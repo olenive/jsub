@@ -1,0 +1,7 @@
+# <variable name> <column in file> <file containing value>
+
+SAMPLEID	1	"${DIR_BASE}"/unit_tests/lists/sampleIDs_1col.txt
+LANE	1	"${DIR_BASE}"//unit_tests/lists/'multiLane_"1"col'.txt
+
+
+
