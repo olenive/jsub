@@ -1,0 +1,7 @@
+#"Errors should not be caused by this comment in call_/bin/bash_scripts_01imac.protocol."
+/bin/bash /Users/olenive/work/jsub_pipeliner/unit_tests/shell_scripts/utbash01.sh "first/in1" "second/in2" "third/out1" "fourth/out2"
+/bin/bash /Users/olenive/work/jsub_pipeliner/unit_tests/shell_scripts/utbash02.sh                          "third/out1" "fourth/out2" "fifth/out3" "sixth/out4"
+#"Errors should not be caused by this comment in call_/bin/bash_scripts_01imac.protocol."
+/bin/bash /Users/olenive/work/jsub_pipeliner/unit_tests/shell_scripts/utbash03.sh                                                     "fifth/out3" "sixth/out4" "seventh/out5" "eighth/out6"
+#"Ean contain comment lines starting with "#" or " 	#" but no comments following data in a signle row.
+#

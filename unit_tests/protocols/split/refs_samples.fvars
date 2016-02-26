@@ -1,0 +1,8 @@
+# This file contains the names of varibales, column numbers and source file paths from which the value of the variable should be taken.
+# <variable name>	<column in file>	<file path>
+LANE_NUM	0	"$DIR_BASE"/"unit_tests/lists/multiLane_"'"1"'"col.txt"
+# The zero in the <column in file> field indicates that all columns shold be used (or treated as one column)
+SAMPLEID	1	"$DIR_BASE"/"unit_tests/lists/sampleIDs_1col.txt"
+
+# The value of DIR_BASE is declared in refs_samples.vars
+
