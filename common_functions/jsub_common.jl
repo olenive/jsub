@@ -8,7 +8,7 @@ function IsBlank(wline) # Check if line is blank
   lstrip(wline) == "" ? true : false
 end
 
-function ReadFileIntoArrayOfArrays(fpath; cols=0::Integer, delimiter = nothing)
+function ReadFileIntoArrayOfArrays(fpath, comStr; cols=0::Integer, delimiter = nothing)
   println("Reading file: ", fpath)
   cols==0 ? println("into '", delimiter, "' delimited columns") : println("into ", cols, " '", delimiter, "' delimited columns");
   #println("delimiter: ", delimiter)
@@ -82,7 +82,7 @@ function ExpandOneVariableAtDollars(inputString, name, value)
   ## Replace # testString = "\"\${VAR}\"/unit_tests/ foo\${VAR#*} bar\${VAR%afd} baz\${VAR:?asdf} boo\${VAR?!*} moo\${VAR\$!*} \"sample\"\"\$VAR\"\".txt\""
   inputReCurly                 = replace(inputString,          string( "\${", name, "}"), value); # \${VAR}
   inputReCurlyReQuoted         = replace(inputReCurly,         string("\"\$", name, "\""), value); # \"\$VAR\"
-  inputReCurlyReQuotedReSpaced = replace(inputReCurlyReQuoted, string( " \$", name, " "), value); # " \$VAR "
+  inputReCurlyReQuotedReSpaced = replace(inputReCurlyReQuoted, string( "\$", name, " "), string(value, " ") ); # "\$VAR "
   ## Do not replace and warn about cases like \${VAR*  e.g. \${VAR%  # \${VAR:  # \${VAR#  # \${VAR?
   if flagWarn
     WarnOfNonReplacedSubstrings(inputReCurlyReQuotedReSpaced, string("\${", name) );
@@ -161,14 +161,14 @@ end
 # end
 
 function ParseVarsFile(fileVars)
-  arrVars, cmdRowsVars = ReadFileIntoArrayOfArrays(fileVars; cols=2, delimiter="\t");
+  arrVars, cmdRowsVars = ReadFileIntoArrayOfArrays(fileVars, comStr; cols=2, delimiter="\t");
   namesVars = ExtractColumnFromArrayOfArrays(arrVars, cmdRowsVars, 1);
   valuesVars = ExtractColumnFromArrayOfArrays(arrVars, cmdRowsVars, 2);
   return namesVars, valuesVars
 end
 
 function ParseExpandVarsInFvarsFile(fileFvars, namesVars, valuesVars; dlmFvars=delimiterFvars)
-  arrFvars, cmdRowsFvars = ReadFileIntoArrayOfArrays(fileFvars; cols=3, delimiter=dlmFvars);
+  arrFvars, cmdRowsFvars = ReadFileIntoArrayOfArrays(fileFvars, comStr; cols=3, delimiter=dlmFvars);
   ## Use variables from .vars to expand values in .fvars
   arrExpFvars = ExpandVariablesInArrayOfArrays(arrFvars, cmdRowsFvars, namesVars, valuesVars ; verbose = verbose);
   # Extract arrays of variable names and variable values
@@ -183,7 +183,7 @@ function ParseExpandVarsInFvarsFile(fileFvars, namesVars, valuesVars; dlmFvars=d
 end
 
 function ParseExpandVarsInProtocolFile(fileProtocol, namesVars, valuesVars)
-  arrProt, cmdRowsProt = ReadFileIntoArrayOfArrays(fileProtocol; cols=1, delimiter=nothing);
+  arrProt, cmdRowsProt = ReadFileIntoArrayOfArrays(fileProtocol, comStr; cols=1, delimiter=nothing);
   ## Use variables from .vars to expand values in .protocol
   arrProtExpVars = ExpandVariablesInArrayOfArrays(arrProt, cmdRowsProt, namesVars, valuesVars ; verbose = verbose)
   return arrProtExpVars, cmdRowsProt
@@ -197,7 +197,7 @@ function ParseExpandVarsInListFiles(filePathsFvars, namesVars, valuesVars, dlmFv
   idx=0;
   for file in filePathsFvars
     idx+=1;
-    arrList, cmdRowsList = ReadFileIntoArrayOfArrays(file; cols=0, delimiter=dlmFvars);
+    arrList, cmdRowsList = ReadFileIntoArrayOfArrays(file, comStr; cols=0, delimiter=dlmFvars);
     arrListExpVars = ExpandVariablesInArrayOfArrays(arrList, cmdRowsList, namesVars, valuesVars ; verbose = verbose);
     dictListArr[file] = arrListExpVars;
     dictCmdLineIdxs[file] = cmdRowsList; #previously: # arrCmdLineIdxs[idx] = cmdRowsList

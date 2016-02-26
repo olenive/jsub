@@ -5,6 +5,16 @@
 # This part should make a single summary file.
 #bash ${DIR_BASE}/unit_tests/shell_scripts/write_files/ut_create_reference.sh ${REF_FILE1} ${REF_FILE2} ${DIR_OUTPUT}/test_referenceFile.txt
 #Checkpoint_FilesNiotEmpty                                                                              ${DIR_OUTPUT}/test_referenceFile.txt
+
+# NOTE: it is not recommended to put multi-line bash commands into the protocol file as they may be split incorrectly among the summary files.
+# This is just a test
+if [ -d "$DIR_OUTPUT" ] then;
+	echo "WARNING from protocol file: output directory already exists: ""$DIR_OUTPUT"
+	ls -lha "$DIR_OUTPUT"
+	echo ""
+fi
+mkdir -p "$DIR_OUTPUT"
+
 bash ${SCR_CREATE_REFS} ${PRE_REF_FILE1} ${PRE_REF_FILE2} ${REF_FILE}
 Checkpoint_FilesNotEmpty                                  ${REF_FILE}
 
