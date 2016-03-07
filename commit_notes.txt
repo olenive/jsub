@@ -1,0 +1,4 @@
+Changed ReadFileIntoArrayOfArrays function in jsub_common.jl to require two arguments, the input file and the string indicating comment lines.  Adjust unit tests in ut_jsub_common.jl to match this.
+
+In this version the contents of the variable name columns of .vars and .fvars will not be subject to variable expansion (i.e. $ signs will be treated as literal characters and escapted yielding '\$').
+

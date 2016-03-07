@@ -78,30 +78,105 @@ function  WarnOfNonReplacedSubstrings(inp, pat)
   end
 end
 
-function ExpandOneVariableAtDollars(inputString, name, value)
+## Expand variable of the form \$NAME or \${NAME} where NAME is a string that can contain alphanumeric characters and/or underscores
+function ExpandOneVariableAtDollars(inString, name, value)  # this will not remove double quoutes aroud a variable (this function could do with refactoring/rewriting (see ut_jsub_common.jl for the necessary unit test))
+  flagWarn = false;
+
   ## Replace # testString = "\"\${VAR}\"/unit_tests/ foo\${VAR#*} bar\${VAR%afd} baz\${VAR:?asdf} boo\${VAR?!*} moo\${VAR\$!*} \"sample\"\"\$VAR\"\".txt\""
-  inputReCurly                 = replace(inputString,          string( "\${", name, "}"), value); # \${VAR}
-  inputReCurlyReQuoted         = replace(inputReCurly,         string("\"\$", name, "\""), value); # \"\$VAR\"
-  inputReCurlyReQuotedReSpaced = replace(inputReCurlyReQuoted, string( "\$", name, " "), string(value, " ") ); # "\$VAR "
+  # # Any character other than a letter number or underscore should indicate the end of a vairable name
+  # inputReCurly                 = replace(inString,          string( "\${", name, "}"), value); # \${VAR}
+  # inputReCurlyReQuoted         = replace(inputReCurly,         string("\"\$", name, "\""), value); # \"\$VAR\"
+  # inputReCurlyReQuotedReSpaced = replace(inputReCurlyReQuoted, string( "\$", name, " "), string(value, " ") ); # "\$VAR "
+  # inputReCurlyReQuotedReSpacedReAlnum = replace(inputReCurlyReQuotedReSpaced, string( "\$", name, "\\"), string(value, "\\") ); # "\$VAR "
+  # outString = inputReCurlyReQuotedReSpaced;
+
+  ## Scan the string one character at a time
+  flagVariable = false; # indicates that we may now be inside a variable name string
+  flagCurly = false; # indicates that we are now inside a statement like ${NAME}
+  flagOpen = false; # indicates that the next non-alphanumeric character is expected to be '{'
+  flagClose = false; # indicates that the next non-alphanumeric character is expected to be '}'
+  candidateName = []; # potential varaible name
+  outString = "";
+  # candidateIndex = 0;
+  for ichr in 1:length(inString)
+    # println(ichr, "  ", inString[ichr])
+    # Detect start of variable '\$'
+    if inString[ichr] == '$'
+      flagVariable = true;
+      # candidateIndex = ichr;
+      # println("possible variable start at: ", ichr); println(inString[1:ichr]); println(inString[ichr:end])
+      # Check for \${
+      if (ichr+1<=length(inString)) && (inString[ichr+1]=='{')
+        flagCurly = true; # indicates that we are now inside a statement like ${NAME}
+        flagOpen = true; # indicates that the next non-alphanumeric character is expected to be '{'
+      end
+    end
+    if flagVariable  # Keep going until the next encountered character is not alphanumeric or an underscore
+      push!(candidateName, inString[ichr]) # add character to the string containing potential variable name
+      
+      ## Check if the next character will be a terminating character
+                  # check for non-alphanumeric and non underscore      # check for the case: \${
+      if ( (ichr+1 > length(inString)) # check for end of string
+          ||( 
+                 !isalnum(inString[ichr+1]) # not alphanumeric
+              && !(inString[ichr+1]=='_')   # not an underscore
+              && !(flagOpen && inString[ichr+1]=='{')  # not an opening curly brace after $
+              && !(flagClose && inString[ichr+1]=='}') # not a closing curly brace after a variable name as in \${NAME}
+            )
+        )
+        flagVariable = false;
+        flagOpen = false;
+        # flagClose = false;
+        if flagCurly && !((ichr+1<=length(inString)) && (inString[ichr+1]=='}')) # Check that the terminating character is a closing curly brace if one is needed.
+          flagWarn = true; # Warn because there was an opening dollar-curly-brace but not a closing one
+        end
+        ## Compare the string obtained from the scan against name and if it matches, replace with value.
+        if flagCurly
+          prefix = "\${";
+          flagClose = true;
+        else
+          prefix = "\$"
+        end
+        # println(join(candidateName), " vs ", string(prefix, name) )
+        # println(join(candidateName) == string(prefix, name)); LL=join(candidateName);
+        if (join(candidateName) == string(prefix, name) ) 
+          outString = string(outString, value); # Replace with value in output
+        else 
+          outString = string(outString, join(candidateName)); # add the candidate string to the output without altering it    
+        end
+        candidateName = [];
+        flagCurly = false;
+      end
+
+    else # append the character to the output string
+      # Check that the character is not the closing bracket after \${NAME}
+      if !flagClose
+        outString = string(outString, inString[ichr]) # is this more or less efficient than an array?
+      else
+        flagClose = false; # reset flag so that subsequent characters are not ignored
+      end
+    end
+  end
+
   ## Do not replace and warn about cases like \${VAR*  e.g. \${VAR%  # \${VAR:  # \${VAR#  # \${VAR?
   if flagWarn
-    WarnOfNonReplacedSubstrings(inputReCurlyReQuotedReSpaced, string("\${", name) );
+    WarnOfNonReplacedSubstrings(outString, string("\${", name) );
   end
-  return inputReCurlyReQuotedReSpaced
+  return outString
 end
 
-function ExpandManyVariablesAtDollars(inputString, varNames, varVals)
+function ExpandManyVariablesAtDollars(inString, varNames, varVals)
   # Check that varNames is the same size as varVals
   if size(varNames) != size(varVals)
     ArgumentError(" in ExpandVariablesAtDollars size($varNames) != size($varVals).  Each input variable name should have exactly one corresponding value.  Is the .vars file correctly formated?")
   end
-  outputString = inputString; # initialize, to be overwritten at each iteration of the loop
+  outString = inString; # initialize, to be overwritten at each iteration of the loop
   for idx = 1:size(varNames)[1]
     name = SanitizeVariableNameOrValue(string(varNames[idx]));
     value = SanitizeVariableNameOrValue(string(varVals[idx]));
-    outputString = ExpandOneVariableAtDollars(outputString, name, value)
+    outString = ExpandOneVariableAtDollars(outString, name, value)
   end
-  return outputString
+  return outString
 end
 
 function ExpandVariablesInArrayOfArrays(arrArr, rows, varNames, varVals; verbose=true)
@@ -165,6 +240,23 @@ function ParseVarsFile(fileVars)
   namesVars = ExtractColumnFromArrayOfArrays(arrVars, cmdRowsVars, 1);
   valuesVars = ExtractColumnFromArrayOfArrays(arrVars, cmdRowsVars, 2);
   return namesVars, valuesVars
+end
+
+function ExpandInOrder(namesVarsRaw, valuesVarsRaw) # Expand variable values one row at a time as though they are being assigned at a shell command line
+  if (length(namesVarsRaw) != length(valuesVarsRaw)) # Check that in put vector lengths match
+    warn(" (in ExpandInOrder) variable name and values arguments should be vectors of equal lengths but appear to be of different lengths.")
+  end
+  ## For each input row expand the variables in the values vector using using name-value paris from preceeding rows
+  valuesVars = Array(Any, length(namesVarsRaw))
+  for irow in 1:length(namesVarsRaw)
+    if irow == 1
+      valuesVars[irow] = valuesVarsRaw[irow];
+    else 
+      valuesVars[irow] = ExpandManyVariablesAtDollars(valuesVarsRaw[irow], namesVarsRaw[1:irow-1], valuesVarsRaw[1:irow-1]); ## length comparison done inside ExpandManyVariablesAtDollars  
+    end
+  end
+  namesVars = namesVarsRaw; # in this version variable names containing the names of other variables are treated as literal strings (variables not expanded)
+  return namesVars, valuesVars  
 end
 
 function ParseExpandVarsInFvarsFile(fileFvars, namesVars, valuesVars; dlmFvars=delimiterFvars)

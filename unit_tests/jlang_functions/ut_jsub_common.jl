@@ -89,20 +89,28 @@ pathToTestFvars = "jlang_function_test_files/refs_samples.fvars"
 # Create expected array to compare against
 # File looks like:
 # ************************************************************************
-# # This file contains the common variables in using refs_samples.protocol
+# This file contains the common variables in using refs_samples.protocol
 
-# DIR_BASE  "/Users/olenive/work/jsub_pipeliner"
-# DIR_OUTPUT  "/Users/olenive/work/output_testing_jsub"
+# DIR_BASE        "/Users/olenive/work/jsub_pipeliner"
+# DIR_OUTPUT      "/Users/olenive/work/output_testing_jsub"
 
-# PRE_REF_FILE1 "$DIR_BASE"/"unit_tests/data/header_coordinate"
-# PRE_REF_FILE2 "$DIR_BASE"/"unit_tests/data/hg19.chrom.sizes"
+# PRE_REF_FILE1   "$DIR_BASE"/"unit_tests/data/header_coordinate"
+# PRE_REF_FILE2   "$DIR_BASE"/"unit_tests/data/hg19.chrom.sizes"
 
-# REF_FILE  "$DIR_OUTPUT"/"utSplit_refFile.txt"
+# REF_FILE        "$DIR_OUTPUT"/"utSplit_refFile.txt"
 # SAMPLE_OUTPUT_1 "$DIR_OUTPUT"/"utSplit_out1_"
 
+# VAR1    "_valueVar1_"
+# # VAR2  "_valueVar2_"
+
+# # In the next line "$VAR1" is replaced by "_valueVar1_" but only in the second column.
+# VAR$VAR1        "_valueVar$VAR1_"
+
+# # In the next line "$VAR2" is replaced by nothing because VAR2 is commented out above
+# VAR$VAR2        "_valueVar$VAR2_"
 
 # ************************************************************************
-expCmdRowsVars = [2,3,4,5,6,7] # Rows in expArrVars that contain commands and not comments
+expCmdRowsVars = [2,3,4,5,6,7,8,11,13] # Rows in expArrVars that contain commands and not comments
 expArrVars = []#Array(Array{AbstractString} (7,))
 push!(expArrVars, ["# This file contains the common variables in using refs_samples.protocol"])
 push!(expArrVars, ["DIR_BASE", "\"/Users/olenive/work/jsub_pipeliner\""])
@@ -111,6 +119,13 @@ push!(expArrVars, ["PRE_REF_FILE1", "\"\$DIR_BASE\"/\"unit_tests/data/header_coo
 push!(expArrVars, ["PRE_REF_FILE2", "\"\$DIR_BASE\"/\"unit_tests/data/hg19.chrom.sizes\""])
 push!(expArrVars, ["REF_FILE", "\"\$DIR_OUTPUT\"/\"utSplit_refFile.txt\""])
 push!(expArrVars, ["SAMPLE_OUTPUT_1", "\"\$DIR_OUTPUT\"/\"utSplit_out1_\""])
+push!(expArrVars, ["VAR1", "\"_valueVar1_\""])
+push!(expArrVars, ["# VAR2\t\"_valueVar2_\""])
+# Note that the replacement mentioned in the text in the array below occurs at a later step (here we are just reading the file)
+push!(expArrVars, ["# In the next line \"\$VAR1\" is replaced by \"_valueVar1_\" but only in the second column."])
+push!(expArrVars, ["VAR\$VAR1", "\"_valueVar\$VAR1_\""])
+push!(expArrVars, ["# In the next line \"\$VAR2\" is replaced by nothing because VAR2 is commented out above"])
+push!(expArrVars, ["VAR\$VAR2", "\"_valueVar\$VAR2_\""])
 
 @call_and_compare ReadFileIntoArrayOfArrays(pathToTestVars, "#") (expArrVars, expCmdRowsVars)
 
