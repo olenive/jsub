@@ -78,130 +78,108 @@ function  WarnOfNonReplacedSubstrings(inp, pat)
   end
 end
 
-## Check if the given character is compatable with being part of a variable name
-function IsCharacterVariableNameCompliant(char, state) # accepted state values are "plain", "curly" or "outside"
-  if state == "outside"
+
+# Check if the subsequent character in the input string terminates any potential variable name
+function IsNextCharacterVariableNameCompliant(inString, ichr) # Note ichr is the current character and not the character being checked because we may be at the end of the string.
+  # Check if character is alphanumeric or an underscore
+  if ichr+1 > length(inString)
     return false
-  elseif state == "curly"
-    # is alphanumeric or an underscore or closing curly brace
-    if isalnum(char) || char == '_' || char == '}'
-      return true;
-    else
-      return false;
-    end
-  elseif state == "plain"
-    if isalnum(char) || char == '_'
-      return true;
-    else
-      return false;
-    end
   else
-    warn(" (in IsCharacterVariableNameCompliant) unexpected state value: ", state);
-    return false;
+    if isalnum(inString[ichr+1]) || inString[ichr+1] == '_'
+      return true
+    else
+      return false
+    end
   end
 end
 
-## Expand variable of the form \$NAME or \${NAME} where NAME is a string that can contain alphanumeric characters and/or underscores
-# Note: unlike doing expansion in the shell, this function keeps double quotes.
-function ExpandOneVariableAtDollars(inString, name, value)  # this will not remove double quoutes aroud a variable (this function could do with refactoring/rewriting (see ut_jsub_common.jl for the necessary unit test))
-  # Initialise
-  flagWarn = false;
-  state = "outside";
-  outString = "";
-  candidate = ""; # potential variable name
+# Determine the role of the character in the input string.
+function DeterminCharacterLabel(inString, ichr, previousLabels)
+  char = inString[ichr]
+  outLabels = Set([])
+  
+  #### Labels are not mutually exclusive ####
+  # outside: not part of a potential variable name
+  # dollar: character indicating start of variable name
+  # curly_open: opening curly brace in variable name
+  # curly_close: closing curly brace in variable name
+  # curly_inside: part of a variable name inside curly braces
+  # plain: part of a variable name without curly braces
+  # terminating: indicates the end of a variable name outside curly braces
+  # discard: indicates the end of a variable in an unexpected manner
+  ###########################################
 
-  ## Look at each character in the input string one at a time.
-  for ichr in 1:length(inString)
-    char = inString[ichr];
-    (ichr+1 <= length(inString)) ? next = inString[ichr+1] : next = '\n';
-    ################################################################################################
-    # Set the type of string we are in
-    # outside: the character is not part of a candidate variable name
-    # plain: the character is inside a candidate variable name of the format $NAME
-    # curly_open: the next character is expected to be the opening curly brace '{'
-    # curly: the character is inside a candidate variable name of the format ${NAME}
-    ################################################################################################
-    if state == "outside"
-      if char == '\$' && next == '{'
-        state = "curly_open"; println("outside -> curly_open")
-      elseif char == '\$' && next != '{'
-        state = "plain"; println("outside -> plain")
-      else 
-        println("outside, appending character as string:\"", string(char), "\"" )
-        outString = outString * string(char); # not inside a potential variable name so append to output
-      end
-    elseif state == "curly_open"
-      # Expecting an opening curly brace (checked above)
-      (char == '{') ? state = "curly" : error(" (in ExpandOneVariableAtDollars) expecting '{' but found: ", char)
-    elseif state == "curly" || state == "plain"
-      #  check character is not terminating  AND  the end of the string has not been reached
-      if IsCharacterVariableNameCompliant(char, state) && ichr != length(inString)
-        candidate = candidate * string(char); # inside potential variable name so append to it
-      else # Reached the end of the candidate state name
+  ## Outside of candidate varaible name or at start of string
+  if ("outside" in previousLabels) || isempty(previousLabels) ||  ("curly_close" in previousLabels)
+    # Check for opening dollar sign
+    if char != '\$'
+      push!(outLabels, "outside")
+    else
+      push!(outLabels, "dollar")
+    end
+  end
 
-        # If this is the last character in the input string and it may be part of a variable name, add it to the candidate string
-        if IsCharacterVariableNameCompliant(char, state) && ichr == length(inString)
-          candidate = candidate * string(char);
-        end
-        
-        # If this is the curly braces case append the closing brace to the variable name (slightly awkward but easiest at this point without refactoring)
-        nameCompared = name;
-        if state == "curly"
-          nameCompared = nameCompared * "}";
-        end
-
-        # Test if candidate name matches variable name
-        flagExpand = false;
-        println(candidate, " VS ", nameCompared, "  result=", (candidate == nameCompared) )
-        (candidate == nameCompared) ? flagExpand=true : flagExpand=false;
-        
-        if state == "curly" && candidate[end] != '}'
-          warn(" (in ExpandOneVariableAtDollars) Expecting closing curly brace but found:", candidate[end]);
-          flagWarn = true; # Expecting closing curly brace
-          flagExpand = false; # Not expanding potential variable name because special operations inside curly braces are not supported by this funciton, curly braces are only allowed to contain exact matches to the variable name.
-        elseif state == "plain" && char == '}'
-          warn(" (in ExpandOneVariableAtDollars) Unexpectd closing curly brace at position ", ichr, " in string: ", inString)
-        end
-        
-        # If this is the last character in the input string and it is not part of the candidate variable name it should be added to the output string (as the next iteration of this for loop will not do it)
-        ending = ""
-        if ichr == length(inString) && !IsCharacterVariableNameCompliant(char, state)
-          ending = string(char);
-        end
-
-        println("flagExpand=", flagExpand)
-        if flagExpand # Variable matches name and other conditions are satisfied so replace the variable name with its value
-          outString = outString * value * ending; println("YES-matching appending: \"", value * ending, "\"")
-        elseif !flagExpand && state == "plain"
-          outString = outString * "\$" * candidate * ending; println("NOT-matching appending: ", "\$" * candidate * ending)
-        elseif !flagExpand && state == "curly"
-          outString = outString * "\${" * candidate * ending; println("NOT-matching appending: ", "\${" * candidate * ending)
-        else
-          warn(" (in ExpandOneVariableAtDollars) after flagExpand, unexpected state value: ", state);
-        end
-
-        # # ## Append the "terminating" character if it is the last in the input string and not part of a potential variable name
-        # if !IsCharacterVariableNameCompliant(char, state) && ichr == length(inString) # note IsCharacterVariableNameCompliant output depends on state as well as char
-        #   outString = outString * string(char);
-        # end
-
-        # Re-set state and candidate name
-        println( state, " -> outside" )
-        state = "outside"; 
-        candidate = "";
+  ## After a terminating character
+  if ("terminating" in previousLabels)
+    # Check for opening dollar sign
+    if char != '\$'
+      # Check for closing curly brace
+      if ( ("curly_inside" in previousLabels) || ("curly_open" in previousLabels) ) && char=='}'
+        # Note: Checks for this closing curly brace and warnings should happen when looking at the previous character
+        push!(outLabels, "curly_close")
+      else
+        push!(outLabels, "outside")
       end
     else
-      warn(" (in ExpandOneVariableAtDollars) unexpected state value: ", state);
+      push!(outLabels, "dollar")
     end
-    println ("char=", char, " state=", state)
   end
 
-  ## Do not replace and warn about cases like \${VAR*  e.g. \${VAR%  # \${VAR:  # \${VAR#  # \${VAR?
-  if flagWarn
-    WarnOfNonReplacedSubstrings(outString, string("\${", name) );
+  ## Inside candidate variable name
+  if !("terminating" in previousLabels) && (("plain" in previousLabels) || ("curly_inside" in previousLabels) || ("dollar" in previousLabels) || ("curly_open" in previousLabels))
+    # Check for opening dollar sign
+    if char == '\$'
+      push!(outLabels, "dollar")
+    end
+
+    # Check if this is a terminating character
+    if !IsNextCharacterVariableNameCompliant(inString, ichr)
+      push!(outLabels, "terminating")
+
+      ## Check for missing closing curly brace
+      if ("curly_inside" in previousLabels) && ( ichr==length(inString) || inString[ichr+1]!='}' ) 
+        warn(" (in DeterminCharacterLabel) Expecting closing curly brace after position ", ichr, " in string: ", inString)
+        push!(outLabels, "discard")
+      end
+    end
+
+    ## Propogate label state from previous character
+    if ("plain" in previousLabels) 
+      push!(outLabels, "plain")
+    
+    elseif ("curly_inside" in previousLabels)
+      push!(outLabels, "curly_inside")
+    
+    elseif ("dollar" in previousLabels)
+      # Check if this character is name compliant or an opening curly brace
+      if IsNextCharacterVariableNameCompliant(inString, ichr-1 ) # -1 because the function looks at the next character
+        push!(outLabels, "plain")
+      elseif char=='{'
+        push!(outLabels, "curly_open")
+      end
+    
+    elseif ("curly_open" in previousLabels)
+      if char=='}' # Check for premature closing brace
+        warn(" (in DeterminCharacterLabel) Found closing curly brace immediately after an opening curly brace \"\${}\" in string: ", inString)
+      elseif IsNextCharacterVariableNameCompliant(inString, ichr-1 ) # -1 because the function looks at the next character
+        push!(outLabels, "curly_inside")
+      end
+    
+    end
   end
-  return outString
+  return outLabels
 end
+
 
 function ExpandManyVariablesAtDollars(inString, varNames, varVals)
   # Check that varNames is the same size as varVals
