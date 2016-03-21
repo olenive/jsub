@@ -182,6 +182,8 @@ push!(expArrFvars, ["# The value of DIR_BASE is declared in refs_samples.vars"])
 # @call_and_compare IsCharacterVariableNameCompliant('}', "curly") true
 
 ## IsNextCharacterVariableNameCompliant
+                                                       #          1111 111111
+                                                       #12345 67890123 456789
 @call_and_compare IsNextCharacterVariableNameCompliant("123aA\$bB_x@~!\"{}?{#", 0) true
 @call_and_compare IsNextCharacterVariableNameCompliant("123aA\$bB_x@~!\"{}?{#", 1) true
 @call_and_compare IsNextCharacterVariableNameCompliant("123aA\$bB_x@~!\"{}?{#", 5) false
@@ -207,30 +209,156 @@ push!(expArrFvars, ["# The value of DIR_BASE is declared in refs_samples.vars"])
 # discard: indicates the end of a variable in an unexpected manner
 ###########################################
 
-@call_and_compare DeterminCharacterLabel("\$VAR", 1, []) ["dollar"]
-@call_and_compare DeterminCharacterLabel("\$VAR", 2, ["dollar"]) ["plain"]
-@call_and_compare DeterminCharacterLabel("\$VAR", 3, ["plain"]) ["plain"]
-@call_and_compare DeterminCharacterLabel("\$VAR", 4, ["plain"]) ["terminating", "plain"]
+@call_and_compare DeterminCharacterLabel("\$VAR", 1, Set([]) ) Set(["dollar"])
+@call_and_compare DeterminCharacterLabel("\$VAR", 2, Set(["dollar"])) Set(["plain"])
+@call_and_compare DeterminCharacterLabel("\$VAR", 3, Set(["plain"])) Set(["plain"])
+@call_and_compare DeterminCharacterLabel("\$VAR", 4, Set(["plain"])) Set(["terminating", "plain"])
 
-@call_and_compare DeterminCharacterLabel("\"\$VAR\"", 1, []) ["outside"]
-@call_and_compare DeterminCharacterLabel("\"\$VAR\"", 2, ["outside"]) ["dollar"]
-@call_and_compare DeterminCharacterLabel("\"\$VAR\"", 3, ["dollar"]) ["plain"]
-@call_and_compare DeterminCharacterLabel("\"\$VAR\"", 4, ["plain"]) ["plain"]
-@call_and_compare DeterminCharacterLabel("\"\$VAR\"", 5, ["plain"]) ["terminating", "plain"]
-@call_and_compare DeterminCharacterLabel("\"\$VAR\"", 6, ["terminating"]) ["outside"]
+                                         # 1234567
+@call_and_compare DeterminCharacterLabel("\$VAR aa", 1, Set([]) ) Set(["dollar"])
+@call_and_compare DeterminCharacterLabel("\$VAR aa", 2, Set(["dollar"])) Set(["plain"])
+@call_and_compare DeterminCharacterLabel("\$VAR aa", 3, Set(["plain"])) Set(["plain"])
+@call_and_compare DeterminCharacterLabel("\$VAR aa", 4, Set(["plain"])) Set(["terminating", "plain"])
+@call_and_compare DeterminCharacterLabel("\$VAR aa", 5, Set(["terminating", "plain"])) Set(["outside"])
+@call_and_compare DeterminCharacterLabel("\$VAR aa", 6, Set(["outside"])) Set(["outside"])
+@call_and_compare DeterminCharacterLabel("\$VAR aa", 7, Set(["outside"])) Set(["outside"])
 
-@call_and_compare DeterminCharacterLabel("\$VAR", ichr, previousLabels) []
-@call_and_compare DeterminCharacterLabel("\$VAR", ichr, previousLabels) []
-@call_and_compare DeterminCharacterLabel("\$VAR", ichr, previousLabels) []
+                                         # 123456
+@call_and_compare DeterminCharacterLabel("\${VAR}", 1, Set([]) ) Set(["dollar"])
+@call_and_compare DeterminCharacterLabel("\${VAR}", 2, Set(["dollar"])) Set(["curly_open"])
+@call_and_compare DeterminCharacterLabel("\${VAR}", 3, Set(["curly_open"])) Set(["curly_inside"])
+@call_and_compare DeterminCharacterLabel("\${VAR}", 4, Set(["curly_inside"])) Set(["curly_inside"])
+@call_and_compare DeterminCharacterLabel("\${VAR}", 5, Set(["curly_inside"])) Set(["terminating", "curly_inside"])
+@call_and_compare DeterminCharacterLabel("\${VAR}", 6, Set(["terminating", "curly_inside"])) Set(["curly_close",])
+@call_and_compare DeterminCharacterLabel("\${VAR}_a", 7, Set(["curly_close"])) Set(["outside"])
+@call_and_compare DeterminCharacterLabel("\${VAR}_a", 6, Set(["outside"])) Set(["outside"])
 
-@call_and_compare DeterminCharacterLabel("\"\$VAR\"", ichr, previousLabels) []
-@call_and_compare DeterminCharacterLabel("\"\$VAR\"", ichr, previousLabels) []
-@call_and_compare DeterminCharacterLabel("\"\$VAR\"", ichr, previousLabels) []
+@call_and_compare DeterminCharacterLabel("\"\$VAR\"", 1, Set([])) Set(["outside"])
+@call_and_compare DeterminCharacterLabel("\"\$VAR\"", 2, Set(["outside"])) Set(["dollar"])
+@call_and_compare DeterminCharacterLabel("\"\$VAR\"", 3, Set(["dollar"])) Set(["plain"])
+@call_and_compare DeterminCharacterLabel("\"\$VAR\"", 4, Set(["plain"])) Set(["plain"])
+@call_and_compare DeterminCharacterLabel("\"\$VAR\"", 5, Set(["plain"])) Set(["terminating", "plain"])
+@call_and_compare DeterminCharacterLabel("\"\$VAR\"", 6, Set(["terminating"])) Set(["outside"])
+                                        
+                                         #          11 1111111 12222 2 2222 2
+                                         #1234 5678901 2345678 90123 4 5678 9
+@call_and_compare DeterminCharacterLabel("pre \$VAR as\$VARVAR\$VAR_\"\$VAR\"", 13, Set(["dollar"])) Set(["plain"])
+@call_and_compare DeterminCharacterLabel("pre \$VAR as\$VARVAR\$VAR_\"\$VAR\"", 18, Set(["plain"])) Set(["plain", "terminating"])
+@call_and_compare DeterminCharacterLabel("pre \$VAR as\$VARVAR\$VAR_\"\$VAR\"", 19, Set(["dollar"])) Set(["dollar"])
 
-@call_and_compare DeterminCharacterLabel("pre $VAR as$VARVAR$VAR_\"\$VAR\"", ichr, previousLabels) []
+                                         #          1111 111111222 222222 2 33333333 33
+                                         #1234 567890123 456789012 345678 9 01234567 89
+@call_and_compare DeterminCharacterLabel("pre \${VAR} as\${VARVAR}\${VAR_\"\${VAR:?}\"", 14, Set(["outside"])) Set(["dollar"])
+@call_and_compare DeterminCharacterLabel("pre \${VAR} as\${VARVAR}\${VAR_\"\${VAR:?}\"", 15, Set(["dollar"])) Set(["curly_open"])
+@call_and_compare DeterminCharacterLabel("pre \${VAR} as\${VARVAR}\${VAR_\"\${VAR:?}\"", 16, Set(["curly_open"])) Set(["curly_inside"])
+@call_and_compare DeterminCharacterLabel("pre \${VAR} as\${VARVAR}\${VAR_\"\${VAR:?}\"", 21, Set(["curly_inside"])) Set(["curly_inside", "terminating"])
+@call_and_compare DeterminCharacterLabel("pre \${VAR} as\${VARVAR}\${VAR_\"\${VAR:?}\"", 22, Set(["terminating", "curly_inside"])) Set(["curly_close"])
+@call_and_compare DeterminCharacterLabel("pre \${VAR} as\${VARVAR}\${VAR_\"\${VAR:?}\"", 23, Set(["curly_close"])) Set(["dollar"])
 
-@call_and_compare DeterminCharacterLabel("pre ${VAR} as${VARVAR}${VAR_\"\${VAR:?}\"", ichr, previousLabels) []
+@call_and_compare DeterminCharacterLabel("pre \${VAR} as\${VARVAR}\${VAR_\"\${VAR:?}\"", 33, Set(["curly_inside"])) Set(["curly_inside"])
+@call_and_compare DeterminCharacterLabel("pre \${VAR} as\${VARVAR}\${VAR_\"\${VAR:?}\"", 34, Set(["curly_inside"])) Set(["curly_inside", "terminating", "discard"])
+@call_and_compare DeterminCharacterLabel("pre \${VAR} as\${VARVAR}\${VAR_\"\${VAR:?}\"", 35, Set(["curly_inside", "terminating"])) Set(["outside"])
 
+## AssignLabels
+#              #          1         2            3         4          5          6         7          8          9          0           1            2             3
+#              #12345678 901234567890 1 234567 89012345678901234 567890123456 78901234567890 1234567890123456 7890123456789 01234 56789 0123456 7 8 9012 3 45678 9 0123
+# testString = "start in\$VAR string \"\${VAR}\"/unit_tests/ foo\${VAR#*} bar\${VAR%afd} baz\${VAR:?asdf} boo\${VAR?!*} moo\${VAR\$!*} \"sample\"\"\$VAR\"\".txt\"\$VAR"
+
+             #            1           2          3
+             # 1 23456 789012 3456789 0123456789 0
+testString = "\"\$VAR*\$VAR x\${VAR} \${VAR:?@}_\""
+expLabels = [
+Set(["outside"]) # 1
+
+Set(["dollar"]) # 2
+Set(["plain"]) # 3
+Set(["plain"]) # 4
+Set(["plain", "terminating"]) # 5
+Set(["outside"]) # 6
+
+Set(["dollar"]) # 7
+Set(["plain"]) # 8
+Set(["plain"]) # 9
+Set(["plain", "terminating"]) # 10
+Set(["outside"]) # 11
+Set(["outside"]) # 12
+
+Set(["dollar"]) # 13
+Set(["curly_open"]) # 14
+Set(["curly_inside"]) # 15
+Set(["curly_inside"]) # 16
+Set(["curly_inside", "terminating"]) # 17
+Set(["curly_close"]) # 18
+Set(["outside"]) # 19
+
+Set(["dollar"]) # 20
+Set(["curly_open"]) # 21
+Set(["curly_inside"]) # 22
+Set(["curly_inside"]) # 23
+Set(["curly_inside", "terminating", "discard"]) # 24
+Set(["outside"]) # 25
+Set(["outside"]) # 26
+Set(["outside"]) # 27
+Set(["outside"]) # 28
+Set(["outside"]) # 29
+
+Set(["outside"]) # 30
+]
+@call_and_compare AssignLabels(testString) expLabels
+             #            1           2          3
+             # 1 23456 789012 3456789 0123456789 0
+testString = "\$VAR"
+expLabels = [
+Set(["dollar"]) # 2
+Set(["plain"]) # 3
+Set(["plain"]) # 4
+Set(["plain", "terminating"]) # 5
+]
+@call_and_compare AssignLabels(testString) expLabels
+             #           1           2          3
+             # 12345 6789012 3456789 0123456789 0
+testString = "\${VAR\$!*}"
+expLabels = [
+Set(["dollar"]) # 1
+Set(["curly_open"]) # 2
+Set(["curly_inside"]) # 3
+Set(["curly_inside"]) # 4
+Set(["curly_inside", "terminating", "discard"]) # 5
+Set(["dollar"]) # 6
+Set(["terminating", "discard"]) # 7
+Set(["outside"]) # 8
+Set(["outside"]) # 9
+]
+@call_and_compare AssignLabels(testString) expLabels
+
+## ProcessCandidateNames(candidate, terminatingLabelSet, name, value)
+@call_and_compare ProcessCandidateNames("\$F", Set(["terminating", "plain"]), "FOO", "888") "\$F"
+@call_and_compare ProcessCandidateNames("\$!", Set(["terminating", "plain"]), "FOO", "888") "\$!"
+@call_and_compare ProcessCandidateNames("moo\${VAR\$!*}", Set(["terminating", "plain"]), "FOO", "888") "moo\${VAR\$!*}"
+@call_and_compare ProcessCandidateNames("\${VAR\$!*}", Set(["terminating", "plain"]), "FOO", "888") "\$!"
+
+@call_and_compare ProcessCandidateNames("\$FOOO", Set(["terminating", "plain"]), "FOO", "888") "\$FOOO"
+@call_and_compare ProcessCandidateNames("FOO", Set(["terminating", "plain"]), "FOO", "888")  "FOO"
+@call_and_compare ProcessCandidateNames("\$FOO", Set(["terminating", "plain"]), "FOO", "888")  "888"
+@call_and_compare ProcessCandidateNames("\${FOO}", Set(["terminating", "plain"]), "FOO", "888")  "\${FOO}"
+@call_and_compare ProcessCandidateNames("\${FOO", Set(["terminating", "plain"]), "FOO", "888")  "\${FOO"
+@call_and_compare ProcessCandidateNames("\${FOO", Set(["terminating" ]), "FOO", "888")  "\${FOO"
+
+@call_and_compare ProcessCandidateNames("\$FOOO", Set(["terminating", "curly_inside"]), "FOO", "888")  "\$FOOO"
+@call_and_compare ProcessCandidateNames("FOO", Set(["terminating", "curly_inside"]), "FOO", "888")  "FOO"
+@call_and_compare ProcessCandidateNames("\$FOO", Set(["terminating", "curly_inside"]), "FOO", "888")  "\$FOO"
+@call_and_compare ProcessCandidateNames("\${FOO}", Set(["terminating", "curly_inside"]), "FOO", "888")  "888"
+@call_and_compare ProcessCandidateNames("\${FOO", Set(["terminating", "curly_inside"]), "FOO", "888")  "\${FOO"
+
+@call_and_compare ProcessCandidateNames("\$FOOO", Set(["terminating", "curly_inside", "discard"]), "FOO", "888") "\$FOOO"
+@call_and_compare ProcessCandidateNames("FOO", Set(["terminating", "curly_inside", "discard"]), "FOO", "888")  "FOO"
+@call_and_compare ProcessCandidateNames("\$FOO", Set(["terminating", "curly_inside", "discard"]), "FOO", "888")  "\$FOO"
+@call_and_compare ProcessCandidateNames("\${FOO}", Set(["terminating", "curly_inside", "discard"]), "FOO", "888")  "\${FOO}"
+@call_and_compare ProcessCandidateNames("\${FOO", Set(["terminating", "curly_inside", "discard"]), "FOO", "888")  "\${FOO"
+
+# testString = "s\${VAR}\"o\${VAR#*}"
+# expString  = "s888\"o\${VAR#*}"
+# @call_and_compare ProcessCandidateNames(testString, Set(["terminating", "curly_inside", "discard"]), "VAR", "888") expString
 
 ## ExpandOneVariableAtDollars
 @call_and_compare ExpandOneVariableAtDollars("\$DIR_BASE", "DIR_BASE", "/path/some/where/") "/path/some/where/"
@@ -246,7 +374,7 @@ push!(expArrFvars, ["# The value of DIR_BASE is declared in refs_samples.vars"])
 @call_and_compare ExpandOneVariableAtDollars( "aa\"bb/\$DIR_BASE---\"" , "DIR_BASE", "/path/some/where/") "aa\"bb//path/some/where/---\""
 @call_and_compare ExpandOneVariableAtDollars( "aa\"bb/\$DIR_BASE/so/on/\"" , "DIR_BASE", "/path/some/where/") "aa\"bb//path/some/where//so/on/\""
 @call_and_compare ExpandOneVariableAtDollars( "aa\"bb/\$DIR_BASE?so/on/\"" , "DIR_BASE", "/path/some/where/") "aa\"bb//path/some/where/?so/on/\""
-@call_and_compare ExpandOneVariableAtDollars( "aa\"bb/\$DIR_BASE}so/on/\"" , "DIR_BASE", "/path/some/where/") "aa\"bb/\$DIR_BASE}so/on/\""
+@call_and_compare ExpandOneVariableAtDollars( "aa\"bb/\$DIR_BASE}so/on/\"" , "DIR_BASE", "/path/some/where/") "aa\"bb//path/some/where/}so/on/\""
 @call_and_compare ExpandOneVariableAtDollars( "aa\"bb/\$DIR_BASE)so/on/\"" , "DIR_BASE", "/path/some/where/") "aa\"bb//path/some/where/)so/on/\""
 @call_and_compare ExpandOneVariableAtDollars( "aa\"bb/\$DIR_BASE,so/on/\"" , "DIR_BASE", "/path/some/where/") "aa\"bb//path/some/where/,so/on/\""
 @call_and_compare ExpandOneVariableAtDollars( "aa\"bb/\$DIR_BASE.so/on/\"" , "DIR_BASE", "/path/some/where/") "aa\"bb//path/some/where/.so/on/\""
@@ -255,9 +383,48 @@ push!(expArrFvars, ["# The value of DIR_BASE is declared in refs_samples.vars"])
 @call_and_compare ExpandOneVariableAtDollars( "aa\"bb/\$DIR_BASE+so/on/\"" , "DIR_BASE", "/path/some/where/") "aa\"bb//path/some/where/+so/on/\""
 @call_and_compare ExpandOneVariableAtDollars( "aa\"bb/\$DIR_BASE-so/on/\"" , "DIR_BASE", "/path/some/where/") "aa\"bb//path/some/where/-so/on/\""
 
+testString = "foo\${VAR#*} bar\${VAR%afd} baz\${VAR:?asdf} boo\${VAR?!*} moo\${VAR\$!*} \"sample\"\"\$VAR\"\".txt\"\$VAR"
+expString  = "foo\${VAR#*} bar\${VAR%afd} baz\${VAR:?asdf} boo\${VAR?!*} moo\${VAR\$!*} \"sample\"\"888\"\".txt\"888"
+@call_and_compare ExpandOneVariableAtDollars(testString, "VAR", "888") expString
+
+testString = "start in\$VAR string \"\${VAR}\"/unit_tests/ foo"
+expString  = "start in\$VAR string \"\${VAR}\"/unit_tests/ foo"
+@call_and_compare ExpandOneVariableAtDollars(testString, "VAR", "888") expString
+
+testString = "\"\${VAR}\"/unit_tests/ foo\${VAR#*}"
+expString  = 
+@call_and_compare ExpandOneVariableAtDollars(testString, "VAR", "888") expString
+
+testString = "s\${VARd}\"/s/o\${VAR#*}"
+expString  = 
+@call_and_compare ExpandOneVariableAtDollars(testString, "VAR", "888") expString
+
+testString = "s\$VARX}\"/s/o\${VAR#*}"
+expString  = 
+@call_and_compare ExpandOneVariableAtDollars(testString, "VAR", "888") expString
+
+testString = "s\${VAR\"/s/o\${VAR#*}"
+expString  = 
+@call_and_compare ExpandOneVariableAtDollars(testString, "VAR", "888") expString
+
+testString = "s\${VAR\"o\${VAR#*}"
+expString  = 
+@call_and_compare ExpandOneVariableAtDollars(testString, "VAR", "888") expString
+
+testString = "s\${VAR}\"o\${VAR#*}"
+expString  = "s888\"o\${VAR#*}"
+@call_and_compare ExpandOneVariableAtDollars(testString, "VAR", "888") expString
+
+testString = "s\${VAR}\"o"
+expString  = "s888\"o"
+@call_and_compare ExpandOneVariableAtDollars(testString, "VAR", "888") expString
+
 testString = "start in\$VAR string \"\${VAR}\"/unit_tests/ foo\${VAR#*} bar\${VAR%afd} baz\${VAR:?asdf} boo\${VAR?!*} moo\${VAR\$!*} \"sample\"\"\$VAR\"\".txt\"\$VAR"
 expString  = "start in888 string \"888\"/unit_tests/ foo\${VAR#*} bar\${VAR%afd} baz\${VAR:?asdf} boo\${VAR?!*} moo\${VAR\$!*} \"sample\"\"888\"\".txt\"888" # expString  = "start in!!! string \"!!!\"/unit_tests/ foo\${VAR#*} bar\${VAR%afd} baz\${VAR:?asdf} boo\${VAR?!*} moo\${VAR\$!*} \"sample\"!!!\".txt\""
 @call_and_compare ExpandOneVariableAtDollars(testString, "VAR", "888") expString
+
+
+PRODIGY
 
 
 ## ExpandManyVariablesAtDollars

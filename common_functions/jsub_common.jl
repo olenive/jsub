@@ -105,7 +105,7 @@ function DeterminCharacterLabel(inString, ichr, previousLabels)
   # curly_close: closing curly brace in variable name
   # curly_inside: part of a variable name inside curly braces
   # plain: part of a variable name without curly braces
-  # terminating: indicates the end of a variable name outside curly braces
+  # terminating: indicates the end of a variable name
   # discard: indicates the end of a variable in an unexpected manner
   ###########################################
 
@@ -146,6 +146,11 @@ function DeterminCharacterLabel(inString, ichr, previousLabels)
     if !IsNextCharacterVariableNameCompliant(inString, ichr)
       push!(outLabels, "terminating")
 
+      # Label as discard if this is the first character after the opening dollar sign or curly brace
+      if ("curly_open" in previousLabels) || ("dollar" in previousLabels)
+        push!(outLabels, "discard")
+      end
+
       ## Check for missing closing curly brace
       if ("curly_inside" in previousLabels) && ( ichr==length(inString) || inString[ichr+1]!='}' ) 
         warn(" (in DeterminCharacterLabel) Expecting closing curly brace after position ", ichr, " in string: ", inString)
@@ -180,6 +185,93 @@ function DeterminCharacterLabel(inString, ichr, previousLabels)
   return outLabels
 end
 
+# Assign labels to each character in a string
+function AssignLabels(inString)
+  charLabels = [];
+  ## For each character in the string
+  for ichr in 1:length(inString)
+    char = inString[ichr];
+    ## Assign a label
+    label = Set([])
+    if ichr==1
+      label = DeterminCharacterLabel(inString, ichr, Set([]))
+    else
+      label = DeterminCharacterLabel(inString, ichr, charLabels[ichr-1])
+    end
+    push!(charLabels, label )
+    println(inString[ichr], " ", label)
+  end
+  return charLabels
+end
+
+# Take a potential variable name, the charLabels of the characters, compare against known variable names and return the string to be appended to the output.
+function ProcessCandidateNames(candidate, terminatingLabelSet, name, value)
+  ## Check for discard label
+  if ("discard" in terminatingLabelSet)
+    return candidate
+  end
+  ## Determin if using curlly or just dollar
+  if ("curly_inside" in terminatingLabelSet)
+    prefix="\${";
+    suffix="}";
+  elseif ("plain" in terminatingLabelSet)
+    prefix="\$";
+    suffix="";
+  else
+    prefix="";
+    suffix="";
+    warn(" (in ProcessCandidateNames) expecting either a \"curly_inside\" or a \"plain\" label in the terminatingLabelSet of candidate (", candidate, ") but found: ", terminatingLabelSet );
+  end
+  testName = prefix*name*suffix;
+  println(testName, " vs ", candidate)
+  if testName == candidate
+    return value
+  else
+    return candidate
+  end
+end
+
+function ExpandOneVariableAtDollars(inString, name, value)  # this will not remove double quoutes aroud a variable (this function could do with refactoring/rewriting (see ut_jsub_common.jl for the necessary unit test))
+  # Initialise
+  #flagWarn = false;
+  outString = "";
+  candidate = ""; # potential variable name
+  istart = 0;
+
+  ## Get vector of character label sets
+  charLabels = AssignLabels(inString);
+
+  ## Process string based on character labels
+  for ichr in 1:length(inString)
+    char = inString[ichr];
+    # println("ExpandOneVariableAtDollars: (", ichr, ") ", char)
+    ## Process on the basis of the label
+    if ("outside" in charLabels[ichr]) # Not in a variable name
+      outString = outString * string(char); # Add to output string (this could be made more efficient but should not take much CPU time in practice anyway)
+    elseif ("terminating" in charLabels[ichr]) # Reached end of potential variable name
+      candidate = candidate * string(char); # Add to candidate name string
+      # println("1 added to candidate: ", string(candidate[end]));
+      ## Check for closing curly brace and append it to candidate name
+      if ("curly_inside" in charLabels[ichr]) && !("discard" in charLabels[ichr])
+        #println("dealing with closing curly brace in discarded candidate name: ", candidate)
+        candidate = candidate * string(inString[ichr+1]); # Note: this should never be called for the final character in the input string
+        # println("2 added to candidate: ", string(candidate[end]));
+      end
+      ## Process, append and re-intialise candidate variable name
+      # println("B ProcessCandidateNames: ", candidate, ",  ", charLabels[ichr], ",  ", name, ",  ", value)
+      processedCandidate = ProcessCandidateNames(candidate, charLabels[ichr], name, value);
+      # println("B Appending: ", processedCandidate )
+      outString = outString * processedCandidate; ## Add candidate string or variable value to output
+      candidate = ""; 
+      istart = 1;
+    elseif !("curly_close" in charLabels[ichr]) # closing curly braces are added to the candidate in the lines above
+      candidate = candidate * string(char); # Add to candidate name string
+      # println("3 added to candidate: ", string(candidate[end]));
+    end
+  end
+
+  return outString
+end
 
 function ExpandManyVariablesAtDollars(inString, varNames, varVals)
   # Check that varNames is the same size as varVals
