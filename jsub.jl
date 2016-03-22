@@ -101,22 +101,22 @@ include("./common_functions/jsub_common.jl")
 ######### SCRIPT #########
 
 ## Read .vars file # Extract arrays of variable names and variable values
-namesVarsRaw, valuesVarsRaw = ParseVarsFile(fileVars)
+namesVarsRaw, valuesVarsRaw = parse_varsfile(fileVars)
 
 ## Expand variables in each row from .vars if they were assigned in a higher row (as though they are being assigned at the command line).
-namesVars, valuesVars = ExpandInOrder(namesVarsRaw, valuesVarsRaw)
+namesVars, valuesVars = expandinorder(namesVarsRaw, valuesVarsRaw)
 
 ## Read .fvar file (of 3 columns) and expand variables from .vars
-namesFvars, infileColumnsFvars, filePathsFvars = ParseExpandVarsInFvarsFile(fileFvars, namesVars, valuesVars)
+namesFvars, infileColumnsFvars, filePathsFvars = parse_expandvars_in_varsfile(fileFvars, namesVars, valuesVars)
 
 ## Read .protocol file (of 1 column ) and expand variables from .vars
-arrProtExpVars, cmdRowsProt = ParseExpandVarsInProtocolFile(fileProtocol, namesVars, valuesVars)
+arrProtExpVars, cmdRowsProt = parse_expandvars_in_protocol(fileProtocol, namesVars, valuesVars)
 
 ## Read "list" files and return their contents in an dictionary (key: file path) (value: arrays of arrays) as well as corresponding command line indicies
-dictListArr, dictCmdLineIdxs = ParseExpandVarsInListFiles(filePathsFvars, namesVars, valuesVars, delimiterFvars; verbose=false)
+dictListArr, dictCmdLineIdxs = parse_expandvars_in_listfiles(filePathsFvars, namesVars, valuesVars, delimiterFvars; verbose=false)
 
 ## Use variable values from "list" files to create multiple summary file arrays from the single .protocol file array
-arrArrExpFvars = ExpandFvarsInProtocol(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose = verbose)
+arrArrExpFvars = expandvars_in_protocol(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose = verbose)
 
 ## For each summary file array check where they first begin to diverge and or converge and merge/split as required
 

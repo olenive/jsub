@@ -1,14 +1,14 @@
 ## This file contains the julia functions used throughout the jsub utility.
 
-function IsComment(wline, comStr) # Check if input string starts with the comment sub-string after any leading whitespace
+function iscomment(wline, comStr) # Check if input string starts with the comment sub-string after any leading whitespace
   lstrip(wline)[1:length(comStr)] == comStr ? true : false
 end
 
-function IsBlank(wline) # Check if line is blank
+function isblank(wline) # Check if line is blank
   lstrip(wline) == "" ? true : false
 end
 
-function ReadFileIntoArrayOfArrays(fpath, comStr; cols=0::Integer, delimiter = nothing)
+function file2arrayofarrays(fpath, comStr; cols=0::Integer, delimiter = nothing)
   println("Reading file: ", fpath)
   cols==0 ? println("into '", delimiter, "' delimited columns") : println("into ", cols, " '", delimiter, "' delimited columns");
   #println("delimiter: ", delimiter)
@@ -17,9 +17,9 @@ function ReadFileIntoArrayOfArrays(fpath, comStr; cols=0::Integer, delimiter = n
   listOut = Array(Array, 0); #arrOut = Array(AbstractString, size(arrRaw)[1], numCols); # output array
   iNonBlank=0; 
   for wline in arrRaw
-    if IsBlank(wline) == false
+    if isblank(wline) == false
       iNonBlank+=1;
-      if IsComment(wline, comStr)
+      if iscomment(wline, comStr)
         push!(listOut, [wline])
       else
         push!(commandRows, iNonBlank); # Index non-blank non-comment lines
@@ -30,7 +30,7 @@ function ReadFileIntoArrayOfArrays(fpath, comStr; cols=0::Integer, delimiter = n
         if delimiter == nothing
           arrLine = split(line, dlmWhitespace; limit=cols, keep=false);
           # if cols != 0;
-          #   warn("In function ReadFileIntoArrayOfArrays cols=", cols, " but delimiter=", delimiter, ". Using default split(::ASCIIString) method which splits by whitespace so the number of output columns may not correspond to the cols option.")
+          #   warn("In function file2arrayofarrays cols=", cols, " but delimiter=", delimiter, ". Using default split(::ASCIIString) method which splits by whitespace so the number of output columns may not correspond to the cols option.")
           # end
         else
           arrLine = split(line, delimiter; limit=cols, keep=false);
@@ -42,26 +42,26 @@ function ReadFileIntoArrayOfArrays(fpath, comStr; cols=0::Integer, delimiter = n
   return listOut, commandRows
 end
 
-function SanitizeVariableNameOrValue(str)
+function sanitizestring(str)
   # remove leading or trailing spaces
   sanitized = lstrip(rstrip(str))
   return sanitized
 end
 
-function ExtractColumnFromArrayOfArrays(arrArr, rows, col::Integer; dlm=' ')
+function columnfrom_arrayofarrays(arrArr, rows, col::Integer; dlm=' ')
   colVals=[];
   if col > 0
     for row in arrArr[rows]
       #println(row)
-      push!(colVals, SanitizeVariableNameOrValue(row[col]) );
+      push!(colVals, sanitizestring(row[col]) );
     end
   elseif col == 0
     for row in arrArr[rows]
       #println(row)
-      push!(colVals, join((map( x->SanitizeVariableNameOrValue(x), row[1:end] )), dlm) );
+      push!(colVals, join((map( x->sanitizestring(x), row[1:end] )), dlm) );
     end
   else
-    warn("(in ExtractColumnFromArrayOfArrays) unexpected column value parameter, expecting a non-negative integer but found: ", col);
+    warn("(in columnfrom_arrayofarrays) unexpected column value parameter, expecting a non-negative integer but found: ", col);
   end
   return colVals
 end
@@ -72,7 +72,7 @@ end
 #   # warn if line is < 5 chars long
 # end
 
-function  WarnOfNonReplacedSubstrings(inp, pat)
+function  warn_notreplaced(inp, pat)
   if contains(inp, pat)
     warn("Not expanding variable matching pattern(s) \"$pat\" in string: ", inp);
   end
@@ -80,7 +80,7 @@ end
 
 
 # Check if the subsequent character in the input string terminates any potential variable name
-function IsNextCharacterVariableNameCompliant(inString, ichr) # Note ichr is the current character and not the character being checked because we may be at the end of the string.
+function nextcharacter_isnamecompliant(inString, ichr) # Note ichr is the current character and not the character being checked because we may be at the end of the string.
   # Check if character is alphanumeric or an underscore
   if ichr+1 > length(inString)
     return false
@@ -94,7 +94,7 @@ function IsNextCharacterVariableNameCompliant(inString, ichr) # Note ichr is the
 end
 
 # Determine the role of the character in the input string.
-function DeterminCharacterLabel(inString, ichr, previousLabels)
+function determinelabel(inString, ichr, previousLabels)
   char = inString[ichr]
   outLabels = Set([])
   
@@ -143,7 +143,7 @@ function DeterminCharacterLabel(inString, ichr, previousLabels)
     end
 
     # Check if this is a terminating character
-    if !IsNextCharacterVariableNameCompliant(inString, ichr)
+    if !nextcharacter_isnamecompliant(inString, ichr)
       push!(outLabels, "terminating")
 
       # Label as discard if this is the first character after the opening dollar sign or curly brace
@@ -153,7 +153,7 @@ function DeterminCharacterLabel(inString, ichr, previousLabels)
 
       ## Check for missing closing curly brace
       if ("curly_inside" in previousLabels) && ( ichr==length(inString) || inString[ichr+1]!='}' ) 
-        warn(" (in DeterminCharacterLabel) Expecting closing curly brace after position ", ichr, " in string: ", inString)
+        warn(" (in determinelabel) Expecting closing curly brace after position ", ichr, " in string: ", inString)
         push!(outLabels, "discard")
       end
     end
@@ -167,7 +167,7 @@ function DeterminCharacterLabel(inString, ichr, previousLabels)
     
     elseif ("dollar" in previousLabels)
       # Check if this character is name compliant or an opening curly brace
-      if IsNextCharacterVariableNameCompliant(inString, ichr-1 ) # -1 because the function looks at the next character
+      if nextcharacter_isnamecompliant(inString, ichr-1 ) # -1 because the function looks at the next character
         push!(outLabels, "plain")
       elseif char=='{'
         push!(outLabels, "curly_open")
@@ -175,8 +175,8 @@ function DeterminCharacterLabel(inString, ichr, previousLabels)
     
     elseif ("curly_open" in previousLabels)
       if char=='}' # Check for premature closing brace
-        warn(" (in DeterminCharacterLabel) Found closing curly brace immediately after an opening curly brace \"\${}\" in string: ", inString)
-      elseif IsNextCharacterVariableNameCompliant(inString, ichr-1 ) # -1 because the function looks at the next character
+        warn(" (in determinelabel) Found closing curly brace immediately after an opening curly brace \"\${}\" in string: ", inString)
+      elseif nextcharacter_isnamecompliant(inString, ichr-1 ) # -1 because the function looks at the next character
         push!(outLabels, "curly_inside")
       end
     
@@ -186,7 +186,7 @@ function DeterminCharacterLabel(inString, ichr, previousLabels)
 end
 
 # Assign labels to each character in a string
-function AssignLabels(inString)
+function assignlabels(inString)
   charLabels = [];
   ## For each character in the string
   for ichr in 1:length(inString)
@@ -194,9 +194,9 @@ function AssignLabels(inString)
     ## Assign a label
     label = Set([])
     if ichr==1
-      label = DeterminCharacterLabel(inString, ichr, Set([]))
+      label = determinelabel(inString, ichr, Set([]))
     else
-      label = DeterminCharacterLabel(inString, ichr, charLabels[ichr-1])
+      label = determinelabel(inString, ichr, charLabels[ichr-1])
     end
     push!(charLabels, label )
     println(inString[ichr], " ", label)
@@ -205,7 +205,7 @@ function AssignLabels(inString)
 end
 
 # Take a potential variable name, the charLabels of the characters, compare against known variable names and return the string to be appended to the output.
-function ProcessCandidateNames(candidate, terminatingLabelSet, name, value)
+function processcandidatename(candidate, terminatingLabelSet, name, value)
   ## Check for discard label
   if ("discard" in terminatingLabelSet)
     return candidate
@@ -220,7 +220,7 @@ function ProcessCandidateNames(candidate, terminatingLabelSet, name, value)
   else
     prefix="";
     suffix="";
-    warn(" (in ProcessCandidateNames) expecting either a \"curly_inside\" or a \"plain\" label in the terminatingLabelSet of candidate (", candidate, ") but found: ", terminatingLabelSet );
+    warn(" (in processcandidatename) expecting either a \"curly_inside\" or a \"plain\" label in the terminatingLabelSet of candidate (", candidate, ") but found: ", terminatingLabelSet );
   end
   testName = prefix*name*suffix;
   println(testName, " vs ", candidate)
@@ -231,7 +231,7 @@ function ProcessCandidateNames(candidate, terminatingLabelSet, name, value)
   end
 end
 
-function ExpandOneVariableAtDollars(inString, name, value)  # this will not remove double quoutes aroud a variable (this function could do with refactoring/rewriting (see ut_jsub_common.jl for the necessary unit test))
+function expandnameafterdollar(inString, name, value)  # this will not remove double quoutes aroud a variable (this function could do with refactoring/rewriting (see ut_jsub_common.jl for the necessary unit test))
   # Initialise
   #flagWarn = false;
   outString = "";
@@ -239,12 +239,12 @@ function ExpandOneVariableAtDollars(inString, name, value)  # this will not remo
   istart = 0;
 
   ## Get vector of character label sets
-  charLabels = AssignLabels(inString);
+  charLabels = assignlabels(inString);
 
   ## Process string based on character labels
   for ichr in 1:length(inString)
     char = inString[ichr];
-    # println("ExpandOneVariableAtDollars: (", ichr, ") ", char)
+    # println("expandnameafterdollar: (", ichr, ") ", char)
     ## Process on the basis of the label
     if ("outside" in charLabels[ichr]) # Not in a variable name
       outString = outString * string(char); # Add to output string (this could be made more efficient but should not take much CPU time in practice anyway)
@@ -258,8 +258,8 @@ function ExpandOneVariableAtDollars(inString, name, value)  # this will not remo
         # println("2 added to candidate: ", string(candidate[end]));
       end
       ## Process, append and re-intialise candidate variable name
-      # println("B ProcessCandidateNames: ", candidate, ",  ", charLabels[ichr], ",  ", name, ",  ", value)
-      processedCandidate = ProcessCandidateNames(candidate, charLabels[ichr], name, value);
+      # println("B processcandidatename: ", candidate, ",  ", charLabels[ichr], ",  ", name, ",  ", value)
+      processedCandidate = processcandidatename(candidate, charLabels[ichr], name, value);
       # println("B Appending: ", processedCandidate )
       outString = outString * processedCandidate; ## Add candidate string or variable value to output
       candidate = ""; 
@@ -273,24 +273,24 @@ function ExpandOneVariableAtDollars(inString, name, value)  # this will not remo
   return outString
 end
 
-function ExpandManyVariablesAtDollars(inString, varNames, varVals)
+function expandmanyafterdollars(inString, varNames, varVals)
   # Check that varNames is the same size as varVals
   if size(varNames) != size(varVals)
     ArgumentError(" in ExpandVariablesAtDollars size($varNames) != size($varVals).  Each input variable name should have exactly one corresponding value.  Is the .vars file correctly formated?")
   end
   outString = inString; # initialize, to be overwritten at each iteration of the loop
   for idx = 1:size(varNames)[1]
-    name = SanitizeVariableNameOrValue(string(varNames[idx]));
-    value = SanitizeVariableNameOrValue(string(varVals[idx]));
-    outString = ExpandOneVariableAtDollars(outString, name, value)
+    name = sanitizestring(string(varNames[idx]));
+    value = sanitizestring(string(varVals[idx]));
+    outString = expandnameafterdollar(outString, name, value)
   end
   return outString
 end
 
-function ExpandVariablesInArrayOfArrays(arrArr, rows, varNames, varVals; verbose=true)
+function expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=true)
   # Check that varNames is the same size as varVals
   if size(varNames) != size(varVals)
-    ArgumentError(" in ExpandVariablesInArrayOfArrays size($varNames) != size($varVals).  Each input variable name should have exactly one corresponding value.  Is the .vars or .fvars file correctly formated?")
+    ArgumentError(" in expand_inarrayofarrays size($varNames) != size($varVals).  Each input variable name should have exactly one corresponding value.  Is the .vars or .fvars file correctly formated?")
   end
   arrOut = arrArr # Initialize output array
   irows = 0; # Note this is an index of the variable "rows" (which is itself an index)
@@ -309,7 +309,7 @@ function ExpandVariablesInArrayOfArrays(arrArr, rows, varNames, varVals; verbose
     icol = 0;
     for col in arrRow
       icol += 1;
-      expanded = ExpandManyVariablesAtDollars(col, varNames, varVals)
+      expanded = expandmanyafterdollars(col, varNames, varVals)
       if verbose
         print(expanded, "\t")
       end
@@ -323,7 +323,7 @@ function ExpandVariablesInArrayOfArrays(arrArr, rows, varNames, varVals; verbose
 end
 
 # This function is needed to deal with escaped quotes that are created when julia reads a path containing quotes from a file.
-function SanitizePath(raw)
+function sanitizepath(raw)
   # Substrings inside and outside single quoutes are treated differently
   arrSplitSingle = split(raw, "'");
   arrOut = Array(AbstractString, size(arrSplitSingle) );
@@ -340,19 +340,19 @@ end
 
 ## Function for reading every list file given in .fvars and extracting arrays of variable values
 # function ValuesFromLists (fpath, column) # Read a 'list' file and extract values from a selected column
-#   arrArr, cmdRows = ReadFileIntoArrayOfArrays(fileList; cols=0, delimiter = nothing)
+#   arrArr, cmdRows = file2arrayofarrays(fileList; cols=0, delimiter = nothing)
 # end
 
-function ParseVarsFile(fileVars)
-  arrVars, cmdRowsVars = ReadFileIntoArrayOfArrays(fileVars, comStr; cols=2, delimiter="\t");
-  namesVars = ExtractColumnFromArrayOfArrays(arrVars, cmdRowsVars, 1);
-  valuesVars = ExtractColumnFromArrayOfArrays(arrVars, cmdRowsVars, 2);
+function parse_varsfile(fileVars)
+  arrVars, cmdRowsVars = file2arrayofarrays(fileVars, comStr; cols=2, delimiter="\t");
+  namesVars = columnfrom_arrayofarrays(arrVars, cmdRowsVars, 1);
+  valuesVars = columnfrom_arrayofarrays(arrVars, cmdRowsVars, 2);
   return namesVars, valuesVars
 end
 
-function ExpandInOrder(namesVarsRaw, valuesVarsRaw) # Expand variable values one row at a time as though they are being assigned at a shell command line
-  if (length(namesVarsRaw) != length(valuesVarsRaw)) # Check that in put vector lengths match
-    warn(" (in ExpandInOrder) variable name and values arguments should be vectors of equal lengths but appear to be of different lengths.")
+function expandinorder(namesVarsRaw, valuesVarsRaw) # Expand variable values one row at a time as though they are being assigned at a shell command line
+  if (length(namesVarsRaw) != length(valuesVarsRaw)) # Checkthat in put vector lengths match
+    warn(" (in expandinorder) variable name and values arguments should be vectors of equal lengths but appear to be of different lengths.")
   end
   ## For each input row expand the variables in the values vector using using name-value paris from preceeding rows
   valuesVars = Array(Any, length(namesVarsRaw))
@@ -360,45 +360,45 @@ function ExpandInOrder(namesVarsRaw, valuesVarsRaw) # Expand variable values one
     if irow == 1
       valuesVars[irow] = valuesVarsRaw[irow];
     else 
-      valuesVars[irow] = ExpandManyVariablesAtDollars(valuesVarsRaw[irow], namesVarsRaw[1:irow-1], valuesVarsRaw[1:irow-1]); ## length comparison done inside ExpandManyVariablesAtDollars  
+      valuesVars[irow] = expandmanyafterdollars(valuesVarsRaw[irow], namesVarsRaw[1:irow-1], valuesVarsRaw[1:irow-1]); ## length comparison done inside expandmanyafterdollars  
     end
   end
   namesVars = namesVarsRaw; # in this version variable names containing the names of other variables are treated as literal strings (variables not expanded)
   return namesVars, valuesVars  
 end
 
-function ParseExpandVarsInFvarsFile(fileFvars, namesVars, valuesVars; dlmFvars=delimiterFvars)
-  arrFvars, cmdRowsFvars = ReadFileIntoArrayOfArrays(fileFvars, comStr; cols=3, delimiter=dlmFvars);
+function parse_expandvars_in_varsfile(fileFvars, namesVars, valuesVars; dlmFvars=delimiterFvars)
+  arrFvars, cmdRowsFvars = file2arrayofarrays(fileFvars, comStr; cols=3, delimiter=dlmFvars);
   ## Use variables from .vars to expand values in .fvars
-  arrExpFvars = ExpandVariablesInArrayOfArrays(arrFvars, cmdRowsFvars, namesVars, valuesVars ; verbose = verbose);
+  arrExpFvars = expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars ; verbose = verbose);
   # Extract arrays of variable names and variable values
-  namesFvars = ExtractColumnFromArrayOfArrays(arrFvars, cmdRowsFvars, 1);
-  infileColumnsFvars = ExtractColumnFromArrayOfArrays(arrFvars, cmdRowsFvars, 2);
+  namesFvars = columnfrom_arrayofarrays(arrFvars, cmdRowsFvars, 1);
+  infileColumnsFvars = columnfrom_arrayofarrays(arrFvars, cmdRowsFvars, 2);
 
   # Get sanitized paths from strings in the third column of the .fvars file
   # Note that this is done after expanding any variables (from .vars) contained in the file paths.
-  filePathsFvars = map(SanitizePath, ExtractColumnFromArrayOfArrays(arrFvars, cmdRowsFvars, 3));
+  filePathsFvars = map(sanitizepath, columnfrom_arrayofarrays(arrFvars, cmdRowsFvars, 3));
 
   return namesFvars, infileColumnsFvars, filePathsFvars
 end
 
-function ParseExpandVarsInProtocolFile(fileProtocol, namesVars, valuesVars)
-  arrProt, cmdRowsProt = ReadFileIntoArrayOfArrays(fileProtocol, comStr; cols=1, delimiter=nothing);
+function parse_expandvars_in_protocol(fileProtocol, namesVars, valuesVars)
+  arrProt, cmdRowsProt = file2arrayofarrays(fileProtocol, comStr; cols=1, delimiter=nothing);
   ## Use variables from .vars to expand values in .protocol
-  arrProtExpVars = ExpandVariablesInArrayOfArrays(arrProt, cmdRowsProt, namesVars, valuesVars ; verbose = verbose)
+  arrProtExpVars = expand_inarrayofarrays(arrProt, cmdRowsProt, namesVars, valuesVars ; verbose = verbose)
   return arrProtExpVars, cmdRowsProt
 end
 
 # Expand variables in .fvars file using values from .vars file
-function ParseExpandVarsInListFiles(filePathsFvars, namesVars, valuesVars, dlmFvars; verbose=false)
+function parse_expandvars_in_listfiles(filePathsFvars, namesVars, valuesVars, dlmFvars; verbose=false)
   ## Read each list file
   dictListArr = Dict(); # Dictionary with file paths as keys and file contents (arrays of arrays) as values.
   dictCmdLineIdxs = Dict(); #previously: # arrCmdLineIdxs = Array(Array, length(filePathsFvars) ); # Array for storing line counts from input files
   idx=0;
   for file in filePathsFvars
     idx+=1;
-    arrList, cmdRowsList = ReadFileIntoArrayOfArrays(file, comStr; cols=0, delimiter=dlmFvars);
-    arrListExpVars = ExpandVariablesInArrayOfArrays(arrList, cmdRowsList, namesVars, valuesVars ; verbose = verbose);
+    arrList, cmdRowsList = file2arrayofarrays(file, comStr; cols=0, delimiter=dlmFvars);
+    arrListExpVars = expand_inarrayofarrays(arrList, cmdRowsList, namesVars, valuesVars ; verbose = verbose);
     dictListArr[file] = arrListExpVars;
     dictCmdLineIdxs[file] = cmdRowsList; #previously: # arrCmdLineIdxs[idx] = cmdRowsList
   end
@@ -420,7 +420,7 @@ function ParseExpandVarsInListFiles(filePathsFvars, namesVars, valuesVars, dlmFv
 end
 
 # Expand varaibles in .protocol using values from .fvars.  This necessarily results in one output summary file per list entry (list files indicated in .fvars)
-function ExpandFvarsInProtocol(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose = false )
+function expandvars_in_protocol(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose = false )
   arrArrExpFvars = []; ## Initialise array for holding summary file arrays-of-arrays
   ## Loop over length of list files (currently assuming that all lists are of the same length but this may need to change in the future)
   for iln in 1:maximum( map(x->length(x), values(dictCmdLineIdxs)) )
@@ -435,11 +435,11 @@ function ExpandFvarsInProtocol(arrProt, cmdRowsProt, namesFvars, infileColumnsFv
       fvarFile = filePathsFvars[ivar]; # Get the list file name associated with this Fvar
       listArr =  dictListArr[fvarFile]; # array of arrays of the contents of the list file
       cmdLineIdxs = dictCmdLineIdxs[fvarFile]; # Rows in the list file which contain data as opposed to comments or being empty
-      fvarValue = ExtractColumnFromArrayOfArrays(listArr, cmdLineIdxs, fvarColumnInListFile)[iln]; # This particular value of the Fvar
+      fvarValue = columnfrom_arrayofarrays(listArr, cmdLineIdxs, fvarColumnInListFile)[iln]; # This particular value of the Fvar
       valuesFvars[ivar] = fvarValue;
     end
     ## Create a new summary file array for the current list row (across all list files)
-    arrExpFvars = ExpandVariablesInArrayOfArrays(arrProt, cmdRowsProt, namesFvars, valuesFvars ; verbose = verbose )
+    arrExpFvars = expand_inarrayofarrays(arrProt, cmdRowsProt, namesFvars, valuesFvars ; verbose = verbose )
     push!(arrArrExpFvars, arrExpFvars)
   end
   return arrArrExpFvars
