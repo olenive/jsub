@@ -107,7 +107,7 @@ namesVarsRaw, valuesVarsRaw = parse_varsfile(fileVars)
 namesVars, valuesVars = expandinorder(namesVarsRaw, valuesVarsRaw)
 
 ## Read .fvar file (of 3 columns) and expand variables from .vars
-namesFvars, infileColumnsFvars, filePathsFvars = parse_expandvars_in_varsfile(fileFvars, namesVars, valuesVars)
+namesFvars, infileColumnsFvars, filePathsFvars = parse_expandvars_in_varsfile(fileFvars, namesVars, valuesVars; dlmFvars=delimiterFvars)
 
 ## Read .protocol file (of 1 column ) and expand variables from .vars
 arrProtExpVars, cmdRowsProt = parse_expandvars_in_protocol(fileProtocol, namesVars, valuesVars)

@@ -14,7 +14,8 @@ function file2arrayofarrays(fpath, comStr; cols=0::Integer, delimiter = nothing)
   #println("delimiter: ", delimiter)
   arrRaw = split(readall(fpath), '\n'); # Read the input file
   commandRows = []; # row numbers of non-comment non-blank rows
-  listOut = Array(Array, 0); #arrOut = Array(AbstractString, size(arrRaw)[1], numCols); # output array
+  ## Initialise output array
+  listOut = Array(Array{UTF8String}, 0); # Insisting of UTF8String here to avoid conversion problems later (MethodError: `convert` has no method matching convert(::Type{SubString{ASCIIString}}, ::UTF8String))  #arrOut = Array(AbstractString, size(arrRaw)[1], numCols); 
   iNonBlank=0; 
   for wline in arrRaw
     if isblank(wline) == false
@@ -199,7 +200,7 @@ function assignlabels(inString)
       label = determinelabel(inString, ichr, charLabels[ichr-1])
     end
     push!(charLabels, label )
-    println(inString[ichr], " ", label)
+    # println(inString[ichr], " ", label)
   end
   return charLabels
 end
@@ -223,7 +224,7 @@ function processcandidatename(candidate, terminatingLabelSet, name, value)
     warn(" (in processcandidatename) expecting either a \"curly_inside\" or a \"plain\" label in the terminatingLabelSet of candidate (", candidate, ") but found: ", terminatingLabelSet );
   end
   testName = prefix*name*suffix;
-  println(testName, " vs ", candidate)
+  # println(testName, " vs ", candidate)
   if testName == candidate
     return value
   else
@@ -370,7 +371,7 @@ end
 function parse_expandvars_in_varsfile(fileFvars, namesVars, valuesVars; dlmFvars=delimiterFvars)
   arrFvars, cmdRowsFvars = file2arrayofarrays(fileFvars, comStr; cols=3, delimiter=dlmFvars);
   ## Use variables from .vars to expand values in .fvars
-  arrExpFvars = expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars ; verbose = verbose);
+  arrExpFvars = expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars; verbose = verbose);
   # Extract arrays of variable names and variable values
   namesFvars = columnfrom_arrayofarrays(arrFvars, cmdRowsFvars, 1);
   infileColumnsFvars = columnfrom_arrayofarrays(arrFvars, cmdRowsFvars, 2);

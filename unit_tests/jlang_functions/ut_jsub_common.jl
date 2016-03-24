@@ -335,7 +335,7 @@ Set(["outside"]) # 9
 @call_and_compare processcandidatename("\$F", Set(["terminating", "plain"]), "FOO", "888") "\$F"
 @call_and_compare processcandidatename("\$!", Set(["terminating", "plain"]), "FOO", "888") "\$!"
 @call_and_compare processcandidatename("moo\${VAR\$!*}", Set(["terminating", "plain"]), "FOO", "888") "moo\${VAR\$!*}"
-@call_and_compare processcandidatename("\${VAR\$!*}", Set(["terminating", "plain"]), "FOO", "888") "\$!"
+@call_and_compare processcandidatename("\${VAR\$!*}", Set(["terminating", "plain"]), "FOO", "888") "\${VAR\$!*}"
 
 @call_and_compare processcandidatename("\$FOOO", Set(["terminating", "plain"]), "FOO", "888") "\$FOOO"
 @call_and_compare processcandidatename("FOO", Set(["terminating", "plain"]), "FOO", "888")  "FOO"
@@ -388,7 +388,7 @@ expString  = "foo\${VAR#*} bar\${VAR%afd} baz\${VAR:?asdf} boo\${VAR?!*} moo\${V
 @call_and_compare expandnameafterdollar(testString, "VAR", "888") expString
 
 testString = "start in\$VAR string \"\${VAR}\"/unit_tests/ foo"
-expString  = "start in\$VAR string \"\${VAR}\"/unit_tests/ foo"
+expString  = "start in888 string \"888\"/unit_tests/ foo"
 @call_and_compare expandnameafterdollar(testString, "VAR", "888") expString
 
 testString = "\"\${VAR}\"/unit_tests/ foo\${VAR#*}"
@@ -400,7 +400,7 @@ expString  = "s\${VARd}\"/s/o\${VAR#*}"
 @call_and_compare expandnameafterdollar(testString, "VAR", "888") expString
 
 testString = "s\$VARX}\"/s/o\${VAR#*}"
-expString  = "s888}\"/s/o\${VAR#*}"
+expString  = "s\$VARX}\"/s/o\${VAR#*}"
 @call_and_compare expandnameafterdollar(testString, "VAR", "888") expString
 
 testString = "s\${VAR\"/s/o\${VAR#*}"
@@ -423,10 +423,6 @@ testString = "start in\$VAR string \"\${VAR}\"/unit_tests/ foo\${VAR#*} bar\${VA
 expString  = "start in888 string \"888\"/unit_tests/ foo\${VAR#*} bar\${VAR%afd} baz\${VAR:?asdf} boo\${VAR?!*} moo\${VAR\$!*} \"sample\"\"888\"\".txt\"888" # expString  = "start in!!! string \"!!!\"/unit_tests/ foo\${VAR#*} bar\${VAR%afd} baz\${VAR:?asdf} boo\${VAR?!*} moo\${VAR\$!*} \"sample\"!!!\".txt\""
 @call_and_compare expandnameafterdollar(testString, "VAR", "888") expString
 
-
-PRODIGY
-
-
 ## expandmanyafterdollars
 testString = "start in\$VAR1 string \"\${VAR2}\"/unit_tests/ foo\${VAR0#*} bar\${VAR0%afd} baz\${VAR0:?asdf} boo\${VAR0?!*} moo\${VAR0\$!*} \"sample\"\"\$VAR3\"\".txt\""
 expString  = "start in111 string \"222\"/unit_tests/ foo\${VAR0#*} bar\${VAR0%afd} baz\${VAR0:?asdf} boo\${VAR0?!*} moo\${VAR0\$!*} \"sample\"\"\$VAR3\"\".txt\""
@@ -436,17 +432,56 @@ expString  = "start in111 string \"222\"/unit_tests/ foo\${VAR0#*} bar\${VAR0%af
 ## expand_inarrayofarrays
 testArr = []
 push!(testArr, ["# first comment string \${VAR}, \$VAR1 \"\"\$VAR2\""])
-push!(testArr, [testString])
+push!(testArr, ["string \${VAR}, \$VAR1 \"\"\$VAR2\""])
 push!(testArr, ["# second comment string  \${VAR}, \$VAR1 \"\"\$VAR2\""])
-push!(testArr, [testString])
+push!(testArr, ["string  \${VAR}, \$VAR1 \"\"\$VAR2\""])
 push!(testArr, ["# third comment string  \${VAR}, \$VAR1 \"\"\$VAR2\""])
 expArr = []
 push!(expArr, ["# first comment string \${VAR}, \$VAR1 \"\"\$VAR2\""])
-push!(expArr, [expString])
+push!(expArr, ["string \${VAR}, 111 \"\"222\""])
 push!(expArr, ["# second comment string  \${VAR}, \$VAR1 \"\"\$VAR2\""])
-push!(expArr, [expString])
+push!(expArr, ["string  \${VAR}, 111 \"\"222\""])
 push!(expArr, ["# third comment string  \${VAR}, \$VAR1 \"\"\$VAR2\""])
-@call_and_compare expand_inarrayofarrays(testArr, [2,4], ["VAR0", "VAR1", "VAR2"], ["000", "!!!1", "!!!2"]; verbose=true) expArr
+@call_and_compare expand_inarrayofarrays(testArr, [2,4], ["VAR0", "VAR1", "VAR2"], ["000", "111", "222"]; verbose=true) expArr
+
+
+
+
+
+
+
+# expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars; verbose = verbose)
+arrArr = []
+push!(arrArr, ["# This file contains the names of varibales, column numbers and source file paths from which the value of the variable should be taken."])
+push!(arrArr, ["# <variable name>\t<column in file>\t<file path>"])
+push!(arrArr, ["LANE_NUM","0","\"\$DIR_BASE\"/\"unit_tests/lists/multiLane_\"'\"1\"'\"col.txt\""])
+push!(arrArr, ["# The zero in the <column in file> field indicates that all columns shold be used (or treated as one column)"])
+push!(arrArr, ["SAMPLEID","1","\"\$DIR_BASE\"/\"unit_tests/lists/sampleIDs_1col.txt\""])
+push!(arrArr, ["# The value of DIR_BASE is declared in refs_samples.vars"])
+rows = [3,5]
+varNames=[
+ "DIR_BASE" 
+ "SCRIPT"   
+ "DOLLARVAR"
+ "HELLO"
+]
+varVals=[
+ "\"/Users/olenive/work/jsub_pipeliner/\""
+ "\"utbash space.sh\""                    
+ "\"\$dolla\""                            
+ "\"Hello spaces and tabs\tand...\"" 
+]
+expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=true)
+arrArr=arrFvars; rows=cmdRowsFvars; varNames=namesVars; varVals=valuesVars; verbose=true;
+expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars; verbose = verbose)
+
+
+
+
+
+
+
+
 
 ## sanitizepath
 testPath = "\"\$DIR_BASE\"/\"unit_tests/lists/multiLane_\"\'\"1\"\'\"col.txt\""
@@ -492,24 +527,27 @@ expNames = [
 "VAR\$VAR2"
 ]
 expValues = [
-"\"/Users/olenive/work/jsub_pipeliner\""
+"\"/Users/olenive/work/jsub_pipeliner\""              
 "\"/Users/olenive/work/output_testing_jsub\""
-"\"\/Users/olenive/work/jsub_pipeliner\"/\"unit_tests/data/header_coordinate\""
-"\"\/Users/olenive/work/jsub_pipeliner\"/\"unit_tests/data/hg19.chrom.sizes\""
-"\"\/Users/olenive/work/output_testing_jsub\"/\"utSplit_refFile.txt\""
-"\"\/Users/olenive/work/output_testing_jsub\"/\"utSplit_out1_\""
-"\"_valueVar1_\""
-"\"_valueVar_valueVar1_\""
-"\"_valueVar\$VAR2_\""
+"\"\"/Users/olenive/work/jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\""
+"\"\"/Users/olenive/work/jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\"" 
+"\"\"/Users/olenive/work/output_testing_jsub\"\"/\"utSplit_refFile.txt\""            
+"\"\"/Users/olenive/work/output_testing_jsub\"\"/\"utSplit_out1_\""                  
+"\"_valueVar1_\""                                     
+"\"_valueVar\$VAR1_\""                                
+"\"_valueVar\$VAR2_\"" 
 ]
 @call_and_compare expandinorder(namesVarsRaw, valuesVarsRaw) (expNames, expValues)
+
+##
 
 ########################################
 
 if flag_test_fail
   warn(" *** One or more unit tests failed in ut_jsub_common.jl ***")
+else
+  println("Unit tests completed successfully.")
 end
-
 
 # EOF
 
