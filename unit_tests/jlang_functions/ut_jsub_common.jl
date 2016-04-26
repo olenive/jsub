@@ -23,7 +23,7 @@ end
 
 ### MACROS ###
 macro call_and_compare( funCall, expected ) # Note this macro actually makes to calls to the function, this should probably be fixed
-  println("Test function call: ", funCall)
+  #println("Test function call: ", funCall)
   #println("1")
   output = :($funCall)
   #println("2")
@@ -34,7 +34,8 @@ macro call_and_compare( funCall, expected ) # Note this macro actually makes to 
     #$output == $expected ? println("output is:\n", $output, "\n", $msgPass) : println("output is:\n", $output, "\nbut the expected output is: \n", $expected,  $msgFail)
     if $output == $expected
       #println("3.1")
-      println("expected output is:\n", $expected, "\nactual output is: \n", $output, "\n", $msgPass) 
+      #println("expected output is:\n", $expected, "\nactual output is: \n", $output, "\n", $msgPass) 
+      println(".")
     else
       #println("3.2")
       println("expected output is:\n", $expected, "\nbut the actual output is: \n", $output, "\n", $msgFail)
@@ -444,12 +445,6 @@ push!(expArr, ["string  \${VAR}, 111 \"\"222\""])
 push!(expArr, ["# third comment string  \${VAR}, \$VAR1 \"\"\$VAR2\""])
 @call_and_compare expand_inarrayofarrays(testArr, [2,4], ["VAR0", "VAR1", "VAR2"], ["000", "111", "222"]; verbose=true) expArr
 
-
-
-
-
-
-
 # expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars; verbose = verbose)
 arrArr = []
 push!(arrArr, ["# This file contains the names of varibales, column numbers and source file paths from which the value of the variable should be taken."])
@@ -471,17 +466,16 @@ varVals=[
  "\"\$dolla\""                            
  "\"Hello spaces and tabs\tand...\"" 
 ]
-expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=true)
-arrArr=arrFvars; rows=cmdRowsFvars; varNames=namesVars; varVals=valuesVars; verbose=true;
-expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars; verbose = verbose)
-
-
-
-
-
-
-
-
+expArr = []
+push!(expArr, ["# This file contains the names of varibales, column numbers and source file paths from which the value of the variable should be taken."])
+push!(expArr, ["# <variable name>\t<column in file>\t<file path>"])
+push!(expArr, ["LANE_NUM","0","\"\"/Users/olenive/work/jsub_pipeliner/\"\"/\"unit_tests/lists/multiLane_\"'\"1\"'\"col.txt\""])
+push!(expArr, ["# The zero in the <column in file> field indicates that all columns shold be used (or treated as one column)"])
+push!(expArr, ["SAMPLEID","1","\"\"/Users/olenive/work/jsub_pipeliner/\"\"/\"unit_tests/lists/sampleIDs_1col.txt\""])
+push!(expArr, ["# The value of DIR_BASE is declared in refs_samples.vars"])
+@call_and_compare expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=true) expArr
+# arrArr=arrFvars; rows=cmdRowsFvars; varNames=namesVars; varVals=valuesVars; verbose=true;
+# expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars; verbose = verbose)
 
 ## sanitizepath
 testPath = "\"\$DIR_BASE\"/\"unit_tests/lists/multiLane_\"\'\"1\"\'\"col.txt\""
@@ -539,7 +533,69 @@ expValues = [
 ]
 @call_and_compare expandinorder(namesVarsRaw, valuesVarsRaw) (expNames, expValues)
 
-##
+## parse_varsfile
+fileVars="../protocols/split/refs_samples.vars"
+expNames1=[
+"DIR_BASE",
+"DIR_OUTPUT",
+"SCR_CREATE_REFS",
+"SCR_PROCESS_SAMPLE",
+"DIR_DATA",
+"PRE_REF_FILE1",
+"PRE_REF_FILE2",
+"REF_FILE",
+"PREFIX_0",
+"SUFFIX_0",
+"PREFIX_1"
+]
+expValues1=[
+"\"/Users/olenive/work/jsub_pipeliner/\"",
+"\"\$DIR_BASE\"/\"unit_tests/outputs/split/\"",
+"\"\$DIR_BASE\"/\"unit_tests/shell_scripts/write_files/ut_create_reference.sh\"",
+"\"\$DIR_BASE\"/\"unit_tests/shell_scripts/write_files/ut_process.sh\"",
+"\"\$DIR_BASE\"/\"unit_tests/data/dummy_sample_files/\"",
+"\"\$DIR_BASE\"/\"unit_tests/data/header_coordinate\"",
+"\"\$DIR_BASE\"/\"unit_tests/data/hg19.chrom.sizes\"",
+"\"\$DIR_OUTPUT\"/\"ut_split_refFile.txt\"",
+"\"dummy_\"",
+"\".txt\"",
+"\"\$DIR_OUTPUT\"/\"ut_split_output_\""
+]
+@call_and_compare parse_varsfile(fileVars, dlmVars="\t") (expNames1, expValues1)
+
+expNames2=[
+"DIR_BASE",
+"DIR_OUTPUT",
+"SCR_CREATE_REFS",
+"SCR_PROCESS_SAMPLE",
+"DIR_DATA",
+"PRE_REF_FILE1",
+"PRE_REF_FILE2",
+"REF_FILE",
+"PREFIX_0",
+"SUFFIX_0",
+"PREFIX_1"
+];
+expValues2=[
+"\"/Users/olenive/work/jsub_pipeliner/\"",
+"\"\$DIR_BASE\"/\"unit_tests/outputs/split/\"",
+"\"\$DIR_BASE\"/\"unit_tests/shell_scripts/write_files/ut_create_reference.sh\"",
+"\"\$DIR_BASE\"/\"unit_tests/shell_scripts/write_files/ut_process.sh\"",
+"\"\$DIR_BASE\"/\"unit_tests/data/dummy_sample_files/\"",
+"\"\$DIR_BASE\"/\"unit_tests/data/header_coordinate\"",
+"\"\$DIR_BASE\"/\"unit_tests/data/hg19.chrom.sizes\"",
+"\"\$DIR_OUTPUT\"/\"ut_split_refFile.txt\"",
+"\"dummy_\"",
+"\".txt\"",
+"\"\$DIR_OUTPUT\"/\"ut_split_output_\""
+];
+# @call_and_compare expandinorder(namesVarsRaw, valuesVarsRaw) (expNames2, expValues2)
+
+## parse_expandvars_in_protocol
+
+## parse_expandvars_in_listfiles
+
+## expandvars_in_protocol
 
 ########################################
 

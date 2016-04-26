@@ -4,20 +4,15 @@
 arg1="$1"
 arg2="$2"
 arg3="$3"
-arg4="$4"
 
+echo "Pretending to process data for each sample. Output file contains the sample ID followed by the reference file."
 echo "Unit test shell script - Running $0 with arguments: "
-echo "Pretending to process data for each sample. Output file contains the sample ID followed by the reference file.
+echo "input file: ""$arg1"
+echo "input data to append to file: ""$arg2"
+echo "output file: ""$arg3"
 
-echo "input sample ID: ""$arg1"
-echo "input file: ""$arg2"
-echo "input list: ""$arg3"
-echo "output file: ""$arg4"
-
-echo "Imaginary prcoessing of sample ""$arg1" > ${arg4}
-echo "Using list of input data from: ${arg3}" >> ${arg4}
-echo "Followd by the reference data: "
-cat ${arg4}  ${arg2} > ${arg4}
+echo "Imaginary prcoessing of sample ""$arg1" > ${arg3}
+cat ${arg3}  ${arg2} > ${arg3}
 
 echo "finished running $0" using inputs "
 

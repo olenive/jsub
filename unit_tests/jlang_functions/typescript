@@ -1,0 +1,30 @@
+Script started on Tue Apr 19 11:07:37 2016
+[?1034h[36molenive[m@[32m103556cgndt:[33;1m~/work/jsub_pipeliner/unit_tests/jlang_functions[m$ mns shold be used (or treated as one column)"])
+bash: syntax error near unexpected token `('
+[36molenive[m@[32m103556cgndt:[33;1m~/work/jsub_pipeliner/unit_tests/jlang_functions[m$ push!(expArr, ["SAMPLEID","1","\"\"/Users/olenive/work/jsub_pipeliner/\"\"/\"unit_tests/lists/sampleIDs_1col.tx t\""])
+bash: !: event not found
+[36molenive[m@[32m103556cgndt:[33;1m~/work/jsub_pipeliner/unit_tests/jlang_functions[m$ push!(expArr, ["# The value of DIR_BASE is declared in refs_samples.vars"])
+bash: !: event not found
+[36molenive[m@[32m103556cgndt:[33;1m~/work/jsub_pipeliner/unit_tests/jlang_functions[m$ @call_and_compare expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=true) expArr
+bash: syntax error near unexpected token `('
+[36molenive[m@[32m103556cgndt:[33;1m~/work/jsub_pipeliner/unit_tests/jlang_functions[m$ # arrArr=arrFvars; rows=cmdRowsFvars; varNames=namesVars; varVals=valuesVars; verbose=true;
+[36molenive[m@[32m103556cgndt:[33;1m~/work/jsub_pipeliner/unit_tests/jlang_functions[m$ # expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars; verbose = verbose)
+[36molenive[m@[32m103556cgndt:[33;1m~/work/jsub_pipeliner/unit_tests/jlang_functions[m$ 
+[36molenive[m@[32m103556cgndt:[33;1m~/work/jsub_pipeliner/unit_tests/jlang_functions[m$ ## sanitizepath
+[36molenive[m@[32m103556cgndt:[33;1m~/work/jsub_pipeliner/unit_tests/jlang_functions[m$ testPath = "\"\$DIR_BASE\"/\"unit_tests/lists/multiLane_\"\'\"1\"\'\"col.txt\""
+bash: testPath: command not found
+[36molenive[m@[32m103556cgndt:[33;1m~/work/jsub_pipeliner/unit_tests/jlang_functions[m$ expPath = "\$DIR_BASE/unit_tests/lists/multiLane_\"1\"col.txt"
+bash: expPath: command not found
+[36molenive[m@[32m103556cgndt:[33;1m~/work/jsub_pipeliner/unit_tests/jlang_functions[m$ @call_and_compare sanitizepath(testPath)  expPath
+bash: syntax error near unexpected token `('
+[36molenive[m@[32m103556cgndt:[33;1m~/work/jsub_pipeliner/unit_tests/jlang_functions[m$ 
+[36molenive[m@[32m103556cgndt:[33;1m~/work/jsub_pipeliner/unit_tests/jlang_functions[m$ 
+[36molenive[m@[32m103556cgndt:[33;1m~/work/jsub_pipeliner/unit_tests/jlang_functions[m$ ll
+total 72
+drwxr-xr-x  8 olenive  cancgene   272B 13 Apr 10:27 [1m[34mjlang_function_test_files[39;49m[0m
+-rw-r--r--  1 olenive  cancgene    43B 19 Apr 11:07 typescript
+-rw-r--r--  1 olenive  cancgene    29K 12 Apr 17:00 ut_jsub_common.jl
+[36molenive[m@[32m103556cgndt:[33;1m~/work/jsub_pipeliner/unit_tests/jlang_functions[m$ exit
+exit
+
+Script done on Tue Apr 19 11:08:01 2016

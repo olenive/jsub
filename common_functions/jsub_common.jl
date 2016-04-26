@@ -206,10 +206,10 @@ function assignlabels(inString)
 end
 
 # Take a potential variable name, the charLabels of the characters, compare against known variable names and return the string to be appended to the output.
-function processcandidatename(candidate, terminatingLabelSet, name, value)
+function processcandidatename(candidate, terminatingLabelSet, name, value; returnTrueOrFalse=false) # returnTrueOrFalse=true means that instead of returning the value to replace the variable name, true will be returned if a valid name exists (false otherwise)
   ## Check for discard label
   if ("discard" in terminatingLabelSet)
-    return candidate
+    returnTrueOrFalse ? false : return candidate
   end
   ## Determin if using curlly or just dollar
   if ("curly_inside" in terminatingLabelSet)
@@ -226,13 +226,14 @@ function processcandidatename(candidate, terminatingLabelSet, name, value)
   testName = prefix*name*suffix;
   # println(testName, " vs ", candidate)
   if testName == candidate
-    return value
+    returnTrueOrFalse ? true : return value
   else
-    return candidate
+    returnTrueOrFalse ? false : return candidate
   end
 end
 
-function expandnameafterdollar(inString, name, value)  # this will not remove double quoutes aroud a variable (this function could do with refactoring/rewriting (see ut_jsub_common.jl for the necessary unit test))
+## Takes a string and replaces name with value where a match is found
+function expandnameafterdollar(inString, name, value; dequote=false, returnTF=false)  # this will not remove double quoutes aroud a variable (this function could do with refactoring/rewriting (see ut_jsub_common.jl for the necessary unit test))
   # Initialise
   #flagWarn = false;
   outString = "";
@@ -260,7 +261,12 @@ function expandnameafterdollar(inString, name, value)  # this will not remove do
       end
       ## Process, append and re-intialise candidate variable name
       # println("B processcandidatename: ", candidate, ",  ", charLabels[ichr], ",  ", name, ",  ", value)
-      processedCandidate = processcandidatename(candidate, charLabels[ichr], name, value);
+      processedCandidate = "";
+      if returnTF
+        return processcandidatename(candidate, charLabels[ichr], name, value; returnTrueOrFalse=true);
+      else  
+        processedCandidate = processcandidatename(candidate, charLabels[ichr], name, value);
+      end
       # println("B Appending: ", processedCandidate )
       outString = outString * processedCandidate; ## Add candidate string or variable value to output
       candidate = ""; 
@@ -288,7 +294,7 @@ function expandmanyafterdollars(inString, varNames, varVals)
   return outString
 end
 
-function expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=true)
+function expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=true) 
   # Check that varNames is the same size as varVals
   if size(varNames) != size(varVals)
     ArgumentError(" in expand_inarrayofarrays size($varNames) != size($varVals).  Each input variable name should have exactly one corresponding value.  Is the .vars or .fvars file correctly formated?")
@@ -344,15 +350,10 @@ end
 #   arrArr, cmdRows = file2arrayofarrays(fileList; cols=0, delimiter = nothing)
 # end
 
-function parse_varsfile(fileVars)
-  arrVars, cmdRowsVars = file2arrayofarrays(fileVars, comStr; cols=2, delimiter="\t");
-  namesVars = columnfrom_arrayofarrays(arrVars, cmdRowsVars, 1);
-  valuesVars = columnfrom_arrayofarrays(arrVars, cmdRowsVars, 2);
-  return namesVars, valuesVars
-end
-
-function expandinorder(namesVarsRaw, valuesVarsRaw) # Expand variable values one row at a time as though they are being assigned at a shell command line
-  if (length(namesVarsRaw) != length(valuesVarsRaw)) # Checkthat in put vector lengths match
+# Expand variable values one row at a time as though they are being assigned at a shell command line
+function expandinorder(namesVarsRaw, valuesVarsRaw) 
+  ## Check that in put vector lengths match
+  if (length(namesVarsRaw) != length(valuesVarsRaw)) 
     warn(" (in expandinorder) variable name and values arguments should be vectors of equal lengths but appear to be of different lengths.")
   end
   ## For each input row expand the variables in the values vector using using name-value paris from preceeding rows
@@ -368,7 +369,16 @@ function expandinorder(namesVarsRaw, valuesVarsRaw) # Expand variable values one
   return namesVars, valuesVars  
 end
 
-function parse_expandvars_in_varsfile(fileFvars, namesVars, valuesVars; dlmFvars=delimiterFvars)
+# Read the .vars file and expand variables row by row.
+function parse_varsfile(fileVars; dlmVars=nothing)
+  arrVars, cmdRowsVars = file2arrayofarrays(fileVars, comStr; cols=2, delimiter=dlmVars);
+  namesVars = columnfrom_arrayofarrays(arrVars, cmdRowsVars, 1);
+  valuesVars = columnfrom_arrayofarrays(arrVars, cmdRowsVars, 2);
+  return namesVars, valuesVars # This can subsequently be expanded row by row using the expandinorder function.
+end
+
+# Read the .fvars file and expand variables row by row.
+function parse_expandvars_fvarsfile(fileFvars, namesVars, valuesVars; dlmFvars=nothing) # Read the .fvars file 
   arrFvars, cmdRowsFvars = file2arrayofarrays(fileFvars, comStr; cols=3, delimiter=dlmFvars);
   ## Use variables from .vars to expand values in .fvars
   arrExpFvars = expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars; verbose = verbose);
@@ -383,15 +393,15 @@ function parse_expandvars_in_varsfile(fileFvars, namesVars, valuesVars; dlmFvars
   return namesFvars, infileColumnsFvars, filePathsFvars
 end
 
-function parse_expandvars_in_protocol(fileProtocol, namesVars, valuesVars)
+function parse_expandvars_protocol(fileProtocol, namesVars, valuesVars)
   arrProt, cmdRowsProt = file2arrayofarrays(fileProtocol, comStr; cols=1, delimiter=nothing);
   ## Use variables from .vars to expand values in .protocol
   arrProtExpVars = expand_inarrayofarrays(arrProt, cmdRowsProt, namesVars, valuesVars ; verbose = verbose)
   return arrProtExpVars, cmdRowsProt
 end
 
-# Expand variables in .fvars file using values from .vars file
-function parse_expandvars_in_listfiles(filePathsFvars, namesVars, valuesVars, dlmFvars; verbose=false)
+# Expand variables in .fvars file using values from list files
+function parse_expandvars_listfiles(filePathsFvars, namesVars, valuesVars, dlmFvars; verbose=false)
   ## Read each list file
   dictListArr = Dict(); # Dictionary with file paths as keys and file contents (arrays of arrays) as values.
   dictCmdLineIdxs = Dict(); #previously: # arrCmdLineIdxs = Array(Array, length(filePathsFvars) ); # Array for storing line counts from input files
@@ -421,7 +431,7 @@ function parse_expandvars_in_listfiles(filePathsFvars, namesVars, valuesVars, dl
 end
 
 # Expand varaibles in .protocol using values from .fvars.  This necessarily results in one output summary file per list entry (list files indicated in .fvars)
-function expandvars_in_protocol(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose = false )
+function protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose = false )
   arrArrExpFvars = []; ## Initialise array for holding summary file arrays-of-arrays
   ## Loop over length of list files (currently assuming that all lists are of the same length but this may need to change in the future)
   for iln in 1:maximum( map(x->length(x), values(dictCmdLineIdxs)) )

@@ -22,7 +22,7 @@
 
 # Stage 2: Generate job files.
 #    inputs: i2.1) List of summary file paths.
-#            i2.2) Job batch ID to be used to generate a unique job file names.
+#            i2.2) Job batch ID to be used to generate unique job file names.
 #            i2.3) Job file header to be put at the top of every job file.
 #            i2.4) File containing generic functions to be inserted into every job file.
 #            i2.5) File containing the environment variables to be set at the start every job.
@@ -107,16 +107,16 @@ namesVarsRaw, valuesVarsRaw = parse_varsfile(fileVars)
 namesVars, valuesVars = expandinorder(namesVarsRaw, valuesVarsRaw)
 
 ## Read .fvar file (of 3 columns) and expand variables from .vars
-namesFvars, infileColumnsFvars, filePathsFvars = parse_expandvars_in_varsfile(fileFvars, namesVars, valuesVars; dlmFvars=delimiterFvars)
+namesFvars, infileColumnsFvars, filePathsFvars = parse_expandvars_fvarsfile(fileFvars, namesVars, valuesVars; dlmFvars=delimiterFvars)
 
 ## Read .protocol file (of 1 column ) and expand variables from .vars
-arrProtExpVars, cmdRowsProt = parse_expandvars_in_protocol(fileProtocol, namesVars, valuesVars)
+arrProtExpVars, cmdRowsProt = parse_expandvars_protocol(fileProtocol, namesVars, valuesVars)
 
 ## Read "list" files and return their contents in an dictionary (key: file path) (value: arrays of arrays) as well as corresponding command line indicies
-dictListArr, dictCmdLineIdxs = parse_expandvars_in_listfiles(filePathsFvars, namesVars, valuesVars, delimiterFvars; verbose=false)
+dictListArr, dictCmdLineIdxs = parse_expandvars_listfiles(filePathsFvars, namesVars, valuesVars, delimiterFvars; verbose=false)
 
 ## Use variable values from "list" files to create multiple summary file arrays from the single .protocol file array
-arrArrExpFvars = expandvars_in_protocol(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose = verbose)
+arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose = verbose)
 
 ## For each summary file array check where they first begin to diverge and or converge and merge/split as required
 

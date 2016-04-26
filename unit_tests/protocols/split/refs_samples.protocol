@@ -3,18 +3,16 @@
 # Second, multiple summary files of what is to be done to individual samples.
 
 # This part should make a single summary file.
-#bash ${DIR_BASE}/unit_tests/shell_scripts/write_files/ut_create_reference.sh ${REF_FILE1} ${REF_FILE2} ${DIR_OUTPUT}/test_referenceFile.txt
-#Checkpoint_FilesNiotEmpty                                                                              ${DIR_OUTPUT}/test_referenceFile.txt
+# bash ${DIR_BASE}/unit_tests/shell_scripts/write_files/ut_create_reference.sh ${REF_FILE1} ${REF_FILE2} ${DIR_OUTPUT}/test_referenceFile.txt
+# Checkpoint_FilesNiotEmpty                                                                              ${DIR_OUTPUT}/test_referenceFile.txt
 bash ${SCR_CREATE_REFS} ${PRE_REF_FILE1} ${PRE_REF_FILE2} ${REF_FILE}
-Checkpoint_FilesNotEmpty                                  ${REF_FILE}
-
-
+# Checkpoint_FilesNotEmpty                                  ${REF_FILE}
 
 # This part should make a sample summary file for each value of SAMPLEID provided in the list file (e.g. ../lists/sampleIDs_1col.txt).
 #bash ${DIR_BASE}/unit_tests/shell_scripts/write_files/ut_process.sh
-bash ${SCR_COMBINE_LANES}  ${SAMPLEID} ${REF_FILE} ${SAMPLE_LANES}  # simulates combining an arbitrary list of data
-bash ${SCR_PROCESS_SAMPLE} ${SAMPLEID} ${REF_FILE} ${SAMPLE_LANES} ${SAMPLE_OUTPUT_1}"$SAMPLEID".txt
-
+#bash ${SCR_COMBINE_LANES}  ${SAMPLEID} ${REF_FILE} ${SAMPLE_LANES}  # simulates combining an arbitrary list of data
+#bash ${SCR_PROCESS_SAMPLE} ${SAMPLEID} ${REF_FILE} ${SAMPLE_LANES} ${SAMPLE_OUTPUT_PREFIX}"$SAMPLEID".txt # a comment just to see what happens to it
+bash ${SCR_PROCESS_SAMPLE}  "$DIR_DATA/"${PREFIX_0}${SAMPLEID}".txt"  ${REF_FILE}  "$DIR_OUTPUT/"${PREFIX_1}${SAMPLEID}".txt" # a comment just to see what happens to it
 
 
 

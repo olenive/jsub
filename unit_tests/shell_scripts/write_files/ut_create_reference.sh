@@ -5,7 +5,7 @@ arg1="$1"
 arg2="$2"
 arg3="$3"
 
-echo "Unit test shell script - Running ut_create_references.sh "
+echo "Unit test shell script - Running ""$0"
 echo "Joining two input files into a hypothetical \"reference\" file to be used for further tests."
 echo "input file 1: ""$arg1"
 echo "input file 2: ""$arg2"
