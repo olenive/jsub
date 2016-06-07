@@ -230,37 +230,31 @@ function processcandidatename(candidate, terminatingLabelSet, name, value; retur
   else
     returnTrueOrFalse ? false : return candidate
   end
+
 end
 
 ## Takes a string and replaces name with value where a match is found
-function expandnameafterdollar(inString, name, value; dequote=false, returnTF=false)  # this will not remove double quoutes aroud a variable (this function could do with refactoring/rewriting (see ut_jsub_common.jl for the necessary unit test))
+function expandnameafterdollar(inString, name, value; dequote=false, returnTF=false)
   # Initialise
-  #flagWarn = false;
   outString = "";
   candidate = ""; # potential variable name
   istart = 0;
 
-  ## Get vector of character label sets
-  charLabels = assignlabels(inString);
+  charLabels = assignlabels(inString); # Get vector of character label sets
 
   ## Process string based on character labels
   for ichr in 1:length(inString)
-    char = inString[ichr];
-    # println("expandnameafterdollar: (", ichr, ") ", char)
+    char = inString[ichr];     # println("expandnameafterdollar: (", ichr, ") ", char)
     ## Process on the basis of the label
     if ("outside" in charLabels[ichr]) # Not in a variable name
       outString = outString * string(char); # Add to output string (this could be made more efficient but should not take much CPU time in practice anyway)
     elseif ("terminating" in charLabels[ichr]) # Reached end of potential variable name
-      candidate = candidate * string(char); # Add to candidate name string
-      # println("1 added to candidate: ", string(candidate[end]));
+      candidate = candidate * string(char); # Add to candidate name string # println("1 added to candidate: ", string(candidate[end]));
       ## Check for closing curly brace and append it to candidate name
-      if ("curly_inside" in charLabels[ichr]) && !("discard" in charLabels[ichr])
-        #println("dealing with closing curly brace in discarded candidate name: ", candidate)
-        candidate = candidate * string(inString[ichr+1]); # Note: this should never be called for the final character in the input string
-        # println("2 added to candidate: ", string(candidate[end]));
+      if ("curly_inside" in charLabels[ichr]) && !("discard" in charLabels[ichr]) #println("dealing with closing curly brace in discarded candidate name: ", candidate)
+        candidate = candidate * string(inString[ichr+1]); # Note: this should never be called for the final character in the input string # println("2 added to candidate: ", string(candidate[end]));
       end
-      ## Process, append and re-intialise candidate variable name
-      # println("B processcandidatename: ", candidate, ",  ", charLabels[ichr], ",  ", name, ",  ", value)
+      ## Process, append and re-intialise candidate variable name # println("B processcandidatename: ", candidate, ",  ", charLabels[ichr], ",  ", name, ",  ", value)
       processedCandidate = "";
       if returnTF
         return processcandidatename(candidate, charLabels[ichr], name, value; returnTrueOrFalse=true);
@@ -272,14 +266,128 @@ function expandnameafterdollar(inString, name, value; dequote=false, returnTF=fa
       candidate = ""; 
       istart = 1;
     elseif !("curly_close" in charLabels[ichr]) # closing curly braces are added to the candidate in the lines above
-      candidate = candidate * string(char); # Add to candidate name string
-      # println("3 added to candidate: ", string(candidate[end]));
+      candidate = candidate * string(char); # Add to candidate name string # println("3 added to candidate: ", string(candidate[end]));
     end
   end
 
   return outString
 end
 
+function assign_quote_state(inString, charQuote::Char) # For each character in the input and output string assign a 0 if it is outside quotes or a 1 if it is inside quotes or a 2 if it is a quote character
+  out = [];
+  inside_quotes = false;
+  for idx in 1:length(inString)
+    if inString[idx] == charQuote
+      push!(out, 2);
+      inside_quotes = !inside_quotes;
+    else
+      push!(out, inside_quotes*1);
+    end
+  end
+  return out
+end
+
+function substitute_string(inString, subString, inclusive_start, inclusive_finish)
+  return inString[1:inclusive_start-1] * subString * inString[inclusive_finish+1:end]; # String resulting from substitution
+end
+
+## Get the index of the first and last non-quote character in a section of the input string indicated by inclusive_start and inclusive_finish
+function get_index_of_first_and_last_nonquote_characters(inString, charQuote::Char; iStart=1, iFinish=0)
+  # Determine end of sub-string
+  if iFinish == 0
+    iFinish=length(inString)
+  end
+  idx_first = 0; idx_last = 0; # Zero indicates that no non-quote characters were found in the input string
+  # Loop forwards over the string to find the first non-quote character
+  for fwd in iStart:iFinish
+    if inString[fwd] != charQuote
+      idx_first = fwd;
+      break
+    end
+  end
+  # Loop backwards over the string to find the last non-quote character
+  for fwd in 1:iFinish+1-iStart
+    rev = iFinish+1-fwd
+    if inString[rev] != charQuote
+      idx_last = rev;
+      break
+    end
+  end
+  return idx_first, idx_last
+end
+
+## Check that substitution of part of a string does not change the inside/outside quote status of other parts of the string
+function check_quote_consistency(inString, subString, inclusive_start, inclusive_finish; charQuote='\"', verbose=false)
+  outString = substitute_string(inString, subString, inclusive_start, inclusive_finish)
+  # For each character in the input and output string assign a 0 if it is outside quotes or a 1 if it is inside quotes or a 2 if it is a quote character
+  states_inString = assign_quote_state(inString, charQuote);
+  states_outString = assign_quote_state(outString, charQuote);
+  # Find positions of first and last non-quite characters in subString
+  idx_first_in, idx_last_in = get_index_of_first_and_last_nonquote_characters(inString, charQuote; iStart=inclusive_start, iFinish=inclusive_finish)
+  idx_first_out, idx_last_out = get_index_of_first_and_last_nonquote_characters(outString, charQuote; iStart=inclusive_start, iFinish=inclusive_start+length(subString)-1)
+  # For debugging
+  if verbose
+    println(inString)
+    println(states_inString')
+    println(idx_first_in, ", ", idx_last_in)
+    println(outString)
+    println(states_outString')
+    println(idx_first_out, ", ", idx_last_out)
+  end
+  # Compare the starting and finishing sections of the above arrays to determine if the quote state of the non-substituted part of the input string has changed
+  if ( 
+  states_inString[1:inclusive_start-1] == states_outString[1:inclusive_start-1] # check that the unaltered begining of the string is quoted in the same way as before substitution
+  && states_inString[inclusive_finish+1:end] == states_outString[inclusive_start+length(subString):end] # check that the unaltered ending of the string is quoted in the same way as before substitution
+  && states_inString[idx_first_in] == states_outString[idx_first_out] # check that the quote state of the first and last non-quote characters is the same before and after substitution
+  && states_inString[idx_last_in] == states_outString[idx_last_out] 
+  && states_inString[end] == states_outString[end] # checks for cases such as "A\"B\"C" vs "A\"D"
+  )
+    return true
+  else
+    return false
+  end
+end
+
+# Initial attempt that did not check all of the subString for quote consistency
+# ## Check that substitution of part of a string does not change the inside/outside quote status of other parts of the string
+# function check_quote_consistency(inString, subString, inclusive_start, inclusive_finish; charQuote='\"', verbose=false)
+#   outString = substitute_string(inString, subString, inclusive_start, inclusive_finish)
+#   # For each character in the input and output string assign a 0 if it is outside quotes or a 1 if it is inside quotes or a 2 if it is a quote character
+#   states_inString = assign_quote_state(inString, charQuote);
+#   states_outString = assign_quote_state(outString, charQuote);
+#   # Find positions of first and last non-quite characters in subString
+#   idx_first_in, idx_last_in = get_index_of_first_and_last_nonquote_characters(inString, charQuote; iStart=inclusive_start, iFinish=inclusive_finish)
+#   idx_first_out, idx_last_out = get_index_of_first_and_last_nonquote_characters(outString, charQuote; iStart=inclusive_start, iFinish=inclusive_start+length(subString)-1)
+#   # For debugging
+#   if verbose
+#     println(inString)
+#     println(states_inString')
+#     println(idx_first_in, ", ", idx_last_in)
+#     println(outString)
+#     println(states_outString')
+#     println(idx_first_out, ", ", idx_last_out)
+#   end
+#   # Compare the starting and finishing sections of the above arrays to determine if the quote state of the non-substituted part of the input string has changed
+#   if ( 
+#   states_inString[1:inclusive_start-1] == states_outString[1:inclusive_start-1] # check that the unaltered begining of the string is quoted in the same way as before substitution
+#   && states_inString[inclusive_finish+1:end] == states_outString[inclusive_start+length(subString):end] # check that the unaltered ending of the string is quoted in the same way as before substitution
+#   && states_inString[idx_first_in] == states_outString[idx_first_out] # check that the quote state of the first and last non-quote characters is the same before and after substitution
+#   && states_inString[idx_last_in] == states_outString[idx_last_out] 
+#   && states_inString[end] == states_outString[end] # checks for cases such as "A\"B\"C" vs "A\"D"
+#   )
+#     return true
+#   else
+#     return false
+#   end
+# end
+
+## Alter a string so that substituting it into another string (e.g. variable name for its value) does not change the inside/outside quote status of other parts of the string
+function enforce_quote_consistency(inString, subString, inclusive_start, inclusive_finish; charQuote='\"')
+
+  return "string"
+end
+
+## Expand many variables in a string
 function expandmanyafterdollars(inString, varNames, varVals)
   # Check that varNames is the same size as varVals
   if size(varNames) != size(varVals)
