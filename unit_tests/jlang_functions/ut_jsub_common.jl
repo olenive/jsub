@@ -461,16 +461,6 @@ Test.with_handler(ut_handler) do
   expString  = "start in888 string \"888\"/unit_tests/ foo\${VAR#*} bar\${VAR%afd} baz\${VAR:?asdf} boo\${VAR?!*} moo\${VAR\$!*} \"sample\"\"888\"\".txt\"888" # expString  = "start in!!! string \"!!!\"/unit_tests/ foo\${VAR#*} bar\${VAR%afd} baz\${VAR:?asdf} boo\${VAR?!*} moo\${VAR\$!*} \"sample\"!!!\".txt\""
   @test expandnameafterdollar(testString, "VAR", "888") == expString
 
-  # Check if both the variable name and value are inside quotes and remove quotes around variable name when expanding (optional).
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value\""; dequote=false) == "out0\"in1\"out1\"\"value\"\"out2\"in2\"out3"
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value\""; dequote=true) == "out0\"in1\"out1\"value\"out2\"in2\"out3"
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "v\"al\"ue"; dequote=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"va\"l\"ue\""; dequote=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value"; dequote=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "va\"lue"; dequote=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "value\""; dequote=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"v\"\"a\"\"l\"\"u\"\"e\""; dequote=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
-
   ## assign_quote_state(inString, charQuote) # For each character in the input and output string assign a 0 if it is outside quotes or a 1 if it is inside quotes or a 2 if it is a quote character
   @test assign_quote_state("A\"B\"", '\"') == [0, 2, 1, 2]
                            #1234 5678 90123 4 5678 90123 4567 89012            #1  2  3  4  5  6  7  8  9  0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5  6  7  8  9  0  1  2
@@ -480,7 +470,6 @@ Test.with_handler(ut_handler) do
                            # 123456 78 901234 56
   @test assign_quote_state("\"Hello\" \"World\"", '\"') == [2,1,1,1,1,1,2,0,2,1,1,1,1,1,2]
   @test assign_quote_state("\"Hello\" \"Sky", '\"') == [2,1,1,1,1,1,2,0,2,1,1,1]
-  
 
   ## substitute_string(inString, subString, inclusive_start, inclusive_finish)
   @test substitute_string("A\"B\"C", "\"D", 2, 5) == "A\"D"
@@ -488,7 +477,7 @@ Test.with_handler(ut_handler) do
   @test substitute_string("Hello World", "Sky", 7, 11) == "Hello Sky"
                           # 123456 78 901234 56                       # 123456 78 901234 56
   @test substitute_string("\"Hello\" \"World\"", "Sky", 9, 15)     == "\"Hello\" Sky"
-
+  @test substitute_string("\"Hello\" \"World\"", "Sky", 10, 14)    == "\"Hello\" \"Sky\""
   @test substitute_string("\"Hello\" \"World\"", "\"Sky", 9, 15)   == "\"Hello\" \"Sky"
   @test substitute_string("\"Hello\" \"World\"", "Sky\"", 9, 15)   == "\"Hello\" Sky\""
   @test substitute_string("\"Hello\" \"World\"", "\"Sky\"", 9, 15) == "\"Hello\" \"Sky\""
@@ -499,6 +488,12 @@ Test.with_handler(ut_handler) do
   @test substitute_string("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "\"val\"", 15, 18) == "out0\"in1\"out1\"\"val\"\"out2\"in2\"out3"
   @test substitute_string("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "val\"", 15, 18)   == "out0\"in1\"out1\"val\"\"out2\"in2\"out3"
   @test substitute_string("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "\"\"val\"\"", 15, 18)   == "out0\"in1\"out1\"\"\"val\"\"\"out2\"in2\"out3"
+                          #1234 5678 90123 4567890123 4567 89012
+  @test substitute_string("out0\"in1\"out1\${VAR}out2\"in2\"out3", "val", 14, 19) == "out0\"in1\"out1valout2\"in2\"out3"
+  @test substitute_string("out0\"in1\"out1\${VAR}out2\"in2\"out3", "\"val\"", 14, 19) == "out0\"in1\"out1\"val\"out2\"in2\"out3"
+  @test substitute_string("out0\"in1\"out1\${VAR}out2\"in2\"out3", "x\"val\"y", 14, 19) == "out0\"in1\"out1x\"val\"yout2\"in2\"out3"
+  @test substitute_string("out0\"in1\"out1\${VAR}out2\"in2\"out3", "x\"valy", 14, 19) == "out0\"in1\"out1x\"valyout2\"in2\"out3"
+  @test substitute_string("out0\"in1\"out1\${VAR}out2\"in2\"out3", "xval\"y", 14, 19) == "out0\"in1\"out1xval\"yout2\"in2\"out3"
 
   ## get_index_of_first_and_last_nonquote_characters(string, charQuote; inclusive_start=1, inclusive_finish=0)
   @test get_index_of_first_and_last_nonquote_characters("12\"45\"7", '\"') == (1, 7)
@@ -511,25 +506,44 @@ Test.with_handler(ut_handler) do
 
   ## check_quote_consistency(inString, subString, inclusive_start, inclusive_finish; charQuote='\"')
   # Check inside/outside quote consistency.  The idea is that a substitution of a variable name for its value should not change the quote status of the rest of the string
-  @test check_quote_consistency("A\"B\"C", "\"D", 2, 5; charQuote='\"') == true
+  @test check_quote_consistency("A\"B\"C", "\"D", 2, 5; charQuote='\"', verbose=true) == false
+  @test check_quote_consistency("A\"B\"", "\"C", 2, 5; charQuote='\"', verbose=true) == false
                                 #12345678901
-  @test check_quote_consistency("Hello World", "Sky", 7, 11; charQuote='\"') == true
+  @test check_quote_consistency("Hello World", "Sky", 7, 11; charQuote='\"', verbose=true) == true
                                 # 123456 78 901234 56
-  @test check_quote_consistency("\"Hello\" \"World\"", "Sky", 9, 15; charQuote='\"') == false
-  @test check_quote_consistency("\"Hello\" \"World\"", "Sky", 10, 14; charQuote='\"') == true
-  @test check_quote_consistency("\"Hello\" \"World\"", "\"Sky", 9, 15; charQuote='\"') == true
-  @test check_quote_consistency("\"Hello\" \"World\"", "Sky\"", 9, 15; charQuote='\"') == true
-  @test check_quote_consistency("\"Hello\" \"World\"", "\"Sky\"", 9, 15; charQuote='\"') == true
-  @test check_quote_consistency("\"Hello\" World\"", "Sky\"", 9, 15; charQuote='\"') == true
+  @test check_quote_consistency("\"Hello\" \"World\"", "Sky", 9, 15; charQuote='\"', verbose=true) == false
+  @test check_quote_consistency("\"Hello\" \"World\"", "Sky", 10, 14; charQuote='\"', verbose=true) == false
+  @test check_quote_consistency("\"Hello\" \"World\"", "\"Sky", 9, 15; charQuote='\"', verbose=true) == false
+  @test check_quote_consistency("\"Hello\" \"World\"", "Sky\"", 9, 15; charQuote='\"', verbose=true) == false
+  @test check_quote_consistency("\"Hello\" \"World\"", "\"Sky\"", 9, 15; charQuote='\"', verbose=false) == true
+  @test check_quote_consistency("\"Hello\" World\"", "Sky\"", 9, 14; charQuote='\"', verbose=false) == true
                                 #1234 5678 90123 4 5678 90123 4567 89012
-  @test check_quote_consistency("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "val", 15, 18; charQuote='\"') == true
-  @test check_quote_consistency("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "v\"a\"l", 15, 18; charQuote='\"') == true
+  @test check_quote_consistency("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "val", 15, 18; charQuote='\"', verbose=true) == false
+  @test check_quote_consistency("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "v\"a\"l", 15, 18; charQuote='\"') == false
   @test check_quote_consistency("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "\"val\"", 15, 18; charQuote='\"') == false
   @test check_quote_consistency("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "val\"", 15, 18; charQuote='\"') == false
-  @test check_quote_consistency("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "\"\"val\"\"", 15, 18; charQuote='\"') == true
+  @test check_quote_consistency("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "\"val", 15, 18; charQuote='\"') == false
+  @test check_quote_consistency("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "\"\"val\"\"", 15, 18; charQuote='\"', verbose=true) == false
+                                #1234 5678 90123 4567890123 4567 89012
+  @test check_quote_consistency("out0\"in1\"out1\${VAR}out2\"in2\"out3", "val", 14, 19; charQuote='\"') == true
+  @test check_quote_consistency("out0\"in1\"out1\${VAR}out2\"in2\"out3", "\"val\"", 14, 19; charQuote='\"') == true
+  @test check_quote_consistency("out0\"in1\"out1\${VAR}out2\"in2\"out3", "x\"val\"y", 14, 19; charQuote='\"') == true
+  @test check_quote_consistency("out0\"in1\"out1\${VAR}out2\"in2\"out3", "x\"valy", 14, 19; charQuote='\"') == false
+  @test check_quote_consistency("out0\"in1\"out1\${VAR}out2\"in2\"out3", "xval\"y", 14, 19; charQuote='\"') == false
 
   ## enforce_quote_consistency(inString, subString, inclusive_start, inclusive_finish; charQuote='\"')
   # Change a string so that substitution does not change the inside/outside quote stat of the rest of the string.
+
+
+  # Check if both the variable name and value are inside quotes and remove quotes around variable name when expanding (optional).
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value\""; dequote=false) == "out0\"in1\"out1\"\"value\"\"out2\"in2\"out3"
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value\""; dequote=true) == "out0\"in1\"out1\"value\"out2\"in2\"out3"
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "v\"al\"ue"; dequote=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"va\"l\"ue\""; dequote=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value"; dequote=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "va\"lue"; dequote=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "value\""; dequote=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"v\"\"a\"\"l\"\"u\"\"e\""; dequote=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
 
 #PRODIGY
 

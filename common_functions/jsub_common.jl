@@ -318,68 +318,49 @@ end
 
 ## Check that substitution of part of a string does not change the inside/outside quote status of other parts of the string
 function check_quote_consistency(inString, subString, inclusive_start, inclusive_finish; charQuote='\"', verbose=false)
-  outString = substitute_string(inString, subString, inclusive_start, inclusive_finish)
-  # For each character in the input and output string assign a 0 if it is outside quotes or a 1 if it is inside quotes or a 2 if it is a quote character
-  states_inString = assign_quote_state(inString, charQuote);
-  states_outString = assign_quote_state(outString, charQuote);
-  # Find positions of first and last non-quite characters in subString
-  idx_first_in, idx_last_in = get_index_of_first_and_last_nonquote_characters(inString, charQuote; iStart=inclusive_start, iFinish=inclusive_finish)
-  idx_first_out, idx_last_out = get_index_of_first_and_last_nonquote_characters(outString, charQuote; iStart=inclusive_start, iFinish=inclusive_start+length(subString)-1)
-  # For debugging
+  ## Get quote pattern for inString, the string into which subString will be substituted at the positions indicated by inclusive_start and inclusive_finish
+  pattern_inString = assign_quote_state(inString, charQuote);
+  ## Get quote pattern for subString
+  pattern_subString = assign_quote_state(subString, charQuote);
+  ## Get quote pattern for the string resulting from the substitution
+  outString = substitute_string(inString, subString, inclusive_start, inclusive_finish);
+  pattern_outString = assign_quote_state(outString, charQuote);
+  ## Count the number of quotes in both strings and determine if they are even or odd
+  iseven_inString = iseven(length(split(inString, charQuote))-1;)
+  iseven_outString = iseven(length(split(outString, charQuote))-1;)
+  ## Print variables used to determine the result (for debugging)
   if verbose
     println(inString)
-    println(states_inString')
-    println(idx_first_in, ", ", idx_last_in)
+    println(pattern_inString')
     println(outString)
-    println(states_outString')
-    println(idx_first_out, ", ", idx_last_out)
+    println(pattern_outString')
+    println("before, inserted, after:")
+    println(outString[1:inclusive_start-1], " vs ", inString[1:inclusive_start-1])
+    println(pattern_outString[1:inclusive_start-1]', " vs ", pattern_inString[1:inclusive_start-1]')
+    println(pattern_outString[1:inclusive_start-1] == pattern_inString[1:inclusive_start-1])
+    println(outString[inclusive_start:inclusive_start+length(subString)-1], " vs ", subString)
+    println(pattern_outString[inclusive_start:inclusive_start+length(subString)-1]', " vs ", pattern_subString')
+    println(pattern_outString[inclusive_start:inclusive_start+length(subString)-1] == pattern_subString)
+    println(outString[inclusive_start+length(subString):end], " vs ", inString[inclusive_finish+1:end])
+    println(pattern_outString[inclusive_start+length(subString):end]', " vs ", pattern_inString[inclusive_finish+1:end]')
+    println(pattern_outString[inclusive_start+length(subString):end] == pattern_inString[inclusive_finish+1:end])
+    println(pattern_outString[end], " vs ", pattern_inString[end])
+    println(pattern_outString[end] == pattern_inString[end])
+    println("Number of ", string(charQuote), ": ", length(split(inString, charQuote))-1, " vs ", length(split(outString, charQuote))-1)
+    println(iseven_inString == iseven_outString)
   end
-  # Compare the starting and finishing sections of the above arrays to determine if the quote state of the non-substituted part of the input string has changed
-  if ( 
-  states_inString[1:inclusive_start-1] == states_outString[1:inclusive_start-1] # check that the unaltered begining of the string is quoted in the same way as before substitution
-  && states_inString[inclusive_finish+1:end] == states_outString[inclusive_start+length(subString):end] # check that the unaltered ending of the string is quoted in the same way as before substitution
-  && states_inString[idx_first_in] == states_outString[idx_first_out] # check that the quote state of the first and last non-quote characters is the same before and after substitution
-  && states_inString[idx_last_in] == states_outString[idx_last_out] 
-  && states_inString[end] == states_outString[end] # checks for cases such as "A\"B\"C" vs "A\"D"
-  )
-    return true
+  # Check and return result
+  if ( pattern_outString[inclusive_start:inclusive_start+length(subString)-1] == pattern_subString # Check that the quote pattern of subString remains the same after it is substituted into inString  
+    && pattern_outString[1:inclusive_start-1] == pattern_inString[1:inclusive_start-1] # Check that the quote pattern of the parts of inString before and after subString remains unchanged after the substitution
+    && pattern_outString[inclusive_start+length(subString):end] == pattern_inString[inclusive_finish+1:end]
+    && pattern_outString[end] == pattern_inString[end] # Check for cases where the last character is a quote and is replaced (e.g. A"B" -> A"C)
+    && iseven_inString == iseven_outString # Check that the resulting numbers of quotes are either both even or both odd
+    )
+    return true;
   else
-    return false
+    return false;
   end
 end
-
-# Initial attempt that did not check all of the subString for quote consistency
-# ## Check that substitution of part of a string does not change the inside/outside quote status of other parts of the string
-# function check_quote_consistency(inString, subString, inclusive_start, inclusive_finish; charQuote='\"', verbose=false)
-#   outString = substitute_string(inString, subString, inclusive_start, inclusive_finish)
-#   # For each character in the input and output string assign a 0 if it is outside quotes or a 1 if it is inside quotes or a 2 if it is a quote character
-#   states_inString = assign_quote_state(inString, charQuote);
-#   states_outString = assign_quote_state(outString, charQuote);
-#   # Find positions of first and last non-quite characters in subString
-#   idx_first_in, idx_last_in = get_index_of_first_and_last_nonquote_characters(inString, charQuote; iStart=inclusive_start, iFinish=inclusive_finish)
-#   idx_first_out, idx_last_out = get_index_of_first_and_last_nonquote_characters(outString, charQuote; iStart=inclusive_start, iFinish=inclusive_start+length(subString)-1)
-#   # For debugging
-#   if verbose
-#     println(inString)
-#     println(states_inString')
-#     println(idx_first_in, ", ", idx_last_in)
-#     println(outString)
-#     println(states_outString')
-#     println(idx_first_out, ", ", idx_last_out)
-#   end
-#   # Compare the starting and finishing sections of the above arrays to determine if the quote state of the non-substituted part of the input string has changed
-#   if ( 
-#   states_inString[1:inclusive_start-1] == states_outString[1:inclusive_start-1] # check that the unaltered begining of the string is quoted in the same way as before substitution
-#   && states_inString[inclusive_finish+1:end] == states_outString[inclusive_start+length(subString):end] # check that the unaltered ending of the string is quoted in the same way as before substitution
-#   && states_inString[idx_first_in] == states_outString[idx_first_out] # check that the quote state of the first and last non-quote characters is the same before and after substitution
-#   && states_inString[idx_last_in] == states_outString[idx_last_out] 
-#   && states_inString[end] == states_outString[end] # checks for cases such as "A\"B\"C" vs "A\"D"
-#   )
-#     return true
-#   else
-#     return false
-#   end
-# end
 
 ## Alter a string so that substituting it into another string (e.g. variable name for its value) does not change the inside/outside quote status of other parts of the string
 function enforce_quote_consistency(inString, subString, inclusive_start, inclusive_finish; charQuote='\"')
