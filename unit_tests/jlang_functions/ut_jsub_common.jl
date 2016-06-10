@@ -486,6 +486,7 @@ Test.with_handler(ut_handler) do
   @test substitute_string("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "val", 15, 18)     == "out0\"in1\"out1\"val\"out2\"in2\"out3"
   @test substitute_string("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "v\"a\"l", 15, 18) == "out0\"in1\"out1\"v\"a\"l\"out2\"in2\"out3"
   @test substitute_string("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "\"val\"", 15, 18) == "out0\"in1\"out1\"\"val\"\"out2\"in2\"out3"
+  @test substitute_string("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "\"val", 15, 18)   == "out0\"in1\"out1\"\"val\"out2\"in2\"out3"
   @test substitute_string("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "val\"", 15, 18)   == "out0\"in1\"out1\"val\"\"out2\"in2\"out3"
   @test substitute_string("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "\"\"val\"\"", 15, 18)   == "out0\"in1\"out1\"\"\"val\"\"\"out2\"in2\"out3"
                           #1234 5678 90123 4567890123 4567 89012
@@ -506,44 +507,118 @@ Test.with_handler(ut_handler) do
 
   ## check_quote_consistency(inString, subString, inclusive_start, inclusive_finish; charQuote='\"')
   # Check inside/outside quote consistency.  The idea is that a substitution of a variable name for its value should not change the quote status of the rest of the string
-  @test check_quote_consistency("A\"B\"C", "\"D", 2, 5; charQuote='\"', verbose=true) == false
-  @test check_quote_consistency("A\"B\"", "\"C", 2, 5; charQuote='\"', verbose=true) == false
+  @test check_quote_consistency("A\"B\"C", "\"D", 2, 5; charQuote='\"', verbose=false) == true
+  @test check_quote_consistency("A\"B\"C\"", "\"D", 2, 5; charQuote='\"', verbose=false) == true
+  @test check_quote_consistency("A\"B\"CE", "\"D", 2, 5; charQuote='\"', verbose=false) == false
+  @test check_quote_consistency("A\"B\"", "\"C", 2, 5; charQuote='\"', verbose=false) == true
                                 #12345678901
-  @test check_quote_consistency("Hello World", "Sky", 7, 11; charQuote='\"', verbose=true) == true
+  @test check_quote_consistency("Hello World", "Sky", 7, 11; charQuote='\"', verbose=false) == true
                                 # 123456 78 901234 56
-  @test check_quote_consistency("\"Hello\" \"World\"", "Sky", 9, 15; charQuote='\"', verbose=true) == false
-  @test check_quote_consistency("\"Hello\" \"World\"", "Sky", 10, 14; charQuote='\"', verbose=true) == false
-  @test check_quote_consistency("\"Hello\" \"World\"", "\"Sky", 9, 15; charQuote='\"', verbose=true) == false
-  @test check_quote_consistency("\"Hello\" \"World\"", "Sky\"", 9, 15; charQuote='\"', verbose=true) == false
+  @test check_quote_consistency("\"Hello\" \"World\"", "Sky", 9, 15; charQuote='\"', verbose=false) == true
+  @test check_quote_consistency("\"Hello\" \"World\"", "Sky", 10, 14; charQuote='\"', verbose=false) == false
+  @test check_quote_consistency("\"Hello\" \"World\"", "\"Sky", 9, 15; charQuote='\"', verbose=false) == true # "Hello" "World" -> "Hello" "Sky (note the lack of closing quote, this should be addressed later using enforce_closingquote)
+  @test check_quote_consistency("\"Hello\" \"World\"", "Sky\"", 9, 15; charQuote='\"', verbose=false) == true
   @test check_quote_consistency("\"Hello\" \"World\"", "\"Sky\"", 9, 15; charQuote='\"', verbose=false) == true
   @test check_quote_consistency("\"Hello\" World\"", "Sky\"", 9, 14; charQuote='\"', verbose=false) == true
                                 #1234 5678 90123 4 5678 90123 4567 89012
-  @test check_quote_consistency("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "val", 15, 18; charQuote='\"', verbose=true) == false
+  @test check_quote_consistency("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "val", 15, 18; charQuote='\"', verbose=false) == false
   @test check_quote_consistency("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "v\"a\"l", 15, 18; charQuote='\"') == false
   @test check_quote_consistency("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "\"val\"", 15, 18; charQuote='\"') == false
   @test check_quote_consistency("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "val\"", 15, 18; charQuote='\"') == false
   @test check_quote_consistency("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "\"val", 15, 18; charQuote='\"') == false
-  @test check_quote_consistency("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "\"\"val\"\"", 15, 18; charQuote='\"', verbose=true) == false
+  @test check_quote_consistency("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "\"\"val\"\"", 15, 18; charQuote='\"', verbose=false) == false
                                 #1234 5678 90123 4567890123 4567 89012
   @test check_quote_consistency("out0\"in1\"out1\${VAR}out2\"in2\"out3", "val", 14, 19; charQuote='\"') == true
   @test check_quote_consistency("out0\"in1\"out1\${VAR}out2\"in2\"out3", "\"val\"", 14, 19; charQuote='\"') == true
   @test check_quote_consistency("out0\"in1\"out1\${VAR}out2\"in2\"out3", "x\"val\"y", 14, 19; charQuote='\"') == true
   @test check_quote_consistency("out0\"in1\"out1\${VAR}out2\"in2\"out3", "x\"valy", 14, 19; charQuote='\"') == false
   @test check_quote_consistency("out0\"in1\"out1\${VAR}out2\"in2\"out3", "xval\"y", 14, 19; charQuote='\"') == false
+                                #1234 5678 90123 4 5 6789 0 123 4567 8 90123
+  @test check_quote_consistency("out0\"in1\"out1\"\"\$VAR\"\"out2\"in2\"out3", "val", 16, 19; charQuote='\"', verbose=false) == true
+                                #1234 5678 90123 4 5 6789 0 123 4567 8 90123
+  # @test check_quote_consistency("out0\"in1\"out1\"\"\$in2\"out2\"in3\"out3", "ooo\"", 16, 19)
 
   ## enforce_quote_consistency(inString, subString, inclusive_start, inclusive_finish; charQuote='\"')
   # Change a string so that substitution does not change the inside/outside quote stat of the rest of the string.
+  # enforce_quote_consistency(inString, subString, inclusive_start, inclusive_finish; charQuote='\"', ignore_fails=false)
+                          #1234 5678 90123 4 5678 90123 4567 89012
+  @test substitute_string("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "val", 15, 18)     == "out0\"in1\"out1\"val\"out2\"in2\"out3"
+  @test substitute_string("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "v\"a\"l", 15, 18) == "out0\"in1\"out1\"v\"a\"l\"out2\"in2\"out3"
+  @test substitute_string("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "\"val\"", 15, 18) == "out0\"in1\"out1\"\"val\"\"out2\"in2\"out3"
+  @test substitute_string("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "\"val", 15, 18)   == "out0\"in1\"out1\"\"val\"out2\"in2\"out3"
+  @test substitute_string("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "val\"", 15, 18)   == "out0\"in1\"out1\"val\"\"out2\"in2\"out3"
+  @test substitute_string("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "\"\"val\"\"", 15, 18)   == "out0\"in1\"out1\"\"\"val\"\"\"out2\"in2\"out3"
+                          #1234 5678 90123 4567890123 4567 89012
+  @test substitute_string("out0\"in1\"out1\${VAR}out2\"in2\"out3", "val", 14, 19) == "out0\"in1\"out1valout2\"in2\"out3"
+  @test substitute_string("out0\"in1\"out1\${VAR}out2\"in2\"out3", "\"val\"", 14, 19) == "out0\"in1\"out1\"val\"out2\"in2\"out3"
+  @test substitute_string("out0\"in1\"out1\${VAR}out2\"in2\"out3", "x\"val\"y", 14, 19) == "out0\"in1\"out1x\"val\"yout2\"in2\"out3"
+  @test substitute_string("out0\"in1\"out1\${VAR}out2\"in2\"out3", "x\"valy", 14, 19) == "out0\"in1\"out1x\"valyout2\"in2\"out3"
+  @test substitute_string("out0\"in1\"out1\${VAR}out2\"in2\"out3", "xval\"y", 14, 19) == "out0\"in1\"out1xval\"yout2\"in2\"out3"
 
+                                  # 1234
+  @test enforce_quote_consistency("\$in0", "ooo", 1, 4; charQuote='\"', verbose=false) == "ooo" 
+  @test enforce_quote_consistency("\$in0", "\"iii", 1, 4; charQuote='\"', verbose=false) == "\"iii" # Note the lack of a closing quote in the resulting string, this should be added after all substitutions using enforce_closingquote 
+  @test enforce_quote_consistency("\$in0", "ooo\"", 1, 4; charQuote='\"', verbose=false) == "ooo\"" 
+  @test enforce_quote_consistency("\$in0", "\"iii\"", 1, 4; charQuote='\"', verbose=false) == "\"iii\"" 
+                                  # 1 2345
+  @test enforce_quote_consistency("\"\$in0", "ooo", 2, 5; charQuote='\"', verbose=false) == "\"ooo" 
+  @test enforce_quote_consistency("\"\$in0", "\"iii", 2, 5; charQuote='\"', verbose=false) == "\"\"iii"
+  @test enforce_quote_consistency("\"\$in0", "ooo\"", 2, 5; charQuote='\"', verbose=false) == "\"ooo\""   # Note the lack of a closing quote in the resulting string, this should be added after all substitutions using enforce_closingquote 
+  @test enforce_quote_consistency("\"\$in0", "\"iii\"", 2, 5; charQuote='\"', verbose=false) == "\"\"iii\"" 
+                                  # 1 2345
+  @test enforce_quote_consistency("\$in0\"", "ooo", 1, 4; charQuote='\"', verbose=false) == "ooo"   # Note the lack of a closing quote in the resulting string, this should be added after all substitutions using enforce_closingquote 
+  @test enforce_quote_consistency("\$in0\"", "\"iii", 1, 4; charQuote='\"', verbose=false) == "\"iii"
+  @test enforce_quote_consistency("\$in0\"", "ooo\"", 1, 4; charQuote='\"', verbose=false) == "ooo\"" 
+  @test enforce_quote_consistency("\$in0\"", "\"iii\"", 1, 4; charQuote='\"', verbose=false) == "\"iii\"" 
+                                  # 1 2345 6
+  @test enforce_quote_consistency("\"\$in0\"", "ooo", 2, 5; charQuote='\"', verbose=false) == "\"ooo" 
+  @test enforce_quote_consistency("\"\$in0\"", "\"iii", 2, 5; charQuote='\"', verbose=false) == "\"\"iii"
+  @test enforce_quote_consistency("\"\$in0\"", "ooo\"", 2, 5; charQuote='\"', verbose=false) == "\"ooo\"" 
+  @test enforce_quote_consistency("\"\$in0\"", "\"iii\"", 2, 5; charQuote='\"', verbose=false) == "\"\"iii\"" 
 
-  # Check if both the variable name and value are inside quotes and remove quotes around variable name when expanding (optional).
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value\""; dequote=false) == "out0\"in1\"out1\"\"value\"\"out2\"in2\"out3"
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value\""; dequote=true) == "out0\"in1\"out1\"value\"out2\"in2\"out3"
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "v\"al\"ue"; dequote=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"va\"l\"ue\""; dequote=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value"; dequote=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "va\"lue"; dequote=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "value\""; dequote=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"v\"\"a\"\"l\"\"u\"\"e\""; dequote=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
+                                  #1234 5678 90123 4 5678 90123 4567 89012
+  @test enforce_quote_consistency("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "out", 15, 18; charQuote='\"', verbose=false) == "\"out\""
+  @test enforce_quote_consistency("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "o\"i\"o", 15, 18; charQuote='\"') == "\"o\"i\"o\""
+  @test enforce_quote_consistency("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "\"iii\"", 15, 18; charQuote='\"') == "\"\"iii\"\""
+  @test enforce_quote_consistency("out0\"in1\"out1\"\$in2\"out2\"in3\"out3", "ooo\"", 15, 18; charQuote='\"', verbose=false) == "\"ooo\"" 
+  @test enforce_quote_consistency("out0\"in1\"out1\"\$in2\"out2\"in3\"out3", "\"iii", 15, 18; charQuote='\"', verbose=false) == "\"\"iii" 
+                                  #1234 5678 90123 4567 89012 3456 789012
+  @test enforce_quote_consistency("out0\"in1\"out1\$VAR\"int1\"ot2\"int3", "out",     14, 17; charQuote='\"', verbose=false) == "out"
+  @test enforce_quote_consistency("out0\"in1\"out1\$VAR\"int2\"ot2\"int3", "o\"i\"o", 14, 17; charQuote='\"') == "o\"i\"o"
+  @test enforce_quote_consistency("out0\"in1\"out1\$VAR\"int2\"ot2\"int3", "\"iii\"", 14, 17; charQuote='\"') == "\"iii\""
+  @test enforce_quote_consistency("out0\"in1\"out1\$in2\"int2\"ot3\"int3", "ooo\"",   14, 17; charQuote='\"', verbose=false) == "ooo\"\"" 
+  @test enforce_quote_consistency("out0\"in1\"out1\$in2\"int2\"ot3\"int3", "\"iii",   14, 17; charQuote='\"', verbose=false) == "\"iii\"" 
+                                  #1234 5678 90123 4 567890123 4567 89012
+  @test enforce_quote_consistency("out0\"in1\"out1\"\$iii jjj2\"ot2\"int3", "out",     15, 18; charQuote='\"', verbose=false) == "\"out\""
+  @test enforce_quote_consistency("out0\"in1\"out1\"\$iii jjj2\"ot2\"int3", "o\"i\"o", 15, 18; charQuote='\"')                == "\"o\"i\"o\""
+  @test enforce_quote_consistency("out0\"in1\"out1\"\$iii jjj2\"ot2\"int3", "\"iii\"", 15, 18; charQuote='\"')                == "\"\"iii\"\""
+  @test enforce_quote_consistency("out0\"in1\"out1\"\$in2 jjj2\"ot3\"int3", "ooo\"",   15, 18; charQuote='\"', verbose=false) == "\"ooo\"" 
+  @test enforce_quote_consistency("out0\"in1\"out1\"\$in2 jjj2\"ot3\"int3", "\"iii",   15, 18; charQuote='\"', verbose=false) == "\"\"iii" 
+
+  @test enforce_quote_consistency("out0\"in1\"out1\"\$in2 jjj2\"ot3\"int3", "ooo\"iii",   15, 18; charQuote='\"', verbose=false) == "\"ooo\"iii"
+  @test enforce_quote_consistency("out0\"in1\"out1\"\$in2 jjj2\"ot3\"int3", "\"iii\"ooo",   15, 18; charQuote='\"', verbose=false) == "\"\"iii\"ooo\""
+
+                                  #1234 5678 90123 4567890123 4567 89012
+  @test enforce_quote_consistency("out0\"in1\"out1\${VAR}out2\"in2\"out3", "ooo", 14, 19; charQuote='\"') == "ooo"
+  @test enforce_quote_consistency("out0\"in1\"out1\${VAR}out2\"in2\"out3", "\"iii\"", 14, 19; charQuote='\"') == "\"iii\""
+  @test enforce_quote_consistency("out0\"in1\"out1\${VAR}out2\"in2\"out3", "xo\"iii\"yo", 14, 19; charQuote='\"') == "xo\"iii\"yo"
+  @test enforce_quote_consistency("out0\"in1\"out1\${VAR}out2\"in2\"out3", "xo\"iii", 14, 19; charQuote='\"') == "xo\"iii\""
+  @test enforce_quote_consistency("out0\"in1\"out1\${VAR}out2\"in2\"out3", "xooo\"yo", 14, 19; charQuote='\"') == "xooo\"yo\""
+                                  #12 345 67890123 456 789 0
+  @test enforce_quote_consistency("o1\"i1\${VAR}i2\"o2\"i3\"", "x1\"y1\${val}x2\"y2\"x3\"", 6, 11; charQuote='\"') == "\"x1\"y1\${val}x2\"y2\"x3\"\""
+  # assign_quote_state("o1\"i1\${VAR}i2\"o2\"i3\"", '\"')'
+  # assign_quote_state("x1\"y1\${val}x2\"y2\"x3\"", '\"')'
+  # assign_quote_state(substitute_string("o1\"i1\${VAR}i2\"o2\"i3\"", enforce_quote_consistency("o1\"i1\${VAR}i2\"o2\"i3\"", "x1\"y1\${val}x2\"y2\"x3\"", 6, 11; charQuote='\"'), 6, 11), '\"')'
+
+  # adapt_quotation=true -> Attemt to keep the pattern of quotation consistent before and after substitution by inserting quotes
+  # @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value\""; adapt_quotation=false) == "out0\"in1\"out1\"\"value\"\"out2\"in2\"out3"
+  # @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value\""; adapt_quotation=true) == "out0\"in1\"out1\"value\"out2\"in2\"out3"
+  # @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "v\"al\"ue"; adapt_quotation=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
+  # @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"va\"l\"ue\""; adapt_quotation=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
+  # @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value"; adapt_quotation=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
+  # @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "va\"lue"; adapt_quotation=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
+  # @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "value\""; adapt_quotation=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
+  # @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"v\"\"a\"\"l\"\"u\"\"e\""; adapt_quotation=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
 
 #PRODIGY
 
