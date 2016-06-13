@@ -9,7 +9,7 @@
 
 ## Explanation ##
 
-# This script facilitates the systematic creation and submission of jobs to the HPC while also writing to log files.
+# This script facilitates the systematic creation and submission of jobs to the LSF queuing system while also writing to log files.
 
 # Stage 1: Generate summary files for each sample.
 #    inputs: i1.1) A list of sample IDs indicating which samples the job is to be run on.  This may contain more than one column when the the job involves multiple samples.
@@ -25,12 +25,12 @@
 #            i2.2) Job batch ID to be used to generate unique job file names.
 #            i2.3) Job file header to be put at the top of every job file.
 #            i2.4) File containing generic functions to be inserted into every job file.
-#            i2.5) File containing the environment variables to be set at the start every job.
+#            i2.5) File containing the environment variables to be set at the start of every job.
 #
-#   outputs: o2.1) LSF job files which can be submitted to the HPC.
+#   outputs: o2.1) LSF job files which can be submitted to the LSF queuing system.
 #            o2.2) List of job files produced.
 
-# Stage 3: Submit the job files as individual jobs to the HPC
+# Stage 3: Submit the job files as individual jobs to the LSF queuing system
 #    inputs: i3.1) List of job files.
 
 ## Defaults
@@ -100,23 +100,25 @@ include("./common_functions/jsub_common.jl")
 
 ######### SCRIPT #########
 
+adapt_quotation=true; # this should be the default to avoid nasty accidents
+
 ## Read .vars file # Extract arrays of variable names and variable values
 namesVarsRaw, valuesVarsRaw = parse_varsfile(fileVars)
 
 ## Expand variables in each row from .vars if they were assigned in a higher row (as though they are being assigned at the command line).
-namesVars, valuesVars = expandinorder(namesVarsRaw, valuesVarsRaw)
+namesVars, valuesVars = expandinorder(namesVarsRaw, valuesVarsRaw, adapt_quotation=adapt_quotation)
 
 ## Read .fvar file (of 3 columns) and expand variables from .vars
-namesFvars, infileColumnsFvars, filePathsFvars = parse_expandvars_fvarsfile(fileFvars, namesVars, valuesVars; dlmFvars=delimiterFvars)
+namesFvars, infileColumnsFvars, filePathsFvars = parse_expandvars_fvarsfile(fileFvars, namesVars, valuesVars; dlmFvars=delimiterFvars, adapt_quotation=adapt_quotation)
 
 ## Read .protocol file (of 1 column ) and expand variables from .vars
-arrProtExpVars, cmdRowsProt = parse_expandvars_protocol(fileProtocol, namesVars, valuesVars)
+arrProtExpVars, cmdRowsProt = parse_expandvars_protocol(fileProtocol, namesVars, valuesVars, adapt_quotation=adapt_quotation)
 
-## Read "list" files and return their contents in an dictionary (key: file path) (value: arrays of arrays) as well as corresponding command line indicies
-dictListArr, dictCmdLineIdxs = parse_expandvars_listfiles(filePathsFvars, namesVars, valuesVars, delimiterFvars; verbose=false)
+## Read "list" files and return their contents in a dictionary (key: file path) (value: arrays of arrays) as well as corresponding command line indicies
+dictListArr, dictCmdLineIdxs = parse_expandvars_listfiles(filePathsFvars, namesVars, valuesVars, delimiterFvars; verbose=false, adapt_quotation=adapt_quotation)
 
 ## Use variable values from "list" files to create multiple summary file arrays from the single .protocol file array
-arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose = verbose)
+arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose = verbose, adapt_quotation=adapt_quotation)
 
 ## For each summary file array check where they first begin to diverge and or converge and merge/split as required
 

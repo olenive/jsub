@@ -611,22 +611,36 @@ Test.with_handler(ut_handler) do
   # assign_quote_state(substitute_string("o1\"i1\${VAR}i2\"o2\"i3\"", enforce_quote_consistency("o1\"i1\${VAR}i2\"o2\"i3\"", "x1\"y1\${val}x2\"y2\"x3\"", 6, 11; charQuote='\"'), 6, 11), '\"')'
 
   # adapt_quotation=true -> Attemt to keep the pattern of quotation consistent before and after substitution by inserting quotes
-  # @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value\""; adapt_quotation=false) == "out0\"in1\"out1\"\"value\"\"out2\"in2\"out3"
-  # @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value\""; adapt_quotation=true) == "out0\"in1\"out1\"value\"out2\"in2\"out3"
-  # @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "v\"al\"ue"; adapt_quotation=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
-  # @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"va\"l\"ue\""; adapt_quotation=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
-  # @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value"; adapt_quotation=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
-  # @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "va\"lue"; adapt_quotation=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
-  # @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "value\""; adapt_quotation=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
-  # @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"v\"\"a\"\"l\"\"u\"\"e\""; adapt_quotation=true) == "out0\"in1\"out1\"\$VAR\"out2\"in2\"out3"
-
-#PRODIGY
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value\""; adapt_quotation=false) == "out0\"in1\"out1\"\"value\"\"out2\"in2\"out3"
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value\""; adapt_quotation=true) == "out0\"in1\"out1\"\"\"value\"\"\"out2\"in2\"out3"
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "value"; adapt_quotation=true) == "out0\"in1\"out1\"\"value\"\"out2\"in2\"out3"
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "v\"al\"ue"; adapt_quotation=true) == "out0\"in1\"out1\"\"v\"al\"ue\"\"out2\"in2\"out3"
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"va\"l\"ue\""; adapt_quotation=true) == "out0\"in1\"out1\"\"\"va\"l\"ue\"\"\"out2\"in2\"out3"
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value"; adapt_quotation=true) == "out0\"in1\"out1\"\"\"value\"out2\"in2\"out3"
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "va\"lue"; adapt_quotation=true) == "out0\"in1\"out1\"\"va\"lue\"out2\"in2\"out3"
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "value\""; adapt_quotation=true) == "out0\"in1\"out1\"\"value\"\"out2\"in2\"out3"
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"v\"\"a\"\"l\"\"u\"\"e\""; adapt_quotation=true) == "out0\"in1\"out1\"\"\"v\"\"a\"\"l\"\"u\"\"e\"\"\"out2\"in2\"out3"
 
   ## expandmanyafterdollars
   testString = "start in\$VAR1 string \"\${VAR2}\"/unit_tests/ foo\${VAR0#*} bar\${VAR0%afd} baz\${VAR0:?asdf} boo\${VAR0?!*} moo\${VAR0\$!*} \"sample\"\"\$VAR3\"\".txt\""
   expString  = "start in111 string \"222\"/unit_tests/ foo\${VAR0#*} bar\${VAR0%afd} baz\${VAR0:?asdf} boo\${VAR0?!*} moo\${VAR0\$!*} \"sample\"\"\$VAR3\"\".txt\""
   @test expandmanyafterdollars(testString, ["VAR0", "VAR1", "VAR2"], ["000", "111", "222"]) == expString
   @test expandmanyafterdollars("aa\"bb/\$DIR_BASE\"", ["DIR_BASE", "VAR1", "VAR2"], ["/path/some/where/", "AAA", "BBB"]) == "aa\"bb//path/some/where/\""
+
+  @test expandmanyafterdollars("oo\"ii\"oo\"\$VAR1\"_\${VAR3}_ \$VAR2 \"ii\"oo", ["VAR1", "VAR2", "VAR3"], ["|inv|", "|ouv|", "|curly|"], adapt_quotation=false) == "oo\"ii\"oo\"|inv|\"_|curly|_ |ouv| \"ii\"oo"
+  @test expandmanyafterdollars("oo\"ii\"oo\"\$VAR1\"_\${VAR3}_ \$VAR2 \"ii\"oo", ["VAR1", "VAR2", "VAR3"], ["|inv|", "|ouv|", "|curly|"], adapt_quotation=true)  == "oo\"ii\"oo\"\"|inv|\"\"_|curly|_ |ouv| \"ii\"oo"
+  @test expandmanyafterdollars("oo\"ii\"oo\"\$VAR1\"_\${VAR3}_ \$VAR2 \"ii\"oo", ["VAR1", "VAR2", "VAR3"], ["\"|inv|\"", "|ouv|", "\"|curly|\""], adapt_quotation=true)  == "oo\"ii\"oo\"\"\"|inv|\"\"\"_\"|curly|\"_ |ouv| \"ii\"oo"
+
+  ## enforce_closingquote
+  @test enforce_closingquote("a", '\"') == "a"
+  @test enforce_closingquote("\"a", '\"') == "\"a\""
+  @test enforce_closingquote("a\"", '\"') == "a\"\""
+  @test enforce_closingquote("\"a\"", '\"') == "\"a\""
+  @test enforce_closingquote("abc", '\"') == "abc"
+  @test enforce_closingquote("\"abc", '\"') == "\"abc\""
+  @test enforce_closingquote("abc\"", '\"') == "abc\"\""
+  @test enforce_closingquote("\"abc\"", '\"') == "\"abc\""
+  @test enforce_closingquote("string  \${VAR}, \$VAR1 \"\"\$VAR2\"", '\"') == "string  \${VAR}, \$VAR1 \"\"\$VAR2\"\""
 
   ## expand_inarrayofarrays
   testArr = []
@@ -641,7 +655,21 @@ Test.with_handler(ut_handler) do
   push!(expArr, ["# second comment string  \${VAR}, \$VAR1 \"\"\$VAR2\""])
   push!(expArr, ["string  \${VAR}, 111 \"\"222\""])
   push!(expArr, ["# third comment string  \${VAR}, \$VAR1 \"\"\$VAR2\""])
-  @test expand_inarrayofarrays(testArr, [2,4], ["VAR0", "VAR1", "VAR2"], ["000", "111", "222"]; verbose=true) == expArr
+  @test expand_inarrayofarrays(testArr, [2,4], ["VAR0", "VAR1", "VAR2"], ["000", "111", "222"]; verbose=false) == expArr
+
+  testArr = []
+  push!(testArr, ["# first comment string \${VAR}, \$VAR1 \"\"\$VAR2\""])
+  push!(testArr, ["string \${VAR}, \$VAR1 \"\$VAR2\""])
+  push!(testArr, ["# second comment string  \${VAR}, \$VAR1 \"\"\$VAR2\""])
+  push!(testArr, ["string  \${VAR}, \$VAR1 \"\$VAR2\""])
+  push!(testArr, ["# third comment string  \${VAR}, \$VAR1 \"\"\$VAR2\""])
+  expArr = []
+  push!(expArr, ["# first comment string \${VAR}, \$VAR1 \"\"\$VAR2\""])
+  push!(expArr, ["string \${VAR}, 111 \"\"222\""])
+  push!(expArr, ["# second comment string  \${VAR}, \$VAR1 \"\"\$VAR2\""])
+  push!(expArr, ["string  \${VAR}, 111 \"\"222\""])
+  push!(expArr, ["# third comment string  \${VAR}, \$VAR1 \"\"\$VAR2\""])
+  @test expand_inarrayofarrays(testArr, [2,4], ["VAR0", "VAR1", "VAR2"], ["000", "111", "222"], verbose=false, adapt_quotation=true) == expArr
 
   # expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars; verbose = verbose)
   arrArr = []

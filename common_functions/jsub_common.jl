@@ -245,7 +245,7 @@ function expandnameafterdollar(inString, name, value; adapt_quotation=false, ret
   inclusive_start = 0; inclusive_finish = 0;
   ## Process string based on character labels
   for ichr in 1:length(inString)
-    char = inString[ichr];     # println("expandnameafterdollar: (", ichr, ") ", char)
+    char = inString[ichr];
     ## Process on the basis of the label
     if ("outside" in charLabels[ichr]) # Not in a variable name
       outString = outString * string(char); # Add to output string (this could be made more efficient but should not take much CPU time in practice anyway)
@@ -425,6 +425,24 @@ function expandmanyafterdollars(inString, varNames, varVals; adapt_quotation=fal
   return outString
 end
 
+# Add a closing quote to a string if one is needed
+function enforce_closingquote(inString, charQuote::Char)
+  pattern = assign_quote_state(inString, charQuote);
+  # Determine if extending the string by one non-quote character would result in the string ending in an un-quoted state
+  non_quote = 'a';
+  if charQuote == non_quote # find a chacter that does not match the quote-character
+    non_quote = 'b';
+  end
+  longerString = inString * string(non_quote);
+  longerPattern = assign_quote_state(longerString, charQuote);
+  if longerPattern[end] == 1
+    return inString * string(charQuote)
+  else
+    return inString
+  end
+end
+
+# Expand variables in array of arrays containing commands (ignoring comment lines)
 function expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=true, adapt_quotation=false, returnTF=false) 
   # Check that varNames is the same size as varVals
   if size(varNames) != size(varVals)
@@ -440,18 +458,19 @@ function expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=true, a
         print(col, "\t")
       end
       print("\n")
-    end
-    if verbose
       print("       resulting in: ")
     end
     icol = 0;
     for col in arrRow
       icol += 1;
       expanded = expandmanyafterdollars(col, varNames, varVals, adapt_quotation=adapt_quotation, returnTF=returnTF)
+      if adapt_quotation # Add closing quote to string
+        expanded = enforce_closingquote(expanded, '\"');
+      end
       if verbose
         print(expanded, "\t")
       end
-      arrOut[rows[irows]][icol] = expanded
+      arrOut[rows[irows]][icol] = expanded;
     end
     if verbose
       print("\n")
@@ -509,10 +528,10 @@ function parse_varsfile(fileVars; dlmVars=nothing)
 end
 
 # Read the .fvars file and expand variables row by row.
-function parse_expandvars_fvarsfile(fileFvars, namesVars, valuesVars; dlmFvars=nothing) # Read the .fvars file 
+function parse_expandvars_fvarsfile(fileFvars, namesVars, valuesVars; dlmFvars=nothing, adapt_quotation=false) # Read the .fvars file 
   arrFvars, cmdRowsFvars = file2arrayofarrays(fileFvars, comStr; cols=3, delimiter=dlmFvars);
   ## Use variables from .vars to expand values in .fvars
-  arrExpFvars = expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars; verbose = verbose);
+  arrExpFvars = expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars; verbose = verbose, adapt_quotation=adapt_quotation);
   # Extract arrays of variable names and variable values
   namesFvars = columnfrom_arrayofarrays(arrFvars, cmdRowsFvars, 1);
   infileColumnsFvars = columnfrom_arrayofarrays(arrFvars, cmdRowsFvars, 2);
@@ -524,15 +543,15 @@ function parse_expandvars_fvarsfile(fileFvars, namesVars, valuesVars; dlmFvars=n
   return namesFvars, infileColumnsFvars, filePathsFvars
 end
 
-function parse_expandvars_protocol(fileProtocol, namesVars, valuesVars)
+function parse_expandvars_protocol(fileProtocol, namesVars, valuesVars; adapt_quotation=false)
   arrProt, cmdRowsProt = file2arrayofarrays(fileProtocol, comStr; cols=1, delimiter=nothing);
   ## Use variables from .vars to expand values in .protocol
-  arrProtExpVars = expand_inarrayofarrays(arrProt, cmdRowsProt, namesVars, valuesVars ; verbose = verbose)
+  arrProtExpVars = expand_inarrayofarrays(arrProt, cmdRowsProt, namesVars, valuesVars ; verbose = verbose, adapt_quotation=adapt_quotation)
   return arrProtExpVars, cmdRowsProt
 end
 
 # Expand variables in .fvars file using values from list files
-function parse_expandvars_listfiles(filePathsFvars, namesVars, valuesVars, dlmFvars; verbose=false)
+function parse_expandvars_listfiles(filePathsFvars, namesVars, valuesVars, dlmFvars; verbose=false, adapt_quotation=false)
   ## Read each list file
   dictListArr = Dict(); # Dictionary with file paths as keys and file contents (arrays of arrays) as values.
   dictCmdLineIdxs = Dict(); #previously: # arrCmdLineIdxs = Array(Array, length(filePathsFvars) ); # Array for storing line counts from input files
@@ -540,7 +559,7 @@ function parse_expandvars_listfiles(filePathsFvars, namesVars, valuesVars, dlmFv
   for file in filePathsFvars
     idx+=1;
     arrList, cmdRowsList = file2arrayofarrays(file, comStr; cols=0, delimiter=dlmFvars);
-    arrListExpVars = expand_inarrayofarrays(arrList, cmdRowsList, namesVars, valuesVars ; verbose = verbose);
+    arrListExpVars = expand_inarrayofarrays(arrList, cmdRowsList, namesVars, valuesVars ; verbose = verbose, adapt_quotation=adapt_quotation);
     dictListArr[file] = arrListExpVars;
     dictCmdLineIdxs[file] = cmdRowsList; #previously: # arrCmdLineIdxs[idx] = cmdRowsList
   end
@@ -562,7 +581,7 @@ function parse_expandvars_listfiles(filePathsFvars, namesVars, valuesVars, dlmFv
 end
 
 # Expand varaibles in .protocol using values from .fvars.  This necessarily results in one output summary file per list entry (list files indicated in .fvars)
-function protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose = false )
+function protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose = false, adapt_quotation=false)
   arrArrExpFvars = []; ## Initialise array for holding summary file arrays-of-arrays
   ## Loop over length of list files (currently assuming that all lists are of the same length but this may need to change in the future)
   for iln in 1:maximum( map(x->length(x), values(dictCmdLineIdxs)) )
@@ -581,7 +600,7 @@ function protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars,
       valuesFvars[ivar] = fvarValue;
     end
     ## Create a new summary file array for the current list row (across all list files)
-    arrExpFvars = expand_inarrayofarrays(arrProt, cmdRowsProt, namesFvars, valuesFvars ; verbose = verbose )
+    arrExpFvars = expand_inarrayofarrays(arrProt, cmdRowsProt, namesFvars, valuesFvars ; verbose = verbose, adapt_quotation=adapt_quotation )
     push!(arrArrExpFvars, arrExpFvars)
   end
   return arrArrExpFvars
