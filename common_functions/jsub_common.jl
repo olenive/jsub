@@ -62,7 +62,7 @@ function columnfrom_arrayofarrays(arrArr, rows, col::Integer; dlm=' ')
       push!(colVals, join((map( x->sanitizestring(x), row[1:end] )), dlm) );
     end
   else
-    warn("(in columnfrom_arrayofarrays) unexpected column value parameter, expecting a non-negative integer but found: ", col);
+    SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in columnfrom_arrayofarrays) unexpected column value parameter, expecting a non-negative integer but found: ", col);
   end
   return colVals
 end
@@ -75,7 +75,7 @@ end
 
 function  warn_notreplaced(inp, pat)
   if contains(inp, pat)
-    warn("Not expanding variable matching pattern(s) \"$pat\" in string: ", inp);
+    SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("Not expanding variable matching pattern(s) \"$pat\" in string: ", inp); 
   end
 end
 
@@ -154,7 +154,7 @@ function determinelabel(inString, ichr, previousLabels)
 
       ## Check for missing closing curly brace
       if ("curly_inside" in previousLabels) && ( ichr==length(inString) || inString[ichr+1]!='}' ) 
-        warn(" (in determinelabel) Expecting closing curly brace after position ", ichr, " in string: ", inString)
+        SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn(" (in determinelabel) Expecting closing curly brace after position ", ichr, " in string: ", inString);
         push!(outLabels, "discard")
       end
     end
@@ -176,7 +176,7 @@ function determinelabel(inString, ichr, previousLabels)
     
     elseif ("curly_open" in previousLabels)
       if char=='}' # Check for premature closing brace
-        warn(" (in determinelabel) Found closing curly brace immediately after an opening curly brace \"\${}\" in string: ", inString)
+        SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn(" (in determinelabel) Found closing curly brace immediately after an opening curly brace \"\${}\" in string: ", inString);
       elseif nextcharacter_isnamecompliant(inString, ichr-1 ) # -1 because the function looks at the next character
         push!(outLabels, "curly_inside")
       end
@@ -221,7 +221,7 @@ function processcandidatename(candidate, terminatingLabelSet, name, value; retur
   else
     prefix="";
     suffix="";
-    warn(" (in processcandidatename) expecting either a \"curly_inside\" or a \"plain\" label in the terminatingLabelSet of candidate (", candidate, ") but found: ", terminatingLabelSet );
+    SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn(" (in processcandidatename) expecting either a \"curly_inside\" or a \"plain\" label in the terminatingLabelSet of candidate (", candidate, ") but found: ", terminatingLabelSet );
   end
   testName = prefix*name*suffix;
   # println(testName, " vs ", candidate)
@@ -504,7 +504,7 @@ end
 function expandinorder(namesVarsRaw, valuesVarsRaw; adapt_quotation=false, returnTF=false)
   ## Check that in put vector lengths match
   if (length(namesVarsRaw) != length(valuesVarsRaw)) 
-    warn(" (in expandinorder) variable name and values arguments should be vectors of equal lengths but appear to be of different lengths.")
+    SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn(" (in expandinorder) variable name and values arguments should be vectors of equal lengths but appear to be of different lengths.");
   end
   ## For each input row expand the variables in the values vector using using name-value paris from preceeding rows
   valuesVars = Array(Any, length(namesVarsRaw))
@@ -565,14 +565,14 @@ function parse_expandvars_listfiles(filePathsFvars, namesVars, valuesVars, dlmFv
   end
   ## Warn if number of command row numbers differ between files
   if length( unique( map( x->length(x),  values(dictCmdLineIdxs) ) ) ) != 1  #previously: # if length(unique(map( x -> length(x) , arrCmdLineIdxs ))) != 1
-    warn("(in ExpandVarsInListFiles) detected different numbers of command lines (non-comment non-blank) in input files:")
+    SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in ExpandVarsInListFiles) detected different numbers of command lines (non-comment non-blank) in input files:");
     for file in filePathsFvars
       println("number of command lines: ", length(dictCmdLineIdxs[file]), ", in file: ", filePathsFvars[file])
     end
   end
   ## Warn if indicies of command rows differ between files
   if length(unique(values(dictCmdLineIdxs))) != 1 #previously: # if length(unique(arrCmdLineIdxs)) != 1
-    warn("(in ExpandVarsInListFiles) detected different indices of command lines (non-comment non-blank) in input files:")
+    SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in ExpandVarsInListFiles) detected different indices of command lines (non-comment non-blank) in input files:");
     for idx = 1:length(filePathsFvars)
       println("Index of command lines: ", dictCmdLineIdxs[idx], ", in file: ", filePathsFvars[idx])
     end

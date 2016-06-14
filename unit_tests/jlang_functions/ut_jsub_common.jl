@@ -45,6 +45,9 @@ const flagWarn = true;
 const delimiterFvars = '\t'
 const verbose = false;
 
+const SUPPRESS_WARNINGS=true;
+num_suppressed = [0];
+
 # Initialise flags
 global flag_test_fail = false
 
@@ -85,8 +88,8 @@ Test.with_handler(ut_handler) do
   # ************************************************************************
   # This file contains the common variables in using refs_samples.protocol
 
-  # DIR_BASE        "/Users/olenive/work/jsub_pipeliner"
-  # DIR_OUTPUT      "/Users/olenive/work/output_testing_jsub"
+  # DIR_BASE        "../../../jsub_pipeliner"
+  # DIR_OUTPUT      "../../../output_testing_jsub"
 
   # PRE_REF_FILE1   "$DIR_BASE"/"unit_tests/data/header_coordinate"
   # PRE_REF_FILE2   "$DIR_BASE"/"unit_tests/data/hg19.chrom.sizes"
@@ -107,8 +110,8 @@ Test.with_handler(ut_handler) do
   expCmdRowsVars = [2,3,4,5,6,7,8,11,13] # Rows in expArrVars that contain commands and not comments
   expArrVars = []#Array(Array{AbstractString} (7,))
   push!(expArrVars, ["# This file contains the common variables in using refs_samples.protocol"])
-  push!(expArrVars, ["DIR_BASE", "\"/Users/olenive/work/jsub_pipeliner\""])
-  push!(expArrVars, ["DIR_OUTPUT", "\"/Users/olenive/work/output_testing_jsub\""])
+  push!(expArrVars, ["DIR_BASE", "\"../../../jsub_pipeliner\""])
+  push!(expArrVars, ["DIR_OUTPUT", "\"../../../output_testing_jsub\""])
   push!(expArrVars, ["PRE_REF_FILE1", "\"\$DIR_BASE\"/\"unit_tests/data/header_coordinate\""])
   push!(expArrVars, ["PRE_REF_FILE2", "\"\$DIR_BASE\"/\"unit_tests/data/hg19.chrom.sizes\""])
   push!(expArrVars, ["REF_FILE", "\"\$DIR_OUTPUT\"/\"utSplit_refFile.txt\""])
@@ -665,9 +668,9 @@ Test.with_handler(ut_handler) do
   push!(testArr, ["# third comment string  \${VAR}, \$VAR1 \"\"\$VAR2\""])
   expArr = []
   push!(expArr, ["# first comment string \${VAR}, \$VAR1 \"\"\$VAR2\""])
-  push!(expArr, ["string \${VAR}, 111 \"\"222\""])
+  push!(expArr, ["string \${VAR}, 111 \"\"222\"\""])
   push!(expArr, ["# second comment string  \${VAR}, \$VAR1 \"\"\$VAR2\""])
-  push!(expArr, ["string  \${VAR}, 111 \"\"222\""])
+  push!(expArr, ["string  \${VAR}, 111 \"\"222\"\""])
   push!(expArr, ["# third comment string  \${VAR}, \$VAR1 \"\"\$VAR2\""])
   @test expand_inarrayofarrays(testArr, [2,4], ["VAR0", "VAR1", "VAR2"], ["000", "111", "222"], verbose=false, adapt_quotation=true) == expArr
 
@@ -687,7 +690,7 @@ Test.with_handler(ut_handler) do
    "HELLO"
   ]
   varVals=[
-   "\"/Users/olenive/work/jsub_pipeliner/\""
+   "\"../../../jsub_pipeliner/\""
    "\"utbash space.sh\""                    
    "\"\$dolla\""                            
    "\"Hello spaces and tabs\tand...\"" 
@@ -695,13 +698,42 @@ Test.with_handler(ut_handler) do
   expArr = []
   push!(expArr, ["# This file contains the names of varibales, column numbers and source file paths from which the value of the variable should be taken."])
   push!(expArr, ["# <variable name>\t<column in file>\t<file path>"])
-  push!(expArr, ["LANE_NUM","0","\"\"/Users/olenive/work/jsub_pipeliner/\"\"/\"unit_tests/lists/multiLane_\"'\"1\"'\"col.txt\""])
+  push!(expArr, ["LANE_NUM","0","\"\"../../../jsub_pipeliner/\"\"/\"unit_tests/lists/multiLane_\"'\"1\"'\"col.txt\""])
   push!(expArr, ["# The zero in the <column in file> field indicates that all columns shold be used (or treated as one column)"])
-  push!(expArr, ["SAMPLEID","1","\"\"/Users/olenive/work/jsub_pipeliner/\"\"/\"unit_tests/lists/sampleIDs_1col.txt\""])
+  push!(expArr, ["SAMPLEID","1","\"\"../../../jsub_pipeliner/\"\"/\"unit_tests/lists/sampleIDs_1col.txt\""])
   push!(expArr, ["# The value of DIR_BASE is declared in refs_samples.vars"])
   @test expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=true) == expArr
   # arrArr=arrFvars; rows=cmdRowsFvars; varNames=namesVars; varVals=valuesVars; verbose=true;
   # expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars; verbose = verbose)
+  
+  arrArr = []
+  push!(arrArr, ["# This file contains the names of varibales, column numbers and source file paths from which the value of the variable should be taken."])
+  push!(arrArr, ["# <variable name>\t<column in file>\t<file path>"])
+  push!(arrArr, ["LANE_NUM","0","\"\$DIR_BASE\"/\"unit_tests/lists/multiLane_\"'\"1\"'\"col.txt\""])
+  push!(arrArr, ["# The zero in the <column in file> field indicates that all columns shold be used (or treated as one column)"])
+  push!(arrArr, ["SAMPLEID","1","\"\$DIR_BASE\"/\"unit_tests/lists/sampleIDs_1col.txt\""])
+  push!(arrArr, ["# The value of DIR_BASE is declared in refs_samples.vars"])
+  rows = [3,5]
+  varNames=[
+   "DIR_BASE" 
+   "SCRIPT"   
+   "DOLLARVAR"
+   "HELLO"
+  ]
+  varVals=[
+   "\"../../../jsub_pipeliner/\""
+   "\"utbash space.sh\""                    
+   "\"\$dolla\""                            
+   "\"Hello spaces and tabs\tand...\"" 
+  ]
+  expArr = []
+  push!(expArr, ["# This file contains the names of varibales, column numbers and source file paths from which the value of the variable should be taken."])
+  push!(expArr, ["# <variable name>\t<column in file>\t<file path>"])
+  push!(expArr, ["LANE_NUM","0","\"\"\"../../../jsub_pipeliner/\"\"\"/\"unit_tests/lists/multiLane_\"'\"1\"'\"col.txt\""])
+  push!(expArr, ["# The zero in the <column in file> field indicates that all columns shold be used (or treated as one column)"])
+  push!(expArr, ["SAMPLEID","1","\"\"\"../../../jsub_pipeliner/\"\"\"/\"unit_tests/lists/sampleIDs_1col.txt\""])
+  push!(expArr, ["# The value of DIR_BASE is declared in refs_samples.vars"])
+  @test expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=true, adapt_quotation=true) == expArr
 
   ## sanitizepath
   testPath = "\"\$DIR_BASE\"/\"unit_tests/lists/multiLane_\"\'\"1\"\'\"col.txt\""
@@ -721,8 +753,8 @@ Test.with_handler(ut_handler) do
   "VAR\$VAR2"
   ]
   expValuesRaw = [
-  "\"/Users/olenive/work/jsub_pipeliner\""
-  "\"/Users/olenive/work/output_testing_jsub\""
+  "\"../../../jsub_pipeliner\""
+  "\"../../../output_testing_jsub\""
   "\"\$DIR_BASE\"/\"unit_tests/data/header_coordinate\""
   "\"\$DIR_BASE\"/\"unit_tests/data/hg19.chrom.sizes\""
   "\"\$DIR_OUTPUT\"/\"utSplit_refFile.txt\""
@@ -747,17 +779,42 @@ Test.with_handler(ut_handler) do
   "VAR\$VAR2"
   ]
   expValues = [
-  "\"/Users/olenive/work/jsub_pipeliner\""              
-  "\"/Users/olenive/work/output_testing_jsub\""
-  "\"\"/Users/olenive/work/jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\""
-  "\"\"/Users/olenive/work/jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\"" 
-  "\"\"/Users/olenive/work/output_testing_jsub\"\"/\"utSplit_refFile.txt\""            
-  "\"\"/Users/olenive/work/output_testing_jsub\"\"/\"utSplit_out1_\""                  
+  "\"../../../jsub_pipeliner\""              
+  "\"../../../output_testing_jsub\""
+  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\""
+  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\"" 
+  "\"\"../../../output_testing_jsub\"\"/\"utSplit_refFile.txt\""            
+  "\"\"../../../output_testing_jsub\"\"/\"utSplit_out1_\""                  
   "\"_valueVar1_\""                                     
   "\"_valueVar\$VAR1_\""                                
   "\"_valueVar\$VAR2_\"" 
   ]
   @test expandinorder(namesVarsRaw, valuesVarsRaw) == (expNames, expValues)
+
+  namesVarsRaw, valuesVarsRaw = parse_varsfile(pathToTestVars)
+  expNames = [
+  "DIR_BASE"
+  "DIR_OUTPUT"
+  "PRE_REF_FILE1"
+  "PRE_REF_FILE2"
+  "REF_FILE"
+  "SAMPLE_OUTPUT_1"
+  "VAR1"
+  "VAR\$VAR1"
+  "VAR\$VAR2"
+  ]
+  expValues = [
+  "\"../../../jsub_pipeliner\""
+  "\"../../../output_testing_jsub\""
+  "\"\"\"../../../jsub_pipeliner\"\"\"/\"unit_tests/data/header_coordinate\""
+  "\"\"\"../../../jsub_pipeliner\"\"\"/\"unit_tests/data/hg19.chrom.sizes\""
+  "\"\"\"../../../output_testing_jsub\"\"\"/\"utSplit_refFile.txt\""
+  "\"\"\"../../../output_testing_jsub\"\"\"/\"utSplit_out1_\""
+  "\"_valueVar1_\""
+  "\"_valueVar\$VAR1_\""
+  "\"_valueVar\$VAR2_\""
+  ]
+  @test expandinorder(namesVarsRaw, valuesVarsRaw, adapt_quotation=true) == (expNames, expValues)
 
   ## parse_varsfile
   fileVars="../protocols/split/refs_samples.vars"
@@ -775,7 +832,7 @@ Test.with_handler(ut_handler) do
   "PREFIX_1"
   ]
   expValues1=[
-  "\"/Users/olenive/work/jsub_pipeliner/\"",
+  "\"../../../jsub_pipeliner/\"",
   "\"\$DIR_BASE\"/\"unit_tests/outputs/split/\"",
   "\"\$DIR_BASE\"/\"unit_tests/shell_scripts/write_files/ut_create_reference.sh\"",
   "\"\$DIR_BASE\"/\"unit_tests/shell_scripts/write_files/ut_process.sh\"",
@@ -789,43 +846,50 @@ Test.with_handler(ut_handler) do
   ]
   @test parse_varsfile(fileVars, dlmVars="\t") == (expNames1, expValues1)
 
-  expNames2=[
-  "DIR_BASE",
-  "DIR_OUTPUT",
-  "SCR_CREATE_REFS",
-  "SCR_PROCESS_SAMPLE",
-  "DIR_DATA",
-  "PRE_REF_FILE1",
-  "PRE_REF_FILE2",
-  "REF_FILE",
-  "PREFIX_0",
-  "SUFFIX_0",
-  "PREFIX_1"
+  fileFvars="jlang_function_test_files/refs_samples.fvars"
+  expNamesFvars=["LANE_NUM", "SAMPLEID"];
+  expInfileColumnsFvars=["0","1"];
+  expFilePathsFvars=[
+  "../../../jsub_pipeliner//unit_tests/lists/multiLane_\"1\"col.txt",
+  "../../../jsub_pipeliner//unit_tests/lists/sampleIDs_1col.txt"
   ];
-  expValues2=[
-  "\"/Users/olenive/work/jsub_pipeliner/\"",
-  "\"\$DIR_BASE\"/\"unit_tests/outputs/split/\"",
-  "\"\$DIR_BASE\"/\"unit_tests/shell_scripts/write_files/ut_create_reference.sh\"",
-  "\"\$DIR_BASE\"/\"unit_tests/shell_scripts/write_files/ut_process.sh\"",
-  "\"\$DIR_BASE\"/\"unit_tests/data/dummy_sample_files/\"",
-  "\"\$DIR_BASE\"/\"unit_tests/data/header_coordinate\"",
-  "\"\$DIR_BASE\"/\"unit_tests/data/hg19.chrom.sizes\"",
-  "\"\$DIR_OUTPUT\"/\"ut_split_refFile.txt\"",
-  "\"dummy_\"",
-  "\".txt\"",
-  "\"\$DIR_OUTPUT\"/\"ut_split_output_\""
+  @test parse_expandvars_fvarsfile(fileFvars, expNames1, expValues1, dlmFvars="\t", verbose=false, adapt_quotation=false) == (expNamesFvars, expInfileColumnsFvars, expFilePathsFvars)
+
+  fileFvars="jlang_function_test_files/refs_samples.fvars"
+  expNamesFvars=["LANE_NUM", "SAMPLEID"];
+  expInfileColumnsFvars=["0","1"];
+  expFilePathsFvars=[
+  "../../../jsub_pipeliner//unit_tests/lists/multiLane_\"1\"col.txt",
+  "../../../jsub_pipeliner//unit_tests/lists/sampleIDs_1col.txt"
   ];
-  # @test expandinorder(namesVarsRaw, valuesVarsRaw) (expNames2, expValues2)
+  @test parse_expandvars_fvarsfile(fileFvars, expNames1, expValues1, dlmFvars="\t", verbose=false, adapt_quotation=true) == (expNamesFvars, expInfileColumnsFvars, expFilePathsFvars)  
 
   ## parse_expandvars_in_protocol
+  fileProtocol="jlang_function_test_files/refs_samples.protocol"
+  expCmdRowsProt=[
+
+  ];
+  expArrProt=[
+
+  ];
+  parse_expandvars_protocol(fileProtocol, expNames1, expValues1; adapt_quotation=false, verbose=true) == (expArrProt, expCmdRowsProt)
 
   ## parse_expandvars_in_listfiles
 
   ## expandvars_in_protocol
 
+#PRODIG
+
   ########################################
 
+  # Report if there were any suppressed warnings
+  if num_suppressed[1] > 0
+    println("Suppressed ", num_suppressed[1], " warnings.  These unit tests intentionally include cases that produce warnings.");
+  end
+
+  # Report number of test passes, fails and exceptions
   ut_report(ut_counter)
+
 end # Test.with_handler(ut_handler) do
 ########################################
 ########################################

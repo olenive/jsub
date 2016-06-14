@@ -90,7 +90,10 @@ const dlmWhitespace=[' ','\t','\n','\v','\f','\r'] # The default whitespace char
 const flagWarn = true;
 const delimiterFvars = '\t'
 const verbose = false;
+const adapt_quotation=true; # this should be the default to avoid nasty accidents
 
+const SUPPRESS_WARNINGS=false;
+num_suppressed = [0];
 
 #### FUNCTIONS ####
 include("./common_functions/jsub_common.jl")
@@ -100,7 +103,7 @@ include("./common_functions/jsub_common.jl")
 
 ######### SCRIPT #########
 
-adapt_quotation=true; # this should be the default to avoid nasty accidents
+
 
 ## Read .vars file # Extract arrays of variable names and variable values
 namesVarsRaw, valuesVarsRaw = parse_varsfile(fileVars)
@@ -126,6 +129,11 @@ arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infi
 
 
 
+
+# Report if there were any suppressed warnings
+if num_suppressed[1] > 0
+  println("Suppressed ", num_suppressed[1], " warnings.");
+end
 ##########################
 # EOF
 
