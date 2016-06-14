@@ -111,7 +111,7 @@ Test.with_handler(ut_handler) do
   expArrVars = []#Array(Array{AbstractString} (7,))
   push!(expArrVars, ["# This file contains the common variables in using refs_samples.protocol"])
   push!(expArrVars, ["DIR_BASE", "\"../../../jsub_pipeliner\""])
-  push!(expArrVars, ["DIR_OUTPUT", "\"../../../output_testing_jsub\""])
+  push!(expArrVars, ["DIR_OUTPUT", "\"\$DIR_BASE/output_testing_jsub\""])
   push!(expArrVars, ["PRE_REF_FILE1", "\"\$DIR_BASE\"/\"unit_tests/data/header_coordinate\""])
   push!(expArrVars, ["PRE_REF_FILE2", "\"\$DIR_BASE\"/\"unit_tests/data/hg19.chrom.sizes\""])
   push!(expArrVars, ["REF_FILE", "\"\$DIR_OUTPUT\"/\"utSplit_refFile.txt\""])
@@ -124,7 +124,7 @@ Test.with_handler(ut_handler) do
   push!(expArrVars, ["# In the next line \"\$VAR2\" is replaced by nothing because VAR2 is commented out above"])
   push!(expArrVars, ["VAR\$VAR2", "\"_valueVar\$VAR2_\""])
 
-  @test file2arrayofarrays(pathToTestVars, "#") == (expArrVars, expCmdRowsVars)
+  @test file2arrayofarrays("jlang_function_test_files/refs_samples.vars", "#") == (expArrVars, expCmdRowsVars)
 
   # ************************************************************************
   # # This file contains the names of varibales, column numbers and source file paths from which the value of the variable should be taken.
@@ -702,7 +702,7 @@ Test.with_handler(ut_handler) do
   push!(expArr, ["# The zero in the <column in file> field indicates that all columns shold be used (or treated as one column)"])
   push!(expArr, ["SAMPLEID","1","\"\"../../../jsub_pipeliner/\"\"/\"unit_tests/lists/sampleIDs_1col.txt\""])
   push!(expArr, ["# The value of DIR_BASE is declared in refs_samples.vars"])
-  @test expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=true) == expArr
+  @test expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=false) == expArr
   # arrArr=arrFvars; rows=cmdRowsFvars; varNames=namesVars; varVals=valuesVars; verbose=true;
   # expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars; verbose = verbose)
   
@@ -733,7 +733,7 @@ Test.with_handler(ut_handler) do
   push!(expArr, ["# The zero in the <column in file> field indicates that all columns shold be used (or treated as one column)"])
   push!(expArr, ["SAMPLEID","1","\"\"\"../../../jsub_pipeliner/\"\"\"/\"unit_tests/lists/sampleIDs_1col.txt\""])
   push!(expArr, ["# The value of DIR_BASE is declared in refs_samples.vars"])
-  @test expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=true, adapt_quotation=true) == expArr
+  @test expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=false, adapt_quotation=true) == expArr
 
   ## sanitizepath
   testPath = "\"\$DIR_BASE\"/\"unit_tests/lists/multiLane_\"\'\"1\"\'\"col.txt\""
@@ -741,6 +741,7 @@ Test.with_handler(ut_handler) do
   @test sanitizepath(testPath) == expPath
 
   ## parse_varsfile
+  # pathToTestVars = "jlang_function_test_files/refs_samples.vars"
   expNamesRaw = [
   "DIR_BASE"
   "DIR_OUTPUT"
@@ -754,7 +755,7 @@ Test.with_handler(ut_handler) do
   ]
   expValuesRaw = [
   "\"../../../jsub_pipeliner\""
-  "\"../../../output_testing_jsub\""
+  "\"\$DIR_BASE/output_testing_jsub\""
   "\"\$DIR_BASE\"/\"unit_tests/data/header_coordinate\""
   "\"\$DIR_BASE\"/\"unit_tests/data/hg19.chrom.sizes\""
   "\"\$DIR_OUTPUT\"/\"utSplit_refFile.txt\""
@@ -763,11 +764,11 @@ Test.with_handler(ut_handler) do
   "\"_valueVar\$VAR1_\""
   "\"_valueVar\$VAR2_\""
   ]
-  @test parse_varsfile(pathToTestVars) == (expNamesRaw, expValuesRaw)
+  @test parse_varsfile("jlang_function_test_files/refs_samples.vars") == (expNamesRaw, expValuesRaw)
 
   ## expandinorder
-  namesVarsRaw, valuesVarsRaw = parse_varsfile(pathToTestVars)
-  expNames = [
+  # namesVarsRaw, valuesVarsRaw = parse_varsfile(pathToTestVars)
+  namesVarsRaw = [
   "DIR_BASE"
   "DIR_OUTPUT"
   "PRE_REF_FILE1"
@@ -777,43 +778,86 @@ Test.with_handler(ut_handler) do
   "VAR1"
   "VAR\$VAR1"
   "VAR\$VAR2"
-  ]
-  expValues = [
-  "\"../../../jsub_pipeliner\""              
-  "\"../../../output_testing_jsub\""
-  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\""
-  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\"" 
-  "\"\"../../../output_testing_jsub\"\"/\"utSplit_refFile.txt\""            
-  "\"\"../../../output_testing_jsub\"\"/\"utSplit_out1_\""                  
-  "\"_valueVar1_\""                                     
-  "\"_valueVar\$VAR1_\""                                
-  "\"_valueVar\$VAR2_\"" 
-  ]
-  @test expandinorder(namesVarsRaw, valuesVarsRaw) == (expNames, expValues)
-
-  namesVarsRaw, valuesVarsRaw = parse_varsfile(pathToTestVars)
-  expNames = [
-  "DIR_BASE"
-  "DIR_OUTPUT"
-  "PRE_REF_FILE1"
-  "PRE_REF_FILE2"
-  "REF_FILE"
-  "SAMPLE_OUTPUT_1"
-  "VAR1"
-  "VAR\$VAR1"
-  "VAR\$VAR2"
-  ]
-  expValues = [
+  ];
+  valuesVarsRaw = [
   "\"../../../jsub_pipeliner\""
-  "\"../../../output_testing_jsub\""
-  "\"\"\"../../../jsub_pipeliner\"\"\"/\"unit_tests/data/header_coordinate\""
-  "\"\"\"../../../jsub_pipeliner\"\"\"/\"unit_tests/data/hg19.chrom.sizes\""
-  "\"\"\"../../../output_testing_jsub\"\"\"/\"utSplit_refFile.txt\""
-  "\"\"\"../../../output_testing_jsub\"\"\"/\"utSplit_out1_\""
+  "\"\$DIR_BASE/output_testing_jsub\""
+  "\"\$DIR_BASE\"/\"unit_tests/data/header_coordinate\""
+  "\"\$DIR_BASE\"/\"unit_tests/data/hg19.chrom.sizes\""
+  "\"\$DIR_OUTPUT\"/\"utSplit_refFile.txt\""
+  "\"\$DIR_OUTPUT\"/\"utSplit_out1_\""
   "\"_valueVar1_\""
   "\"_valueVar\$VAR1_\""
   "\"_valueVar\$VAR2_\""
-  ]
+  ];
+  expNames = [
+  "DIR_BASE"
+  "DIR_OUTPUT"
+  "PRE_REF_FILE1"
+  "PRE_REF_FILE2"
+  "REF_FILE"
+  "SAMPLE_OUTPUT_1"
+  "VAR1"
+  "VAR\$VAR1"
+  "VAR\$VAR2"
+  ];
+  expValues = [
+  "\"../../../jsub_pipeliner\""
+  "\"\"../../../jsub_pipeliner\"/output_testing_jsub\""
+  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\""
+  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\""
+  "\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_refFile.txt\""
+  "\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\""
+  "\"_valueVar1_\""
+  "\"_valueVar\$VAR1_\""
+  "\"_valueVar\$VAR2_\"" 
+  ];
+  @test expandinorder(namesVarsRaw, valuesVarsRaw, adapt_quotation=false) == (expNames, expValues)
+
+  namesVarsRaw = [
+  "DIR_BASE"
+  "DIR_OUTPUT"
+  "PRE_REF_FILE1"
+  "PRE_REF_FILE2"
+  "REF_FILE"
+  "SAMPLE_OUTPUT_1"
+  "VAR1"
+  "VAR\$VAR1"
+  "VAR\$VAR2"
+  ];
+  valuesVarsRaw = [
+  "\"../../../jsub_pipeliner\""
+  "\"\$DIR_BASE/output_testing_jsub\""
+  "\"\$DIR_BASE\"/\"unit_tests/data/header_coordinate\""
+  "\"\$DIR_BASE\"/\"unit_tests/data/hg19.chrom.sizes\""
+  "\"\$DIR_OUTPUT\"/\"utSplit_refFile.txt\""
+  "\"\$DIR_OUTPUT\"/\"utSplit_out1_\""
+  "\"_valueVar1_\""
+  "\"_valueVar\$VAR1_\""
+  "\"_valueVar\$VAR2_\""
+  ];
+  expNames = [
+  "DIR_BASE"
+  "DIR_OUTPUT"
+  "PRE_REF_FILE1"
+  "PRE_REF_FILE2"
+  "REF_FILE"
+  "SAMPLE_OUTPUT_1"
+  "VAR1"
+  "VAR\$VAR1"
+  "VAR\$VAR2"
+  ];
+  expValues = [
+  "\"../../../jsub_pipeliner\""
+  "\"\"\"../../../jsub_pipeliner\"\"/output_testing_jsub\""
+  "\"\"\"../../../jsub_pipeliner\"\"\"/\"unit_tests/data/header_coordinate\""
+  "\"\"\"../../../jsub_pipeliner\"\"\"/\"unit_tests/data/hg19.chrom.sizes\""
+  "\"\"\"\"\"../../../jsub_pipeliner\"\"/output_testing_jsub\"\"\"/\"utSplit_refFile.txt\""
+  "\"\"\"\"\"../../../jsub_pipeliner\"\"/output_testing_jsub\"\"\"/\"utSplit_out1_\""
+  "\"_valueVar1_\""
+  "\"_valueVar\$VAR1_\""
+  "\"_valueVar\$VAR2_\"" 
+  ];
   @test expandinorder(namesVarsRaw, valuesVarsRaw, adapt_quotation=true) == (expNames, expValues)
 
   ## parse_varsfile
@@ -865,14 +909,132 @@ Test.with_handler(ut_handler) do
   @test parse_expandvars_fvarsfile(fileFvars, expNames1, expValues1, dlmFvars="\t", verbose=false, adapt_quotation=true) == (expNamesFvars, expInfileColumnsFvars, expFilePathsFvars)  
 
   ## parse_expandvars_in_protocol
+  expNamesIn0 = [
+  "DIR_BASE"
+  "DIR_OUTPUT"
+  "PRE_REF_FILE1"
+  "PRE_REF_FILE2"
+  "REF_FILE"
+  "SAMPLE_OUTPUT_1"
+  "VAR1"
+  "VAR\$VAR1"
+  "VAR\$VAR2"
+  ];
+  expValuesIn0 = [
+  "\"../../../jsub_pipeliner\""
+  "\"\"../../../jsub_pipeliner\"/output_testing_jsub\""
+  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\""
+  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\""
+  "\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_refFile.txt\""
+  "\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\""
+  "\"_valueVar1_\""
+  "\"_valueVar\$VAR1_\""
+  "\"_valueVar\$VAR2_\"" 
+  ];
   fileProtocol="jlang_function_test_files/refs_samples.protocol"
-  expCmdRowsProt=[
+  expCmdRowsProt=[2,3];
+  expArrProt=[]
+  push!(expArrProt, ["# A very minimalistic hypothetical protocol file"])
+  push!(expArrProt, ["bash \"../../../jsub_pipeliner\"/somescript.sh  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" \"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\""])
+  push!(expArrProt, ["python \"\"../../../jsub_pipeliner\"\"/\"therscript.py\" \"\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\"\" \"\"../../../jsub_pipeliner\"/output_testing_jsub\"/\"processed1.txt\""])
+  push!(expArrProt, ["# The end"])
+  @test parse_expandvars_protocol(fileProtocol, expNamesIn0, expValuesIn0; adapt_quotation=false, verbose=false) == (expArrProt, expCmdRowsProt)
 
+  ## parse_expandvars_in_protocol
+  expNamesIn0 = [
+  "DIR_BASE"
+  "DIR_OUTPUT"
+  "PRE_REF_FILE1"
+  "PRE_REF_FILE2"
+  "REF_FILE"
+  "SAMPLE_OUTPUT_1"
+  "VAR1"
+  "VAR\$VAR1"
+  "VAR\$VAR2"
   ];
-  expArrProt=[
+  expValuesIn0 = [
+  "\"../../../jsub_pipeliner\""
+  "\"\"../../../jsub_pipeliner\"/output_testing_jsub\""
+  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\""
+  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\""
+  "\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_refFile.txt\""
+  "\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\""
+  "\"_valueVar1_\""
+  "\"_valueVar\$VAR1_\""
+  "\"_valueVar\$VAR2_\"" 
+  ];
+  fileProtocol="jlang_function_test_files/refs_samples.protocol"
+  expCmdRowsProt=[2,3]; # Blank lines are not counted
+  expArrProt=[]
+  push!(expArrProt, ["# A very minimalistic hypothetical protocol file"])
+  push!(expArrProt, ["bash \"../../../jsub_pipeliner\"/somescript.sh  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" \"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\""])
+  push!(expArrProt, ["python \"\"\"../../../jsub_pipeliner\"\"\"/\"therscript.py\" \"\"\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\"\"\" \"\"../../../jsub_pipeliner\"/output_testing_jsub\"/\"processed1.txt\""])
+  push!(expArrProt, ["# The end"])
+  @test parse_expandvars_protocol(fileProtocol, expNamesIn0, expValuesIn0; adapt_quotation=true, verbose=false) == (expArrProt, expCmdRowsProt)
 
-  ];
-  parse_expandvars_protocol(fileProtocol, expNames1, expValues1; adapt_quotation=false, verbose=true) == (expArrProt, expCmdRowsProt)
+
+
+  # ## parse_expandvars_in_protocol
+  # expNamesIn0 = [
+  # "DIR_BASE"
+  # "DIR_OUTPUT"
+  # "PRE_REF_FILE1"
+  # "PRE_REF_FILE2"
+  # "REF_FILE"
+  # "SAMPLE_OUTPUT_1"
+  # "VAR1"
+  # "VAR\$VAR1"
+  # "VAR\$VAR2"
+  # ];
+  # expValuesIn0 = [
+  # "\"../../../jsub_pipeliner\""
+  # "\"\"../../../jsub_pipeliner\"/output_testing_jsub\""
+  # "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\""
+  # "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\""
+  # "\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_refFile.txt\""
+  # "\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\""
+  # "\"_valueVar1_\""
+  # "\"_valueVar\$VAR1_\""
+  # "\"_valueVar\$VAR2_\"" 
+  # ];
+  # fileProtocol="jlang_function_test_files/refs_samples.protocol"
+  # expCmdRowsProt=[11,12,13,14,15,16,18,19,25,26];
+  # expArrProt=[
+  # "if [ -d \"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\" ] then;",
+  # "\techo \"WARNING from protocol file: output directory already exists: \"\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"",
+  # "\tls -lha \"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"",
+  # "\techo \"\"",
+  # "fi",
+  # "mkdir -p \"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"",
+  # "bash \${SCR_CREATE_REFS} \${PRE_REF_FILE1} \${PRE_REF_FILE2} \${REF_FILE}",
+  # "Checkpoint_FilesNotEmpty                                  \${REF_FILE}",
+  # "bash \${SCR_COMBINE_LANES}  \${SAMPLEID} \${REF_FILE} \${SAMPLE_LANES}  # simulates combining an arbitrary list of data",
+  # "bash \${SCR_PROCESS_SAMPLE} \${SAMPLEID} \${REF_FILE} \${SAMPLE_LANES} \${SAMPLE_OUTPUT_1}\"\$SAMPLEID\".txt"
+  # ];
+  # @test parse_expandvars_protocol(fileProtocol, expNamesIn0, expValuesIn0; adapt_quotation=false, verbose=true) == (expArrProt, expCmdRowsProt)
+
+  # expNamesIn1 = [
+  # "DIR_BASE"
+  # "DIR_OUTPUT"
+  # "PRE_REF_FILE1"
+  # "PRE_REF_FILE2"
+  # "REF_FILE"
+  # "SAMPLE_OUTPUT_1"
+  # "VAR1"
+  # "VAR\$VAR1"
+  # "VAR\$VAR2"
+  # ];
+  # expValuesIn1 = [
+  # "\"../../../jsub_pipeliner\""
+  # "\"\"\"../../../jsub_pipeliner\"\"/output_testing_jsub\""
+  # "\"\"\"../../../jsub_pipeliner\"\"\"/\"unit_tests/data/header_coordinate\""
+  # "\"\"\"../../../jsub_pipeliner\"\"\"/\"unit_tests/data/hg19.chrom.sizes\""
+  # "\"\"\"\"\"../../../jsub_pipeliner\"\"/output_testing_jsub\"\"\"/\"utSplit_refFile.txt\""
+  # "\"\"\"\"\"../../../jsub_pipeliner\"\"/output_testing_jsub\"\"\"/\"utSplit_out1_\""
+  # "\"_valueVar1_\""
+  # "\"_valueVar\$VAR1_\""
+  # "\"_valueVar\$VAR2_\"" 
+  # ];
 
   ## parse_expandvars_in_listfiles
 

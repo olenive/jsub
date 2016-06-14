@@ -8,7 +8,7 @@ function isblank(wline) # Check if line is blank
   lstrip(wline) == "" ? true : false
 end
 
-function file2arrayofarrays(fpath, comStr; cols=0::Integer, delimiter = nothing)
+function file2arrayofarrays(fpath, comStr; cols=0::Integer, delimiter = nothing, verbose=false)
   println("Reading file: ", fpath)
   cols==0 ? println("into '", delimiter, "' delimited columns") : println("into ", cols, " '", delimiter, "' delimited columns");
   #println("delimiter: ", delimiter)
@@ -443,7 +443,7 @@ function enforce_closingquote(inString, charQuote::Char)
 end
 
 # Expand variables in array of arrays containing commands (ignoring comment lines)
-function expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=true, adapt_quotation=false, returnTF=false) 
+function expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=false, adapt_quotation=false, returnTF=false) 
   # Check that varNames is the same size as varVals
   if size(varNames) != size(varVals)
     ArgumentError(" in expand_inarrayofarrays size($varNames) != size($varVals).  Each input variable name should have exactly one corresponding value.  Is the .vars or .fvars file correctly formated?")
@@ -512,7 +512,8 @@ function expandinorder(namesVarsRaw, valuesVarsRaw; adapt_quotation=false, retur
     if irow == 1
       valuesVars[irow] = valuesVarsRaw[irow];
     else 
-      valuesVars[irow] = expandmanyafterdollars(valuesVarsRaw[irow], namesVarsRaw[1:irow-1], valuesVarsRaw[1:irow-1], adapt_quotation=adapt_quotation, returnTF=returnTF); ## length comparison done inside expandmanyafterdollars  
+      valuesVars[irow] = expandmanyafterdollars(valuesVarsRaw[irow], namesVarsRaw[1:irow-1], valuesVarsRaw[1:irow-1], adapt_quotation=adapt_quotation, returnTF=returnTF); ## length comparison done inside expandmanyafterdollars
+      valuesVarsRaw[irow] = valuesVars[irow]; # Update the values to be used for subsequent expansions
     end
   end
   namesVars = namesVarsRaw; # in this version variable names containing the names of other variables are treated as literal strings (variables not expanded)
@@ -528,7 +529,7 @@ function parse_varsfile(fileVars; dlmVars=nothing)
 end
 
 # Read the .fvars file and expand variables row by row.
-function parse_expandvars_fvarsfile(fileFvars, namesVars, valuesVars; dlmFvars=nothing, adapt_quotation=false) # Read the .fvars file 
+function parse_expandvars_fvarsfile(fileFvars, namesVars, valuesVars; dlmFvars=nothing, adapt_quotation=false, verbose=false) # Read the .fvars file 
   arrFvars, cmdRowsFvars = file2arrayofarrays(fileFvars, comStr; cols=3, delimiter=dlmFvars);
   ## Use variables from .vars to expand values in .fvars
   arrExpFvars = expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars; verbose = verbose, adapt_quotation=adapt_quotation);
@@ -543,7 +544,7 @@ function parse_expandvars_fvarsfile(fileFvars, namesVars, valuesVars; dlmFvars=n
   return namesFvars, infileColumnsFvars, filePathsFvars
 end
 
-function parse_expandvars_protocol(fileProtocol, namesVars, valuesVars; adapt_quotation=false)
+function parse_expandvars_protocol(fileProtocol, namesVars, valuesVars; adapt_quotation=false, verbose=false)
   arrProt, cmdRowsProt = file2arrayofarrays(fileProtocol, comStr; cols=1, delimiter=nothing);
   ## Use variables from .vars to expand values in .protocol
   arrProtExpVars = expand_inarrayofarrays(arrProt, cmdRowsProt, namesVars, valuesVars ; verbose = verbose, adapt_quotation=adapt_quotation)
