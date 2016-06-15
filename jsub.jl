@@ -87,7 +87,6 @@ const comStr="#" # Note: this is expected to be a string ("#") rather than a cha
 # const dlmVars='\t' # Column delimiter for files containing variables
 # const dlmProtocol=' ' # Column delimiter for the protocol file
 const dlmWhitespace=[' ','\t','\n','\v','\f','\r'] # The default whitespace characters used by split
-const flagWarn = true;
 const delimiterFvars = '\t'
 const verbose = false;
 const adapt_quotation=true; # this should be the default to avoid nasty accidents

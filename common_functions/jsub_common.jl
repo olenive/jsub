@@ -9,8 +9,10 @@ function isblank(wline) # Check if line is blank
 end
 
 function file2arrayofarrays(fpath, comStr; cols=0::Integer, delimiter = nothing, verbose=false)
-  println("Reading file: ", fpath)
-  cols==0 ? println("into '", delimiter, "' delimited columns") : println("into ", cols, " '", delimiter, "' delimited columns");
+  if verbose
+    println("Reading file: ", fpath)
+    cols==0 ? println("into '", delimiter, "' delimited columns") : println("into ", cols, " '", delimiter, "' delimited columns");
+  end
   #println("delimiter: ", delimiter)
   arrRaw = split(readall(fpath), '\n'); # Read the input file
   commandRows = []; # row numbers of non-comment non-blank rows
@@ -448,7 +450,7 @@ function expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=false, 
   if size(varNames) != size(varVals)
     ArgumentError(" in expand_inarrayofarrays size($varNames) != size($varVals).  Each input variable name should have exactly one corresponding value.  Is the .vars or .fvars file correctly formated?")
   end
-  arrOut = arrArr # Initialize output array
+  arrOut = deepcopy(arrArr) # Initialize output array
   irows = 0; # Note this is an index of the variable "rows" (which is itself an index)
   for arrRow in arrArr[rows]
     irows += 1;
@@ -490,7 +492,7 @@ function sanitizepath(raw)
   end
   # Substrings inside single quotes are left unaltered (using print(string) later removes the '\' in front of the double quotes) 
   for jdx in 2:2:length(arrSplitSingle)
-    arrOut[jdx] = arrSplitSingle[jdx]
+    arrOut[jdx] = deepcopy(arrSplitSingle[jdx])
   end
   return join(arrOut)
 end
@@ -534,12 +536,12 @@ function parse_expandvars_fvarsfile(fileFvars, namesVars, valuesVars; dlmFvars=n
   ## Use variables from .vars to expand values in .fvars
   arrExpFvars = expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars; verbose = verbose, adapt_quotation=adapt_quotation);
   # Extract arrays of variable names and variable values
-  namesFvars = columnfrom_arrayofarrays(arrFvars, cmdRowsFvars, 1);
-  infileColumnsFvars = columnfrom_arrayofarrays(arrFvars, cmdRowsFvars, 2);
+  namesFvars = columnfrom_arrayofarrays(arrExpFvars, cmdRowsFvars, 1);
+  infileColumnsFvars = columnfrom_arrayofarrays(arrExpFvars, cmdRowsFvars, 2);
 
   # Get sanitized paths from strings in the third column of the .fvars file
   # Note that this is done after expanding any variables (from .vars) contained in the file paths.
-  filePathsFvars = map(sanitizepath, columnfrom_arrayofarrays(arrFvars, cmdRowsFvars, 3));
+  filePathsFvars = map(sanitizepath, columnfrom_arrayofarrays(arrExpFvars, cmdRowsFvars, 3));
 
   return namesFvars, infileColumnsFvars, filePathsFvars
 end
@@ -561,49 +563,62 @@ function parse_expandvars_listfiles(filePathsFvars, namesVars, valuesVars, dlmFv
     idx+=1;
     arrList, cmdRowsList = file2arrayofarrays(file, comStr; cols=0, delimiter=dlmFvars);
     arrListExpVars = expand_inarrayofarrays(arrList, cmdRowsList, namesVars, valuesVars ; verbose = verbose, adapt_quotation=adapt_quotation);
-    dictListArr[file] = arrListExpVars;
+    dictListArr[file] = deepcopy(arrListExpVars);
     dictCmdLineIdxs[file] = cmdRowsList; #previously: # arrCmdLineIdxs[idx] = cmdRowsList
   end
   ## Warn if number of command row numbers differ between files
   if length( unique( map( x->length(x),  values(dictCmdLineIdxs) ) ) ) != 1  #previously: # if length(unique(map( x -> length(x) , arrCmdLineIdxs ))) != 1
-    SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in ExpandVarsInListFiles) detected different numbers of command lines (non-comment non-blank) in input files:");
-    for file in filePathsFvars
-      println("number of command lines: ", length(dictCmdLineIdxs[file]), ", in file: ", filePathsFvars[file])
+    if !SUPPRESS_WARNINGS 
+      warn("(in ExpandVarsInListFiles) detected different numbers of command lines (non-comment non-blank) in input files:");
+      for file in filePathsFvars
+        println("number of command lines: ", length(dictCmdLineIdxs[file]), ", in file: ", filePathsFvars[file])
+      end
+    else
+      num_suppressed[1] += 1;
     end
   end
-  ## Warn if indicies of command rows differ between files
+  ## Warn if numbers of uniqe indicies of command rows differ between files
   if length(unique(values(dictCmdLineIdxs))) != 1 #previously: # if length(unique(arrCmdLineIdxs)) != 1
-    SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in ExpandVarsInListFiles) detected different indices of command lines (non-comment non-blank) in input files:");
-    for idx = 1:length(filePathsFvars)
-      println("Index of command lines: ", dictCmdLineIdxs[idx], ", in file: ", filePathsFvars[idx])
+    if !SUPPRESS_WARNINGS  
+      warn("(in ExpandVarsInListFiles) detected different indices of command lines (non-comment non-blank) in input files:");
+      for idx = 1:length(filePathsFvars)
+        println("Index of command lines: ", dictCmdLineIdxs[idx], ", in file: ", filePathsFvars[idx])
+      end
+    else
+      num_suppressed[1] += 1;
     end
   end
   return dictListArr, dictCmdLineIdxs
 end
 
 # Expand varaibles in .protocol using values from .fvars.  This necessarily results in one output summary file per list entry (list files indicated in .fvars)
-function protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose = false, adapt_quotation=false)
-  arrArrExpFvars = []; ## Initialise array for holding summary file arrays-of-arrays
+function protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose=false, adapt_quotation=false)
+  arrArrExpFvars = []; ## Initialise array for holding summary file data in the form of an arrays-of-arrays
   ## Loop over length of list files (currently assuming that all lists are of the same length but this may need to change in the future)
   for iln in 1:maximum( map(x->length(x), values(dictCmdLineIdxs)) )
     # Initialise array for holding values of each Fvar for the current list row (across all list files)
     valuesFvars = Array(AbstractString, size(namesFvars));
-    ## Loop over Fvar names
+    ## Get the values of Fvars for the current list row
     for ivar in 1:length(namesFvars)
       ## Get Fvar value from corresponding row of its list file
       # .fvar variable name, column and list file.
-      fvarName = namesFvars[ivar];
-      fvarColumnInListFile = parse(Int, infileColumnsFvars[ivar]); 
+      fvarName = namesFvars[ivar]; # Get variable name
+      fvarColumnInListFile = parse(Int, infileColumnsFvars[ivar]); # Get column number
       fvarFile = filePathsFvars[ivar]; # Get the list file name associated with this Fvar
-      listArr =  dictListArr[fvarFile]; # array of arrays of the contents of the list file
+      listArr = dictListArr[fvarFile]; # array of arrays of the contents of the list file
       cmdLineIdxs = dictCmdLineIdxs[fvarFile]; # Rows in the list file which contain data as opposed to comments or being empty
-      fvarValue = columnfrom_arrayofarrays(listArr, cmdLineIdxs, fvarColumnInListFile)[iln]; # This particular value of the Fvar
-      valuesFvars[ivar] = fvarValue;
+      valuesFvars[ivar] = columnfrom_arrayofarrays(listArr, cmdLineIdxs, fvarColumnInListFile)[iln]; # This particular value of the Fvar
     end
     ## Create a new summary file array for the current list row (across all list files)
-    arrExpFvars = expand_inarrayofarrays(arrProt, cmdRowsProt, namesFvars, valuesFvars ; verbose = verbose, adapt_quotation=adapt_quotation )
-    push!(arrArrExpFvars, arrExpFvars)
+    if verbose
+      println("Expanding variables using values from row ", iln, " of list files.")
+      println("arrProt = ", arrProt)
+      println("namesFvars = ", namesFvars);
+      println("valuesFvars = ", valuesFvars);
+    end
+    push!(arrArrExpFvars, expand_inarrayofarrays(arrProt, cmdRowsProt, namesFvars, valuesFvars; verbose=verbose, adapt_quotation=adapt_quotation ))
   end
   return arrArrExpFvars
 end
 
+# EOF

@@ -63,6 +63,7 @@ pathToTestFvars = "jlang_function_test_files/refs_samples.fvars"
 ######## Run tests on functions ########
 ########################################
 ### For each function, declare input argument and expected output, then run the function and check that the outcome matches what is expected.
+println("Running unit tests...")
 Test.with_handler(ut_handler) do
 
   ## iscomment
@@ -940,8 +941,7 @@ Test.with_handler(ut_handler) do
   push!(expArrProt, ["# The end"])
   @test parse_expandvars_protocol(fileProtocol, expNamesIn0, expValuesIn0; adapt_quotation=false, verbose=false) == (expArrProt, expCmdRowsProt)
 
-  ## parse_expandvars_in_protocol
-  expNamesIn0 = [
+  expNamesIn1 = [
   "DIR_BASE"
   "DIR_OUTPUT"
   "PRE_REF_FILE1"
@@ -952,7 +952,7 @@ Test.with_handler(ut_handler) do
   "VAR\$VAR1"
   "VAR\$VAR2"
   ];
-  expValuesIn0 = [
+  expValuesIn1 = [
   "\"../../../jsub_pipeliner\""
   "\"\"../../../jsub_pipeliner\"/output_testing_jsub\""
   "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\""
@@ -970,77 +970,178 @@ Test.with_handler(ut_handler) do
   push!(expArrProt, ["bash \"../../../jsub_pipeliner\"/somescript.sh  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" \"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\""])
   push!(expArrProt, ["python \"\"\"../../../jsub_pipeliner\"\"\"/\"therscript.py\" \"\"\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\"\"\" \"\"../../../jsub_pipeliner\"/output_testing_jsub\"/\"processed1.txt\""])
   push!(expArrProt, ["# The end"])
-  @test parse_expandvars_protocol(fileProtocol, expNamesIn0, expValuesIn0; adapt_quotation=true, verbose=false) == (expArrProt, expCmdRowsProt)
+  @test parse_expandvars_protocol(fileProtocol, expNamesIn1, expValuesIn1; adapt_quotation=true, verbose=false) == (expArrProt, expCmdRowsProt)
+
+  ## parse_expandvars_listfiles(filePathsFvars, namesVars, valuesVars, dlmFvars; verbose=false, adapt_quotation=false)
+  fileFvars="jlang_function_test_files/refs_samples.fvars"
+  supNamesFvars=["LANE_NUM", "SAMPLEID"];
+  supInfileColumnsFvars=["0","1"];
+  supFilePathsFvars=[
+  "../../../jsub_pipeliner//unit_tests/lists/multiLane_\"1\"col.txt",
+  "../../../jsub_pipeliner//unit_tests/lists/sampleIDs_1col.txt"
+  ];
+  supNamesIn0 = [
+  "DIR_BASE"
+  "DIR_OUTPUT"
+  "PRE_REF_FILE1"
+  "PRE_REF_FILE2"
+  "REF_FILE"
+  "SAMPLE_OUTPUT_1"
+  "VAR1"
+  "VAR\$VAR1"
+  "VAR\$VAR2"
+  ];
+  supValuesIn0 = [
+  "\"../../../jsub_pipeliner\""
+  "\"\"../../../jsub_pipeliner\"/output_testing_jsub\""
+  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\""
+  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\""
+  "\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_refFile.txt\""
+  "\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\""
+  "\"_valueVar1_\""
+  "\"_valueVar\$VAR1_\""
+  "\"_valueVar\$VAR2_\"" 
+  ];
+  arrFileContents1 = [];
+  push!(arrFileContents1, ["\"path\/to\/\"Lane'\"1\"1'", "path\/to\"Lane\"\"1\"2"]);
+  push!(arrFileContents1, ["Lane\"2\"1"]);
+  push!(arrFileContents1, ["Lane31", "Lane32", "Lane33"]);
+  push!(arrFileContents1, ["Lane41", "Lane42", "Lane43", "Lane44"]);
+  push!(arrFileContents1, ["Lane51"]);
+  push!(arrFileContents1, ["Lane61"]);
+  push!(arrFileContents1, ["Lane71", "Lane72"]);
+  arrFileNonCommentLines1 = [1,2,3,4,5,6,7]
+  arrFileContents2 = [];
+  push!(arrFileContents2, ["Sample001"]);
+  push!(arrFileContents2, ["Sample002"]);
+  push!(arrFileContents2, ["Sample003"]);
+  push!(arrFileContents2, ["Sample004"]);
+  push!(arrFileContents2, ["Sample005"]);
+  push!(arrFileContents2, ["Sample006"]);
+  push!(arrFileContents2, ["Sample007"]);
+  arrFileNonCommentLines2 = [1,2,3,4,5,6,7]
+  dictListArr = Dict(
+  "../../../jsub_pipeliner//unit_tests/lists/multiLane_\"1\"col.txt" => arrFileContents1,
+  "../../../jsub_pipeliner//unit_tests/lists/sampleIDs_1col.txt" => arrFileContents2
+  )
+  dictCmdLineIdxs = Dict(
+  "../../../jsub_pipeliner//unit_tests/lists/multiLane_\"1\"col.txt" => arrFileNonCommentLines1,
+  "../../../jsub_pipeliner//unit_tests/lists/sampleIDs_1col.txt" => arrFileNonCommentLines2
+  )
+  @test parse_expandvars_listfiles(supFilePathsFvars, supNamesIn0, supValuesIn0, "\t"; adapt_quotation=false, verbose=false) == (dictListArr, dictCmdLineIdxs)
+  @test parse_expandvars_listfiles(supFilePathsFvars, supNamesIn0, supValuesIn0, "\t"; adapt_quotation=true, verbose=false) == (dictListArr, dictCmdLineIdxs)
+
+  ## protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose = false, adapt_quotation=false)
+  ## SUPPLIED
+  supArrProt=[]
+  push!(supArrProt, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"])
+  push!(supArrProt, ["bash \${a_bash_script.sh} \${LANE_NUM} \${SAMPLEID} fileA_\${SAMPLEID}"])
+  push!(supArrProt, ["python \${a_python_script.py}                       fileA_\${SAMPLEID}  fileB_\${SAMPLEID}"])
+  push!(supArrProt, ["./path/to/binary.exe  fileB_\${SAMPLEID}  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supArrProt, ["# The end"])
+  supCmdRowsProt=[2,3,4];
+  supNamesFvars=["LANE_NUM", "SAMPLEID"];
+  supInfileColumnsFvars=["0","1"];
+  supFilePathsFvars=[
+  "dummy/path/to/lane_numbers.list", # "../../../jsub_pipeliner//unit_tests/lists/multiLane_\"1\"col.txt",
+  "dummy/path/to/sampleIDs.list"  # "../../../jsub_pipeliner//unit_tests/lists/sampleIDs_1col.txt"
+  ];
+  supNamesIn = [
+  "DIR_BASE"
+  "DIR_OUTPUT"
+  "PRE_REF_FILE1"
+  "PRE_REF_FILE2"
+  ];
+  supValuesIn = [
+  "\"../../../jsub_pipeliner\""
+  "\"\"../../../jsub_pipeliner\"/output_testing_jsub\""
+  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\""
+  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\""
+  ];
+  # These array contain data that would be read from list files into dictionaries
+  arrFileContents1 = [];
+  push!(arrFileContents1, ["\"path\/to\/\"Lane'\"1\"1'", "path\/to\"Lane\"\"1\"2"]);
+  push!(arrFileContents1, ["Lane\"2\"1"]);
+  push!(arrFileContents1, ["Lane31", "Lane32", "Lane33"]);
+  push!(arrFileContents1, ["Lane41", "Lane42", "Lane43", "Lane44"]);
+  push!(arrFileContents1, ["Lane51"]);
+  push!(arrFileContents1, ["Lane61"]);
+  push!(arrFileContents1, ["Lane71", "Lane72"]);
+  arrFileNonCommentLines1 = [1,2,3,4,5,6,7]
+  arrFileContents2 = [];
+  push!(arrFileContents2, ["Sample001"]);
+  push!(arrFileContents2, ["Sample002"]);
+  push!(arrFileContents2, ["Sample003"]);
+  push!(arrFileContents2, ["Sample004"]);
+  push!(arrFileContents2, ["Sample005"]);
+  push!(arrFileContents2, ["Sample006"]);
+  push!(arrFileContents2, ["Sample007"]);
+  arrFileNonCommentLines2 = [1,2,3,4,5,6,7];
+  supDictListArr = Dict(
+  supFilePathsFvars[1] => arrFileContents1,
+  supFilePathsFvars[2] => arrFileContents2
+  );
+  supDictCmdLineIdxs = Dict(
+  supFilePathsFvars[1] => arrFileNonCommentLines1,
+  supFilePathsFvars[2] => arrFileNonCommentLines2
+  );
+  ## EXPECTED
+  expectedSummaryArrayOfArrays = [];
+  expectedSubArray = [];
+  push!(expectedSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
+  push!(expectedSubArray, ["bash \${a_bash_script.sh} \"path\/to\/\"Lane'\"1\"1' path\/to\"Lane\"\"1\"2 Sample001 fileA_Sample001"])
+  push!(expectedSubArray, ["python \${a_python_script.py}                       fileA_Sample001  fileB_Sample001"])
+  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample001  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(expectedSubArray, ["# The end"]);
+  push!(expectedSummaryArrayOfArrays, expectedSubArray); expectedSubArray = [];
+  push!(expectedSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
+  push!(expectedSubArray, ["bash \${a_bash_script.sh} Lane\"2\"1 Sample002 fileA_Sample002"])
+  push!(expectedSubArray, ["python \${a_python_script.py}                       fileA_Sample002  fileB_Sample002"])
+  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample002  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(expectedSubArray, ["# The end"]);
+  push!(expectedSummaryArrayOfArrays, expectedSubArray); expectedSubArray = [];
+  push!(expectedSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
+  push!(expectedSubArray, ["bash \${a_bash_script.sh} Lane31 Lane32 Lane33 Sample003 fileA_Sample003"])
+  push!(expectedSubArray, ["python \${a_python_script.py}                       fileA_Sample003  fileB_Sample003"])
+  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample003  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(expectedSubArray, ["# The end"]);
+  push!(expectedSummaryArrayOfArrays, expectedSubArray); expectedSubArray = [];
+  push!(expectedSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
+  push!(expectedSubArray, ["bash \${a_bash_script.sh} Lane41 Lane42 Lane43 Lane44 Sample004 fileA_Sample004"])
+  push!(expectedSubArray, ["python \${a_python_script.py}                       fileA_Sample004  fileB_Sample004"])
+  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample004  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(expectedSubArray, ["# The end"]);
+  push!(expectedSummaryArrayOfArrays, expectedSubArray); expectedSubArray = [];
+  push!(expectedSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
+  push!(expectedSubArray, ["bash \${a_bash_script.sh} Lane51 Sample005 fileA_Sample005"])
+  push!(expectedSubArray, ["python \${a_python_script.py}                       fileA_Sample005  fileB_Sample005"])
+  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample005  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(expectedSubArray, ["# The end"]);
+  push!(expectedSummaryArrayOfArrays, expectedSubArray); expectedSubArray = [];
+  push!(expectedSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
+  push!(expectedSubArray, ["bash \${a_bash_script.sh} Lane61 Sample006 fileA_Sample006"])
+  push!(expectedSubArray, ["python \${a_python_script.py}                       fileA_Sample006  fileB_Sample006"])
+  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample006  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(expectedSubArray, ["# The end"]);
+  push!(expectedSummaryArrayOfArrays, expectedSubArray); expectedSubArray = [];
+  push!(expectedSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
+  push!(expectedSubArray, ["bash \${a_bash_script.sh} Lane71 Lane72 Sample007 fileA_Sample007"])
+  push!(expectedSubArray, ["python \${a_python_script.py}                       fileA_Sample007  fileB_Sample007"])
+  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample007  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(expectedSubArray, ["# The end"]);
+  push!(expectedSummaryArrayOfArrays, expectedSubArray); 
+  @test protocol_to_array(supArrProt, supCmdRowsProt, supNamesFvars, supInfileColumnsFvars, supFilePathsFvars, supDictListArr, supDictCmdLineIdxs; verbose=false, adapt_quotation=false) == expectedSummaryArrayOfArrays;
+  @test protocol_to_array(supArrProt, supCmdRowsProt, supNamesFvars, supInfileColumnsFvars, supFilePathsFvars, supDictListArr, supDictCmdLineIdxs; verbose=false, adapt_quotation=true) == expectedSummaryArrayOfArrays;
 
 
 
-  # ## parse_expandvars_in_protocol
-  # expNamesIn0 = [
-  # "DIR_BASE"
-  # "DIR_OUTPUT"
-  # "PRE_REF_FILE1"
-  # "PRE_REF_FILE2"
-  # "REF_FILE"
-  # "SAMPLE_OUTPUT_1"
-  # "VAR1"
-  # "VAR\$VAR1"
-  # "VAR\$VAR2"
-  # ];
-  # expValuesIn0 = [
-  # "\"../../../jsub_pipeliner\""
-  # "\"\"../../../jsub_pipeliner\"/output_testing_jsub\""
-  # "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\""
-  # "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\""
-  # "\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_refFile.txt\""
-  # "\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\""
-  # "\"_valueVar1_\""
-  # "\"_valueVar\$VAR1_\""
-  # "\"_valueVar\$VAR2_\"" 
-  # ];
-  # fileProtocol="jlang_function_test_files/refs_samples.protocol"
-  # expCmdRowsProt=[11,12,13,14,15,16,18,19,25,26];
-  # expArrProt=[
-  # "if [ -d \"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\" ] then;",
-  # "\techo \"WARNING from protocol file: output directory already exists: \"\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"",
-  # "\tls -lha \"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"",
-  # "\techo \"\"",
-  # "fi",
-  # "mkdir -p \"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"",
-  # "bash \${SCR_CREATE_REFS} \${PRE_REF_FILE1} \${PRE_REF_FILE2} \${REF_FILE}",
-  # "Checkpoint_FilesNotEmpty                                  \${REF_FILE}",
-  # "bash \${SCR_COMBINE_LANES}  \${SAMPLEID} \${REF_FILE} \${SAMPLE_LANES}  # simulates combining an arbitrary list of data",
-  # "bash \${SCR_PROCESS_SAMPLE} \${SAMPLEID} \${REF_FILE} \${SAMPLE_LANES} \${SAMPLE_OUTPUT_1}\"\$SAMPLEID\".txt"
-  # ];
-  # @test parse_expandvars_protocol(fileProtocol, expNamesIn0, expValuesIn0; adapt_quotation=false, verbose=true) == (expArrProt, expCmdRowsProt)
 
-  # expNamesIn1 = [
-  # "DIR_BASE"
-  # "DIR_OUTPUT"
-  # "PRE_REF_FILE1"
-  # "PRE_REF_FILE2"
-  # "REF_FILE"
-  # "SAMPLE_OUTPUT_1"
-  # "VAR1"
-  # "VAR\$VAR1"
-  # "VAR\$VAR2"
-  # ];
-  # expValuesIn1 = [
-  # "\"../../../jsub_pipeliner\""
-  # "\"\"\"../../../jsub_pipeliner\"\"/output_testing_jsub\""
-  # "\"\"\"../../../jsub_pipeliner\"\"\"/\"unit_tests/data/header_coordinate\""
-  # "\"\"\"../../../jsub_pipeliner\"\"\"/\"unit_tests/data/hg19.chrom.sizes\""
-  # "\"\"\"\"\"../../../jsub_pipeliner\"\"/output_testing_jsub\"\"\"/\"utSplit_refFile.txt\""
-  # "\"\"\"\"\"../../../jsub_pipeliner\"\"/output_testing_jsub\"\"\"/\"utSplit_out1_\""
-  # "\"_valueVar1_\""
-  # "\"_valueVar\$VAR1_\""
-  # "\"_valueVar\$VAR2_\"" 
-  # ];
 
-  ## parse_expandvars_in_listfiles
 
-  ## expandvars_in_protocol
 
-#PRODIG
+
+
+
 
   ########################################
 
