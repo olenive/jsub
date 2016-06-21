@@ -1032,7 +1032,7 @@ Test.with_handler(ut_handler) do
   @test parse_expandvars_listfiles(supFilePathsFvars, supNamesIn0, supValuesIn0, "\t"; adapt_quotation=true, verbose=false) == (dictListArr, dictCmdLineIdxs)
 
   ## protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose = false, adapt_quotation=false)
-  ## SUPPLIED
+  # Supplied input
   supArrProt=[]
   push!(supArrProt, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"])
   push!(supArrProt, ["bash \${a_bash_script.sh} \${LANE_NUM} \${SAMPLEID} fileA_\${SAMPLEID}"])
@@ -1085,7 +1085,7 @@ Test.with_handler(ut_handler) do
   supFilePathsFvars[1] => arrFileNonCommentLines1,
   supFilePathsFvars[2] => arrFileNonCommentLines2
   );
-  ## EXPECTED
+  # Expected output
   expectedSummaryArrayOfArrays = [];
   expectedSubArray = [];
   push!(expectedSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
@@ -1133,11 +1133,148 @@ Test.with_handler(ut_handler) do
   @test protocol_to_array(supArrProt, supCmdRowsProt, supNamesFvars, supInfileColumnsFvars, supFilePathsFvars, supDictListArr, supDictCmdLineIdxs; verbose=false, adapt_quotation=false) == expectedSummaryArrayOfArrays;
   @test protocol_to_array(supArrProt, supCmdRowsProt, supNamesFvars, supInfileColumnsFvars, supFilePathsFvars, supDictListArr, supDictCmdLineIdxs; verbose=false, adapt_quotation=true) == expectedSummaryArrayOfArrays;
 
+  ## get_jobnames(arrProt; prefix="", suffix="", timestamp=false, tag="#JSUB<jobname>")
+  # Supplied input
 
+  supSummaryArrayOfArrays = [];
+  supSubArray = [];
+  push!(supSubArray, ["#JSUB<jobname>the first job"]);
+  push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
+  push!(supSubArray, ["bash \${a_bash_script.sh} \"path\/to\/\"Lane'\"1\"1' path\/to\"Lane\"\"1\"2 Sample001 fileA_Sample001"])
+  push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample001  fileB_Sample001"])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample001  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["# The end"]);
+  push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
+  push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
+  push!(supSubArray, ["#JSUB<jobname>the second job"]);
+  push!(supSubArray, ["bash \${a_bash_script.sh} Lane\"2\"1 Sample002 fileA_Sample002"])
+  push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample002  fileB_Sample002"])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample002  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["# The end"]);
+  push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
+  push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
+  push!(supSubArray, ["bash \${a_bash_script.sh} Lane31 Lane32 Lane33 Sample003 fileA_Sample003"])
+  push!(supSubArray, ["#JSUB<jobname>the third job"]);
+  push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample003  fileB_Sample003"])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample003  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["# The end"]);
+  push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
+  push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
+  push!(supSubArray, ["bash \${a_bash_script.sh} Lane41 Lane42 Lane43 Lane44 Sample004 fileA_Sample004"])
+  push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample004  fileB_Sample004"])
+  push!(supSubArray, ["#JSUB<jobname>the fourth job"]);
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample004  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["# The end"]);
+  push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
+  push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
+  push!(supSubArray, ["bash \${a_bash_script.sh} Lane51 Sample005 fileA_Sample005"])
+  push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample005  fileB_Sample005"])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample005  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["# The end"]);
+  push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
+  push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
+  push!(supSubArray, ["bash \${a_bash_script.sh} Lane61 Sample006 fileA_Sample006"])
+  push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample006  fileB_Sample006"])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample006  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["# The end"]);
+  push!(supSubArray, ["#JSUB<jobname>the sixth job"]);
+  push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
+  push!(supSubArray, ["#JSUB<jobname>the seventh job"]);
+  push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
+  push!(supSubArray, ["bash \${a_bash_script.sh} Lane71 Lane72 Sample007 fileA_Sample007"])
+  push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample007  fileB_Sample007"])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample007  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["# The end"]);
+  push!(supSummaryArrayOfArrays, supSubArray);
+  # Expected output
+  expNames = [
+  "the first job",
+  "the second job",
+  "the third job",
+  "the fourth job",
+  "job_0005_YYYYMMDD_HHMMSS",
+  "the sixth job",
+  "the seventh job"
+  ];
+  @test get_jobnames(supSummaryArrayOfArrays, timestamp="YYYYMMDD_HHMMSS", tag="#JSUB<jobname>") == expNames
+  expNames = [
+  "PRE_the first job_SUF",
+  "PRE_the second job_SUF",
+  "PRE_the third job_SUF",
+  "PRE_the fourth job_SUF",
+  "PRE_job_0005_YYYYMMDD_HHMMSS_SUF",
+  "PRE_the sixth job_SUF",
+  "PRE_the seventh job_SUF"
+  ];  
+  @test get_jobnames(supSummaryArrayOfArrays; prefix="PRE_", suffix="_SUF", timestamp="YYYYMMDD_HHMMSS", tag="#JSUB<jobname>") == expNames
 
+  ## create_summary_files(arrArrExpFvars, summaryPaths; verbose=verbose)
+  # Supplied input
+  summaryPaths = [
+    "jlang_function_test_files/summary_files/summary1.txt",
+    "jlang_function_test_files/summary_files/summary2.txt",
+    "jlang_function_test_files/summary_files/summary3.txt",
+    "jlang_function_test_files/summary_files/summary4.txt",
+    "jlang_function_test_files/summary_files/summary5.txt",
+    "jlang_function_test_files/summary_files/summary6.txt",
+    "jlang_function_test_files/summary_files/summary7.txt"
+  ];
 
+# remove files before running test
 
-
+  supSummaryArrayOfArrays = [];
+  supSubArray = [];
+  push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
+  push!(supSubArray, ["bash \${a_bash_script.sh} \"path\/to\/\"Lane'\"1\"1' path\/to\"Lane\"\"1\"2 Sample001 fileA_Sample001"])
+  push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample001  fileB_Sample001"])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample001  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["# The end"]);
+  push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
+  push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
+  push!(supSubArray, ["bash \${a_bash_script.sh} Lane\"2\"1 Sample002 fileA_Sample002"])
+  push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample002  fileB_Sample002"])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample002  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["# The end"]);
+  push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
+  push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
+  push!(supSubArray, ["bash \${a_bash_script.sh} Lane31 Lane32 Lane33 Sample003 fileA_Sample003"])
+  push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample003  fileB_Sample003"])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample003  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["# The end"]);
+  push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
+  push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
+  push!(supSubArray, ["bash \${a_bash_script.sh} Lane41 Lane42 Lane43 Lane44 Sample004 fileA_Sample004"])
+  push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample004  fileB_Sample004"])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample004  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["# The end"]);
+  push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
+  push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
+  push!(supSubArray, ["bash \${a_bash_script.sh} Lane51 Sample005 fileA_Sample005"])
+  push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample005  fileB_Sample005"])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample005  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["# The end"]);
+  push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
+  push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
+  push!(supSubArray, ["bash \${a_bash_script.sh} Lane61 Sample006 fileA_Sample006"])
+  push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample006  fileB_Sample006"])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample006  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["# The end"]);
+  push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
+  push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
+  push!(supSubArray, ["bash \${a_bash_script.sh} Lane71 Lane72 Sample007 fileA_Sample007"])
+  push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample007  fileB_Sample007"])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample007  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["# The end"]);
+  push!(supSummaryArrayOfArrays, supSubArray);
+  # Expected output is files   
+  create_summary_files(supSummaryArrayOfArrays, summaryPaths; verbose=true)
+  # Read output back into array of arrays of arrays and check if it matches what was supplied
+  readFromFiles = [];
+  for file in summaryPaths
+    arrArr, commandLines = file2arrayofarrays(file, "#", cols=1);
+    push!(readFromFiles, arrArr);
+  end
+  @test readFromFiles == supSummaryArrayOfArrays
 
 
 

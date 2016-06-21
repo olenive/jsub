@@ -1,5 +1,22 @@
 ## This file contains the julia functions used throughout the jsub utility.
 
+function get_timestamp(theTime)
+  if theTime == ""
+    theTime = now();
+    return string( 
+      Dates.year(theTime), 
+      dec(Dates.month(theTime), 2), 
+      dec(Dates.day(theTime), 2), 
+      "_",
+      dec(Dates.hour(theTime), 2),
+      dec(Dates.minute(theTime), 2),
+      dec(Dates.second(theTime), 2)
+    )
+  else
+    return theTime
+  end
+end
+
 function iscomment(wline, comStr) # Check if input string starts with the comment sub-string after any leading whitespace
   lstrip(wline)[1:length(comStr)] == comStr ? true : false
 end
@@ -621,4 +638,82 @@ function protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars,
   return arrArrExpFvars
 end
 
+# Get job names by reading protocol file arrays and looking for the first instance of a jobname tag or simply numbering them
+function get_jobnames(arrProt; prefix="", suffix="", timestamp="", tag="#JSUB<jobname>")
+  theTime = "";
+  if timestamp == ""
+    theTime = string("_", get_timestamp(theTime));
+  else
+    theTime = string("_", timestamp);
+  end
+  jobNames = [];
+  lenTag = length(tag);
+  idx = 0;
+  for arr in arrProt
+    idx += 1; # println("\n\nidx = ", idx, "  arr = ", arr, "\n")
+    foundName = false;
+    for subarr in arr
+      line = join(subarr); # # println(subarr); println("line = ", line)
+      if lenTag < length(line) && line[1:lenTag] == tag
+        push!(jobNames, string(prefix, line[lenTag+1:end], suffix)); # Use name from file
+        foundName = true;
+        break
+      end
+    end
+    if !foundName
+      push!(jobNames, string(prefix, "job_", dec(idx, 4), theTime, suffix)); # Use default name
+    end
+  end
+  return jobNames
+end
+
+# Write summary files
+function create_summary_files(arrArrExpFvars, summaryPaths; verbose=verbose)
+  outputPaths = []; # list of paths of the summary files created
+  ## Check that number of elements in array matches number of file paths
+  if length(arrArrExpFvars) != length(summaryPaths)
+    SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_summary_files) number of elements in data array (", length(arrArrExpFvars), ") does not match number of file paths provided (", length(summaryPaths), "). Excess data will not be written to files." );
+  end
+  ## Write lines to files
+  ipath = 0;
+  for file in summaryPaths
+    ipath += 1;
+    if verbose
+      println("Writing to summary file: ", file);
+    end
+    stream = open(file, "w");
+    arrExpFvars = arrArrExpFvars[ipath];
+    for subarr in arrExpFvars
+      line = join(subarr);
+      write(stream, line);
+      write(stream, "\n");
+    end
+    push!(outputPaths, file);
+    close(stream);
+  end
+  return outputPaths
+end
+
+# # Split summary file based on <split> and <group> tags
+# function create_summary_tree(arrArrExpFvars; beginSplit="#JSUB<split>", finishSplit="#JSUB<\\split>", beginGroup="#JSUB<group>", finishGroup="#JSUB<\\group>")
+
+# end
+
+# # Take an expanded protocol in the form of an array of arrays and produce a summary file for each entry
+# function create_job_file(pathToSummaryFile; verbose=verbose)
+#   ## Determine job file name and job name
+
+#   ## Write header
+
+#   ## Write commands
+
+# end
+
+
+
 # EOF
+
+
+
+
+
