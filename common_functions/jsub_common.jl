@@ -1,6 +1,6 @@
 ## This file contains the julia functions used throughout the jsub utility.
 
-function get_timestamp(theTime)
+function get_timestamp_(theTime)
   if theTime == ""
     theTime = now();
     return string( 
@@ -25,7 +25,7 @@ function isblank(wline) # Check if line is blank
   lstrip(wline) == "" ? true : false
 end
 
-function file2arrayofarrays(fpath, comStr; cols=0::Integer, delimiter = nothing, verbose=false)
+function file2arrayofarrays_(fpath, comStr; cols=0::Integer, delimiter = nothing, verbose=false)
   if verbose
     println("Reading file: ", fpath)
     cols==0 ? println("into '", delimiter, "' delimited columns") : println("into ", cols, " '", delimiter, "' delimited columns");
@@ -50,7 +50,7 @@ function file2arrayofarrays(fpath, comStr; cols=0::Integer, delimiter = nothing,
         if delimiter == nothing
           arrLine = split(line, dlmWhitespace; limit=cols, keep=false);
           # if cols != 0;
-          #   warn("In function file2arrayofarrays cols=", cols, " but delimiter=", delimiter, ". Using default split(::ASCIIString) method which splits by whitespace so the number of output columns may not correspond to the cols option.")
+          #   warn("In function file2arrayofarrays_ cols=", cols, " but delimiter=", delimiter, ". Using default split(::ASCIIString) method which splits by whitespace so the number of output columns may not correspond to the cols option.")
           # end
         else
           arrLine = split(line, delimiter; limit=cols, keep=false);
@@ -516,7 +516,7 @@ end
 
 ## Function for reading every list file given in .fvars and extracting arrays of variable values
 # function ValuesFromLists (fpath, column) # Read a 'list' file and extract values from a selected column
-#   arrArr, cmdRows = file2arrayofarrays(fileList; cols=0, delimiter = nothing)
+#   arrArr, cmdRows = file2arrayofarrays_(fileList; cols=0, delimiter = nothing)
 # end
 
 # Expand variable values one row at a time as though they are being assigned at a shell command line
@@ -540,16 +540,16 @@ function expandinorder(namesVarsRaw, valuesVarsRaw; adapt_quotation=false, retur
 end
 
 # Read the .vars file and expand variables row by row.
-function parse_varsfile(fileVars; dlmVars=nothing)
-  arrVars, cmdRowsVars = file2arrayofarrays(fileVars, comStr; cols=2, delimiter=dlmVars);
+function parse_varsfile_(fileVars; dlmVars=nothing)
+  arrVars, cmdRowsVars = file2arrayofarrays_(fileVars, comStr; cols=2, delimiter=dlmVars);
   namesVars = columnfrom_arrayofarrays(arrVars, cmdRowsVars, 1);
   valuesVars = columnfrom_arrayofarrays(arrVars, cmdRowsVars, 2);
   return namesVars, valuesVars # This can subsequently be expanded row by row using the expandinorder function.
 end
 
 # Read the .fvars file and expand variables row by row.
-function parse_expandvars_fvarsfile(fileFvars, namesVars, valuesVars; dlmFvars=nothing, adapt_quotation=false, verbose=false) # Read the .fvars file 
-  arrFvars, cmdRowsFvars = file2arrayofarrays(fileFvars, comStr; cols=3, delimiter=dlmFvars);
+function parse_expandvars_fvarsfile_(fileFvars, namesVars, valuesVars; dlmFvars=nothing, adapt_quotation=false, verbose=false) # Read the .fvars file 
+  arrFvars, cmdRowsFvars = file2arrayofarrays_(fileFvars, comStr; cols=3, delimiter=dlmFvars);
   ## Use variables from .vars to expand values in .fvars
   arrExpFvars = expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars; verbose = verbose, adapt_quotation=adapt_quotation);
   # Extract arrays of variable names and variable values
@@ -563,22 +563,22 @@ function parse_expandvars_fvarsfile(fileFvars, namesVars, valuesVars; dlmFvars=n
   return namesFvars, infileColumnsFvars, filePathsFvars
 end
 
-function parse_expandvars_protocol(fileProtocol, namesVars, valuesVars; adapt_quotation=false, verbose=false)
-  arrProt, cmdRowsProt = file2arrayofarrays(fileProtocol, comStr; cols=1, delimiter=nothing);
+function parse_expandvars_protocol_(fileProtocol, namesVars, valuesVars; adapt_quotation=false, verbose=false)
+  arrProt, cmdRowsProt = file2arrayofarrays_(fileProtocol, comStr; cols=1, delimiter=nothing);
   ## Use variables from .vars to expand values in .protocol
   arrProtExpVars = expand_inarrayofarrays(arrProt, cmdRowsProt, namesVars, valuesVars ; verbose = verbose, adapt_quotation=adapt_quotation)
   return arrProtExpVars, cmdRowsProt
 end
 
 # Expand variables in .fvars file using values from list files
-function parse_expandvars_listfiles(filePathsFvars, namesVars, valuesVars, dlmFvars; verbose=false, adapt_quotation=false)
+function parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, dlmFvars; verbose=false, adapt_quotation=false)
   ## Read each list file
   dictListArr = Dict(); # Dictionary with file paths as keys and file contents (arrays of arrays) as values.
   dictCmdLineIdxs = Dict(); #previously: # arrCmdLineIdxs = Array(Array, length(filePathsFvars) ); # Array for storing line counts from input files
   idx=0;
   for file in filePathsFvars
     idx+=1;
-    arrList, cmdRowsList = file2arrayofarrays(file, comStr; cols=0, delimiter=dlmFvars);
+    arrList, cmdRowsList = file2arrayofarrays_(file, comStr; cols=0, delimiter=dlmFvars);
     arrListExpVars = expand_inarrayofarrays(arrList, cmdRowsList, namesVars, valuesVars ; verbose = verbose, adapt_quotation=adapt_quotation);
     dictListArr[file] = deepcopy(arrListExpVars);
     dictCmdLineIdxs[file] = cmdRowsList; #previously: # arrCmdLineIdxs[idx] = cmdRowsList
@@ -639,13 +639,7 @@ function protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars,
 end
 
 # Get job names by reading protocol file arrays and looking for the first instance of a jobname tag or simply numbering them
-function get_jobnames(arrProt; prefix="", suffix="", timestamp="", tag="#JSUB<jobname>")
-  theTime = "";
-  if timestamp == ""
-    theTime = string("_", get_timestamp(theTime));
-  else
-    theTime = string("_", timestamp);
-  end
+function get_filenames_(arrProt; prefix="", suffix="", timestamp="", tag="#JSUB<filename>")
   jobNames = [];
   lenTag = length(tag);
   idx = 0;
@@ -653,7 +647,7 @@ function get_jobnames(arrProt; prefix="", suffix="", timestamp="", tag="#JSUB<jo
     idx += 1; # println("\n\nidx = ", idx, "  arr = ", arr, "\n")
     foundName = false;
     for subarr in arr
-      line = join(subarr); # # println(subarr); println("line = ", line)
+      line = join(subarr); # println(subarr); println("line = ", line)
       if lenTag < length(line) && line[1:lenTag] == tag
         push!(jobNames, string(prefix, line[lenTag+1:end], suffix)); # Use name from file
         foundName = true;
@@ -661,18 +655,18 @@ function get_jobnames(arrProt; prefix="", suffix="", timestamp="", tag="#JSUB<jo
       end
     end
     if !foundName
-      push!(jobNames, string(prefix, "job_", dec(idx, 4), theTime, suffix)); # Use default name
+      push!(jobNames, string(prefix, "job_", dec(idx, 4), timestamp, suffix)); # Use default name
     end
   end
   return jobNames
 end
 
 # Write summary files
-function create_summary_files(arrArrExpFvars, summaryPaths; verbose=verbose)
+function create_summary_files_(arrArrExpFvars, summaryPaths; verbose=verbose)
   outputPaths = []; # list of paths of the summary files created
   ## Check that number of elements in array matches number of file paths
   if length(arrArrExpFvars) != length(summaryPaths)
-    SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_summary_files) number of elements in data array (", length(arrArrExpFvars), ") does not match number of file paths provided (", length(summaryPaths), "). Excess data will not be written to files." );
+    SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_summary_files_) number of elements in data array (", length(arrArrExpFvars), ") does not match number of file paths provided (", length(summaryPaths), "). Excess data will not be written to files." );
   end
   ## Write lines to files
   ipath = 0;
@@ -684,9 +678,7 @@ function create_summary_files(arrArrExpFvars, summaryPaths; verbose=verbose)
     stream = open(file, "w");
     arrExpFvars = arrArrExpFvars[ipath];
     for subarr in arrExpFvars
-      line = join(subarr);
-      write(stream, line);
-      write(stream, "\n");
+      write(stream, string(join(subarr), "\n"));
     end
     push!(outputPaths, file);
     close(stream);

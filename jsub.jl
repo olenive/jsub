@@ -96,33 +96,40 @@ num_suppressed = [0];
 
 #### FUNCTIONS ####
 include("./common_functions/jsub_common.jl")
-
 ###################
 
 
-######### SCRIPT #########
+######### MAIN #########
 
 
 
 ## Read .vars file # Extract arrays of variable names and variable values
-namesVarsRaw, valuesVarsRaw = parse_varsfile(fileVars)
+namesVarsRaw, valuesVarsRaw = parse_varsfile_(fileVars)
 
 ## Expand variables in each row from .vars if they were assigned in a higher row (as though they are being assigned at the command line).
 namesVars, valuesVars = expandinorder(namesVarsRaw, valuesVarsRaw, adapt_quotation=adapt_quotation)
 
 ## Read .fvar file (of 3 columns) and expand variables from .vars
-namesFvars, infileColumnsFvars, filePathsFvars = parse_expandvars_fvarsfile(fileFvars, namesVars, valuesVars; dlmFvars=delimiterFvars, adapt_quotation=adapt_quotation)
+namesFvars, infileColumnsFvars, filePathsFvars = parse_expandvars_fvarsfile_(fileFvars, namesVars, valuesVars; dlmFvars=delimiterFvars, adapt_quotation=adapt_quotation)
 
 ## Read .protocol file (of 1 column ) and expand variables from .vars
-arrProtExpVars, cmdRowsProt = parse_expandvars_protocol(fileProtocol, namesVars, valuesVars, adapt_quotation=adapt_quotation)
+arrProtExpVars, cmdRowsProt = parse_expandvars_protocol_(fileProtocol, namesVars, valuesVars, adapt_quotation=adapt_quotation)
 
 ## Read "list" files and return their contents in a dictionary (key: file path) (value: arrays of arrays) as well as corresponding command line indicies
-dictListArr, dictCmdLineIdxs = parse_expandvars_listfiles(filePathsFvars, namesVars, valuesVars, delimiterFvars; verbose=false, adapt_quotation=adapt_quotation)
+dictListArr, dictCmdLineIdxs = parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, delimiterFvars; verbose=false, adapt_quotation=adapt_quotation)
 
 ## Use variable values from "list" files to create multiple summary file arrays from the single .protocol file array
-arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose = verbose, adapt_quotation=adapt_quotation)
+arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs; verbose=verbose, adapt_quotation=adapt_quotation)
 
-## For each summary file array check where they first begin to diverge and or converge and merge/split as required
+## Generate list of job names
+summaryPaths = get_filenames_(arrArrExpFvars; prefix="", suffix="", timestamp="")
+
+## Take an expanded protocol in the form of an array of arrays and produce a summary file for each entry
+create_summary_files_(arrArrExpFvars, summaryPaths; verbose=verbose)
+
+## Read summary files into array of arrays of arrays
+# Note: file2arrayofarrays_ returns a tuple of file contents and line number indices
+summaryFilesData = map((x) -> file2arrayofarrays_(x, "#", cols=1), summaryPaths ) 
 
 
 
@@ -133,6 +140,6 @@ arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infi
 if num_suppressed[1] > 0
   println("Suppressed ", num_suppressed[1], " warnings.");
 end
-##########################
+########################
 # EOF
 

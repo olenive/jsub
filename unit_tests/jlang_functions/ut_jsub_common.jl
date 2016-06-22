@@ -83,7 +83,7 @@ Test.with_handler(ut_handler) do
   @test isblank("			'#") == false
 
 
-  ## file2arrayofarrays
+  ## file2arrayofarrays_
   # Create expected array to compare against
   # File looks like:
   # ************************************************************************
@@ -125,7 +125,7 @@ Test.with_handler(ut_handler) do
   push!(expArrVars, ["# In the next line \"\$VAR2\" is replaced by nothing because VAR2 is commented out above"])
   push!(expArrVars, ["VAR\$VAR2", "\"_valueVar\$VAR2_\""])
 
-  @test file2arrayofarrays("jlang_function_test_files/refs_samples.vars", "#") == (expArrVars, expCmdRowsVars)
+  @test file2arrayofarrays_("jlang_function_test_files/refs_samples.vars", "#") == (expArrVars, expCmdRowsVars)
 
   # ************************************************************************
   # # This file contains the names of varibales, column numbers and source file paths from which the value of the variable should be taken.
@@ -147,7 +147,7 @@ Test.with_handler(ut_handler) do
   push!(expArrFvars, ["SAMPLEID", "1", "\"\$DIR_BASE\"/\"unit_tests/lists/sampleIDs_1col.txt\""])
   push!(expArrFvars, ["# The value of DIR_BASE is declared in refs_samples.vars"])
 
-  @test file2arrayofarrays(pathToTestFvars, "#") == (expArrFvars, expCmdRowsFvars)
+  @test file2arrayofarrays_(pathToTestFvars, "#") == (expArrFvars, expCmdRowsFvars)
 
 
   ## sanitizestring
@@ -741,7 +741,7 @@ Test.with_handler(ut_handler) do
   expPath = "\$DIR_BASE/unit_tests/lists/multiLane_\"1\"col.txt"
   @test sanitizepath(testPath) == expPath
 
-  ## parse_varsfile
+  ## parse_varsfile_
   # pathToTestVars = "jlang_function_test_files/refs_samples.vars"
   expNamesRaw = [
   "DIR_BASE"
@@ -765,10 +765,10 @@ Test.with_handler(ut_handler) do
   "\"_valueVar\$VAR1_\""
   "\"_valueVar\$VAR2_\""
   ]
-  @test parse_varsfile("jlang_function_test_files/refs_samples.vars") == (expNamesRaw, expValuesRaw)
+  @test parse_varsfile_("jlang_function_test_files/refs_samples.vars") == (expNamesRaw, expValuesRaw)
 
   ## expandinorder
-  # namesVarsRaw, valuesVarsRaw = parse_varsfile(pathToTestVars)
+  # namesVarsRaw, valuesVarsRaw = parse_varsfile_(pathToTestVars)
   namesVarsRaw = [
   "DIR_BASE"
   "DIR_OUTPUT"
@@ -861,7 +861,7 @@ Test.with_handler(ut_handler) do
   ];
   @test expandinorder(namesVarsRaw, valuesVarsRaw, adapt_quotation=true) == (expNames, expValues)
 
-  ## parse_varsfile
+  ## parse_varsfile_
   fileVars="../protocols/split/refs_samples.vars"
   expNames1=[
   "DIR_BASE",
@@ -889,7 +889,7 @@ Test.with_handler(ut_handler) do
   "\".txt\"",
   "\"\$DIR_OUTPUT\"/\"ut_split_output_\""
   ]
-  @test parse_varsfile(fileVars, dlmVars="\t") == (expNames1, expValues1)
+  @test parse_varsfile_(fileVars, dlmVars="\t") == (expNames1, expValues1)
 
   fileFvars="jlang_function_test_files/refs_samples.fvars"
   expNamesFvars=["LANE_NUM", "SAMPLEID"];
@@ -898,7 +898,7 @@ Test.with_handler(ut_handler) do
   "../../../jsub_pipeliner//unit_tests/lists/multiLane_\"1\"col.txt",
   "../../../jsub_pipeliner//unit_tests/lists/sampleIDs_1col.txt"
   ];
-  @test parse_expandvars_fvarsfile(fileFvars, expNames1, expValues1, dlmFvars="\t", verbose=false, adapt_quotation=false) == (expNamesFvars, expInfileColumnsFvars, expFilePathsFvars)
+  @test parse_expandvars_fvarsfile_(fileFvars, expNames1, expValues1, dlmFvars="\t", verbose=false, adapt_quotation=false) == (expNamesFvars, expInfileColumnsFvars, expFilePathsFvars)
 
   fileFvars="jlang_function_test_files/refs_samples.fvars"
   expNamesFvars=["LANE_NUM", "SAMPLEID"];
@@ -907,7 +907,7 @@ Test.with_handler(ut_handler) do
   "../../../jsub_pipeliner//unit_tests/lists/multiLane_\"1\"col.txt",
   "../../../jsub_pipeliner//unit_tests/lists/sampleIDs_1col.txt"
   ];
-  @test parse_expandvars_fvarsfile(fileFvars, expNames1, expValues1, dlmFvars="\t", verbose=false, adapt_quotation=true) == (expNamesFvars, expInfileColumnsFvars, expFilePathsFvars)  
+  @test parse_expandvars_fvarsfile_(fileFvars, expNames1, expValues1, dlmFvars="\t", verbose=false, adapt_quotation=true) == (expNamesFvars, expInfileColumnsFvars, expFilePathsFvars)  
 
   ## parse_expandvars_in_protocol
   expNamesIn0 = [
@@ -939,7 +939,7 @@ Test.with_handler(ut_handler) do
   push!(expArrProt, ["bash \"../../../jsub_pipeliner\"/somescript.sh  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" \"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\""])
   push!(expArrProt, ["python \"\"../../../jsub_pipeliner\"\"/\"therscript.py\" \"\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\"\" \"\"../../../jsub_pipeliner\"/output_testing_jsub\"/\"processed1.txt\""])
   push!(expArrProt, ["# The end"])
-  @test parse_expandvars_protocol(fileProtocol, expNamesIn0, expValuesIn0; adapt_quotation=false, verbose=false) == (expArrProt, expCmdRowsProt)
+  @test parse_expandvars_protocol_(fileProtocol, expNamesIn0, expValuesIn0; adapt_quotation=false, verbose=false) == (expArrProt, expCmdRowsProt)
 
   expNamesIn1 = [
   "DIR_BASE"
@@ -970,9 +970,9 @@ Test.with_handler(ut_handler) do
   push!(expArrProt, ["bash \"../../../jsub_pipeliner\"/somescript.sh  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" \"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\""])
   push!(expArrProt, ["python \"\"\"../../../jsub_pipeliner\"\"\"/\"therscript.py\" \"\"\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\"\"\" \"\"../../../jsub_pipeliner\"/output_testing_jsub\"/\"processed1.txt\""])
   push!(expArrProt, ["# The end"])
-  @test parse_expandvars_protocol(fileProtocol, expNamesIn1, expValuesIn1; adapt_quotation=true, verbose=false) == (expArrProt, expCmdRowsProt)
+  @test parse_expandvars_protocol_(fileProtocol, expNamesIn1, expValuesIn1; adapt_quotation=true, verbose=false) == (expArrProt, expCmdRowsProt)
 
-  ## parse_expandvars_listfiles(filePathsFvars, namesVars, valuesVars, dlmFvars; verbose=false, adapt_quotation=false)
+  ## parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, dlmFvars; verbose=false, adapt_quotation=false)
   fileFvars="jlang_function_test_files/refs_samples.fvars"
   supNamesFvars=["LANE_NUM", "SAMPLEID"];
   supInfileColumnsFvars=["0","1"];
@@ -1028,8 +1028,8 @@ Test.with_handler(ut_handler) do
   "../../../jsub_pipeliner//unit_tests/lists/multiLane_\"1\"col.txt" => arrFileNonCommentLines1,
   "../../../jsub_pipeliner//unit_tests/lists/sampleIDs_1col.txt" => arrFileNonCommentLines2
   )
-  @test parse_expandvars_listfiles(supFilePathsFvars, supNamesIn0, supValuesIn0, "\t"; adapt_quotation=false, verbose=false) == (dictListArr, dictCmdLineIdxs)
-  @test parse_expandvars_listfiles(supFilePathsFvars, supNamesIn0, supValuesIn0, "\t"; adapt_quotation=true, verbose=false) == (dictListArr, dictCmdLineIdxs)
+  @test parse_expandvars_listfiles_(supFilePathsFvars, supNamesIn0, supValuesIn0, "\t"; adapt_quotation=false, verbose=false) == (dictListArr, dictCmdLineIdxs)
+  @test parse_expandvars_listfiles_(supFilePathsFvars, supNamesIn0, supValuesIn0, "\t"; adapt_quotation=true, verbose=false) == (dictListArr, dictCmdLineIdxs)
 
   ## protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose = false, adapt_quotation=false)
   # Supplied input
@@ -1133,12 +1133,12 @@ Test.with_handler(ut_handler) do
   @test protocol_to_array(supArrProt, supCmdRowsProt, supNamesFvars, supInfileColumnsFvars, supFilePathsFvars, supDictListArr, supDictCmdLineIdxs; verbose=false, adapt_quotation=false) == expectedSummaryArrayOfArrays;
   @test protocol_to_array(supArrProt, supCmdRowsProt, supNamesFvars, supInfileColumnsFvars, supFilePathsFvars, supDictListArr, supDictCmdLineIdxs; verbose=false, adapt_quotation=true) == expectedSummaryArrayOfArrays;
 
-  ## get_jobnames(arrProt; prefix="", suffix="", timestamp=false, tag="#JSUB<jobname>")
+  ## get_filenames_(arrProt; prefix="", suffix="", timestamp=false, tag="#JSUB<filename>")
   # Supplied input
 
   supSummaryArrayOfArrays = [];
   supSubArray = [];
-  push!(supSubArray, ["#JSUB<jobname>the first job"]);
+  push!(supSubArray, ["#JSUB<filename>the first job"]);
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script.sh} \"path\/to\/\"Lane'\"1\"1' path\/to\"Lane\"\"1\"2 Sample001 fileA_Sample001"])
   push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample001  fileB_Sample001"])
@@ -1146,7 +1146,7 @@ Test.with_handler(ut_handler) do
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
-  push!(supSubArray, ["#JSUB<jobname>the second job"]);
+  push!(supSubArray, ["#JSUB<filename>the second job"]);
   push!(supSubArray, ["bash \${a_bash_script.sh} Lane\"2\"1 Sample002 fileA_Sample002"])
   push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample002  fileB_Sample002"])
   push!(supSubArray, ["./path/to/binary.exe  fileB_Sample002  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
@@ -1154,7 +1154,7 @@ Test.with_handler(ut_handler) do
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script.sh} Lane31 Lane32 Lane33 Sample003 fileA_Sample003"])
-  push!(supSubArray, ["#JSUB<jobname>the third job"]);
+  push!(supSubArray, ["#JSUB<filename>the third job"]);
   push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample003  fileB_Sample003"])
   push!(supSubArray, ["./path/to/binary.exe  fileB_Sample003  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
@@ -1162,7 +1162,7 @@ Test.with_handler(ut_handler) do
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script.sh} Lane41 Lane42 Lane43 Lane44 Sample004 fileA_Sample004"])
   push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample004  fileB_Sample004"])
-  push!(supSubArray, ["#JSUB<jobname>the fourth job"]);
+  push!(supSubArray, ["#JSUB<filename>the fourth job"]);
   push!(supSubArray, ["./path/to/binary.exe  fileB_Sample004  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
@@ -1177,9 +1177,9 @@ Test.with_handler(ut_handler) do
   push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample006  fileB_Sample006"])
   push!(supSubArray, ["./path/to/binary.exe  fileB_Sample006  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
-  push!(supSubArray, ["#JSUB<jobname>the sixth job"]);
+  push!(supSubArray, ["#JSUB<filename>the sixth job"]);
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
-  push!(supSubArray, ["#JSUB<jobname>the seventh job"]);
+  push!(supSubArray, ["#JSUB<filename>the seventh job"]);
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script.sh} Lane71 Lane72 Sample007 fileA_Sample007"])
   push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample007  fileB_Sample007"])
@@ -1196,7 +1196,7 @@ Test.with_handler(ut_handler) do
   "the sixth job",
   "the seventh job"
   ];
-  @test get_jobnames(supSummaryArrayOfArrays, timestamp="YYYYMMDD_HHMMSS", tag="#JSUB<jobname>") == expNames
+  @test get_filenames_(supSummaryArrayOfArrays, timestamp="_YYYYMMDD_HHMMSS", tag="#JSUB<filename>") == expNames
   expNames = [
   "PRE_the first job_SUF",
   "PRE_the second job_SUF",
@@ -1206,9 +1206,9 @@ Test.with_handler(ut_handler) do
   "PRE_the sixth job_SUF",
   "PRE_the seventh job_SUF"
   ];  
-  @test get_jobnames(supSummaryArrayOfArrays; prefix="PRE_", suffix="_SUF", timestamp="YYYYMMDD_HHMMSS", tag="#JSUB<jobname>") == expNames
+  @test get_filenames_(supSummaryArrayOfArrays; prefix="PRE_", suffix="_SUF", timestamp="_YYYYMMDD_HHMMSS", tag="#JSUB<filename>") == expNames
 
-  ## create_summary_files(arrArrExpFvars, summaryPaths; verbose=verbose)
+  ## create_summary_files_(arrArrExpFvars, summaryPaths; verbose=verbose)
   # Supplied input
   summaryPaths = [
     "jlang_function_test_files/summary_files/summary1.txt",
@@ -1219,9 +1219,7 @@ Test.with_handler(ut_handler) do
     "jlang_function_test_files/summary_files/summary6.txt",
     "jlang_function_test_files/summary_files/summary7.txt"
   ];
-
-# remove files before running test
-
+  map((x) -> try; run(`rm $x`); end, summaryPaths); # remove files before running test
   supSummaryArrayOfArrays = [];
   supSubArray = [];
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
@@ -1266,15 +1264,27 @@ Test.with_handler(ut_handler) do
   push!(supSubArray, ["./path/to/binary.exe  fileB_Sample007  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray);
-  # Expected output is files   
-  create_summary_files(supSummaryArrayOfArrays, summaryPaths; verbose=true)
+  # Expected output consists of files written to disk
+  create_summary_files_(supSummaryArrayOfArrays, summaryPaths; verbose=true)
   # Read output back into array of arrays of arrays and check if it matches what was supplied
-  readFromFiles = [];
-  for file in summaryPaths
-    arrArr, commandLines = file2arrayofarrays(file, "#", cols=1);
-    push!(readFromFiles, arrArr);
-  end
-  @test readFromFiles == supSummaryArrayOfArrays
+  @test map((x) -> file2arrayofarrays_(x, "#", cols=1)[1], summaryPaths ) == supSummaryArrayOfArrays
+
+  # ## 
+  # suppliedSummaryIndices = [3,4]
+  # suppliedSummaryArray = []
+  # push!(suppliedSummaryArray, ["# This data would come from reading summary files."])
+  # push!(suppliedSummaryArray, ["#JSUB<filename>ProtocolName"])
+  # push!(suppliedSummaryArray, ["bash echo \"cmd 1\""])
+  # push!(suppliedSummaryArray, ["# comment in betwen"])
+  # push!(suppliedSummaryArray, ["bash echo \"cmd 2\""])
+  # expectedSummaryArray = []
+  # push!(expectedSummaryArray, ["# This data would come from reading summary files."])
+  # push!(expectedSummaryArray, ["#JSUB<filename>ProtocolName"])
+  # push!(expectedSummaryArray, ["bash echo \"cmd 1\""])
+  # push!(expectedSummaryArray, ["# comment in betwen"])
+  # push!(expectedSummaryArray, ["bash echo \"cmd 2\""])
+  # @test (suppliedSummaryArray, suppliedSummaryIndices) == expectedSummaryArray
+
 
 
 
