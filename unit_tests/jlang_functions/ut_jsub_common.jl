@@ -149,6 +149,26 @@ Test.with_handler(ut_handler) do
 
   @test file2arrayofarrays_(pathToTestFvars, "#") == (expArrFvars, expCmdRowsFvars)
 
+  pathToTestSummary = "jlang_function_test_files/summary_files/ut_summary_tags.txt"
+  suppliedTagsExpand = Dict(
+    "tagSummaryName" => "#JSUB<protocol>",
+    "tagSplit" => "#JGROUP"
+  )
+  expectedSummary = [];
+  push!(expectedSummary, ["# This data would come from reading summary files."]);
+  push!(expectedSummary, ["#JSUB<protocol>ProtocolName"]);
+  push!(expectedSummary, ["bash echo \"cmd 1\""]);
+  push!(expectedSummary, ["#JGROUP first"]);
+  push!(expectedSummary, ["bash echo \"cmd 12\""]);
+  push!(expectedSummary, ["bash echo \"cmd 13\""]);
+  push!(expectedSummary, ["#JGROUP second first"]);
+  push!(expectedSummary, ["bash echo \"cmd 21\""]);
+  push!(expectedSummary, ["bash echo \"cmd 22\""]);
+  expectedIndices = [2,3,4,5,6,7,8,9]
+  @test file2arrayofarrays_(pathToTestSummary, "#", cols=1, tagsExpand=suppliedTagsExpand) == (expectedSummary, expectedIndices)
+  expectedIndices = [3,5,6,8,9]
+  @test file2arrayofarrays_(pathToTestSummary, "#", cols=1) == (expectedSummary, expectedIndices)
+
 
   ## sanitizestring
   @test sanitizestring("	  test string with a tab	here	 ") == "test string with a tab\there"
@@ -1133,12 +1153,11 @@ Test.with_handler(ut_handler) do
   @test protocol_to_array(supArrProt, supCmdRowsProt, supNamesFvars, supInfileColumnsFvars, supFilePathsFvars, supDictListArr, supDictCmdLineIdxs; verbose=false, adapt_quotation=false) == expectedSummaryArrayOfArrays;
   @test protocol_to_array(supArrProt, supCmdRowsProt, supNamesFvars, supInfileColumnsFvars, supFilePathsFvars, supDictListArr, supDictCmdLineIdxs; verbose=false, adapt_quotation=true) == expectedSummaryArrayOfArrays;
 
-  ## get_filenames_(arrProt; prefix="", suffix="", timestamp=false, tag="#JSUB<filename>")
+  ## get_summary_names(arrProt; prefix="", suffix="", timestamp=false, tag="#JSUB<protocol>")
   # Supplied input
-
   supSummaryArrayOfArrays = [];
   supSubArray = [];
-  push!(supSubArray, ["#JSUB<filename>the first job"]);
+  push!(supSubArray, ["#JSUB<protocol>the first job"]);
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script.sh} \"path\/to\/\"Lane'\"1\"1' path\/to\"Lane\"\"1\"2 Sample001 fileA_Sample001"])
   push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample001  fileB_Sample001"])
@@ -1146,7 +1165,7 @@ Test.with_handler(ut_handler) do
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
-  push!(supSubArray, ["#JSUB<filename>the second job"]);
+  push!(supSubArray, ["#JSUB<protocol>the second job"]);
   push!(supSubArray, ["bash \${a_bash_script.sh} Lane\"2\"1 Sample002 fileA_Sample002"])
   push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample002  fileB_Sample002"])
   push!(supSubArray, ["./path/to/binary.exe  fileB_Sample002  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
@@ -1154,7 +1173,7 @@ Test.with_handler(ut_handler) do
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script.sh} Lane31 Lane32 Lane33 Sample003 fileA_Sample003"])
-  push!(supSubArray, ["#JSUB<filename>the third job"]);
+  push!(supSubArray, [" #JSUB<protocol>the third job"]);
   push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample003  fileB_Sample003"])
   push!(supSubArray, ["./path/to/binary.exe  fileB_Sample003  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
@@ -1162,7 +1181,7 @@ Test.with_handler(ut_handler) do
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script.sh} Lane41 Lane42 Lane43 Lane44 Sample004 fileA_Sample004"])
   push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample004  fileB_Sample004"])
-  push!(supSubArray, ["#JSUB<filename>the fourth job"]);
+  push!(supSubArray, ["  #JSUB<protocol>the fourth job"]);
   push!(supSubArray, ["./path/to/binary.exe  fileB_Sample004  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
@@ -1177,9 +1196,9 @@ Test.with_handler(ut_handler) do
   push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample006  fileB_Sample006"])
   push!(supSubArray, ["./path/to/binary.exe  fileB_Sample006  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
-  push!(supSubArray, ["#JSUB<filename>the sixth job"]);
+  push!(supSubArray, ["#JSUB<protocol>the sixth job"]);
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
-  push!(supSubArray, ["#JSUB<filename>the seventh job"]);
+  push!(supSubArray, ["\t#JSUB<protocol>the seventh job"]);
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script.sh} Lane71 Lane72 Sample007 fileA_Sample007"])
   push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample007  fileB_Sample007"])
@@ -1196,7 +1215,7 @@ Test.with_handler(ut_handler) do
   "the sixth job",
   "the seventh job"
   ];
-  @test get_filenames_(supSummaryArrayOfArrays, timestamp="_YYYYMMDD_HHMMSS", tag="#JSUB<filename>") == expNames
+  @test get_summary_names(supSummaryArrayOfArrays, timestamp="_YYYYMMDD_HHMMSS", tag="#JSUB<protocol>") == expNames
   expNames = [
   "PRE_the first job_SUF",
   "PRE_the second job_SUF",
@@ -1206,7 +1225,7 @@ Test.with_handler(ut_handler) do
   "PRE_the sixth job_SUF",
   "PRE_the seventh job_SUF"
   ];  
-  @test get_filenames_(supSummaryArrayOfArrays; prefix="PRE_", suffix="_SUF", timestamp="_YYYYMMDD_HHMMSS", tag="#JSUB<filename>") == expNames
+  @test get_summary_names(supSummaryArrayOfArrays; prefix="PRE_", suffix="_SUF", timestamp="_YYYYMMDD_HHMMSS", tag="#JSUB<protocol>") == expNames
 
   ## create_summary_files_(arrArrExpFvars, summaryPaths; verbose=verbose)
   # Supplied input
@@ -1269,25 +1288,56 @@ Test.with_handler(ut_handler) do
   # Read output back into array of arrays of arrays and check if it matches what was supplied
   @test map((x) -> file2arrayofarrays_(x, "#", cols=1)[1], summaryPaths ) == supSummaryArrayOfArrays
 
-  # ## 
-  # suppliedSummaryIndices = [3,4]
-  # suppliedSummaryArray = []
-  # push!(suppliedSummaryArray, ["# This data would come from reading summary files."])
-  # push!(suppliedSummaryArray, ["#JSUB<filename>ProtocolName"])
-  # push!(suppliedSummaryArray, ["bash echo \"cmd 1\""])
-  # push!(suppliedSummaryArray, ["# comment in betwen"])
-  # push!(suppliedSummaryArray, ["bash echo \"cmd 2\""])
-  # expectedSummaryArray = []
-  # push!(expectedSummaryArray, ["# This data would come from reading summary files."])
-  # push!(expectedSummaryArray, ["#JSUB<filename>ProtocolName"])
-  # push!(expectedSummaryArray, ["bash echo \"cmd 1\""])
-  # push!(expectedSummaryArray, ["# comment in betwen"])
-  # push!(expectedSummaryArray, ["bash echo \"cmd 2\""])
-  # @test (suppliedSummaryArray, suppliedSummaryIndices) == expectedSummaryArray
+  ## split_summary(summary; tagSplit="#JGROUP")
+  # suppliedSummaryIndices = [3,4,5];
+  suppliedSummaryArray = [];
+  push!(suppliedSummaryArray, ["# This data would come from reading summary files."]);
+  push!(suppliedSummaryArray, ["#JSUB<protocol>ProtocolName"]);
+  push!(suppliedSummaryArray, ["bash echo \"cmd 1\""]);
+  push!(suppliedSummaryArray, ["# #JGROUP comment in betwen"]);
+  push!(suppliedSummaryArray, ["bash echo \"cmd 2\""]);
+  push!(suppliedSummaryArray, ["# #JGROUP other comment"]);
+  push!(suppliedSummaryArray, ["bash echo \"cmd 3\""]);
+  expectedSummaryArray = []
+  push!(expectedSummaryArray, ["# This data would come from reading summary files."]);
+  push!(expectedSummaryArray, ["#JSUB<protocol>ProtocolName"]);
+  push!(expectedSummaryArray, ["bash echo \"cmd 1\""]);
+  push!(expectedSummaryArray, ["# #JGROUP comment in betwen"]);
+  push!(expectedSummaryArray, ["bash echo \"cmd 2\""]);
+  push!(expectedSummaryArray, ["# #JGROUP other comment"]);
+  push!(expectedSummaryArray, ["bash echo \"cmd 3\""]);
+  expectedSummaryDict = Dict("root" => expectedSummaryArray)
+  @test split_summary(suppliedSummaryArray; tagSplit="#JGROUP") == expectedSummaryDict
 
-
-
-
+  # suppliedSummaryIndices = [3,4,5];
+  suppliedSummaryArray = [];
+  push!(suppliedSummaryArray, ["# This data would come from reading summary files."]);
+  push!(suppliedSummaryArray, ["#JSUB<protocol>ProtocolName"]);
+  push!(suppliedSummaryArray, ["bash echo \"cmd 1\""]);
+  push!(suppliedSummaryArray, ["#JGROUP first"]);
+  push!(suppliedSummaryArray, ["bash echo \"cmd 12\""]);
+  push!(suppliedSummaryArray, ["bash echo \"cmd 13\""]);
+  push!(suppliedSummaryArray, ["#JGROUP second first"]);
+  push!(suppliedSummaryArray, ["bash echo \"cmd 21\""]);
+  push!(suppliedSummaryArray, ["bash echo \"cmd 22\""]);
+  root = [];
+  push!(root, ["# This data would come from reading summary files."]);
+  push!(root, ["#JSUB<protocol>ProtocolName"]);
+  push!(root, ["bash echo \"cmd 1\""]);
+  group1 = [];
+  push!(group1, ["#JGROUP first"]);
+  push!(group1, ["bash echo \"cmd 12\""]);
+  push!(group1, ["bash echo \"cmd 13\""]);
+  group2 = [];
+  push!(group2, ["#JGROUP second first"]);
+  push!(group2, ["bash echo \"cmd 21\""]);
+  push!(group2, ["bash echo \"cmd 22\""]);
+  expectedSummaryDict = Dict(
+    "root" => root,
+    "first" => group1,
+    "second" => group2
+  )
+  @test split_summary(suppliedSummaryArray; tagSplit="#JGROUP") == expectedSummaryDict
 
 
   ########################################

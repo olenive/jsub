@@ -18,14 +18,25 @@ function get_timestamp_(theTime)
 end
 
 function iscomment(wline, comStr) # Check if input string starts with the comment sub-string after any leading whitespace
-  lstrip(wline)[1:length(comStr)] == comStr ? true : false
+  line = lstrip(wline);
+  if length(line) >= length(comStr)
+    line[1:length(comStr)] == comStr ? (return true) : (return false)
+  else
+    return false
+  end
 end
 
 function isblank(wline) # Check if line is blank
   lstrip(wline) == "" ? true : false
 end
 
-function file2arrayofarrays_(fpath, comStr; cols=0::Integer, delimiter = nothing, verbose=false)
+# Identify rows that begin with a tag indicating instructions for jsub.  The values in these rows should be expanded even if they begin with a comment.
+function get_tag_rowindices(tagsExpand)
+
+  return []
+end
+
+function file2arrayofarrays_(fpath, comStr; cols=0::Integer, delimiter=nothing, verbose=false, tagsExpand=nothing)
   if verbose
     println("Reading file: ", fpath)
     cols==0 ? println("into '", delimiter, "' delimited columns") : println("into ", cols, " '", delimiter, "' delimited columns");
@@ -35,12 +46,18 @@ function file2arrayofarrays_(fpath, comStr; cols=0::Integer, delimiter = nothing
   commandRows = []; # row numbers of non-comment non-blank rows
   ## Initialise output array
   listOut = Array(Array{UTF8String}, 0); # Insisting of UTF8String here to avoid conversion problems later (MethodError: `convert` has no method matching convert(::Type{SubString{ASCIIString}}, ::UTF8String))  #arrOut = Array(AbstractString, size(arrRaw)[1], numCols); 
-  iNonBlank=0; 
+  iNonBlank = 0; 
   for wline in arrRaw
     if isblank(wline) == false
-      iNonBlank+=1;
+      iNonBlank += 1;
       if iscomment(wline, comStr)
         push!(listOut, [wline])
+        # Supplement command rows vector with rows that begin with a comment-tag instruction to jsub (e.g. #JSUB etc...)
+        if tagsExpand != nothing
+          if any(x -> iscomment(wline, x), values(tagsExpand) ) # Check if the line begins with any of the tags that would indicate that its contents should be expanded
+            push!(commandRows, iNonBlank); # Index non-blank non-comment lines
+          end
+        end
       else
         push!(commandRows, iNonBlank); # Index non-blank non-comment lines
         # Parse non-blank non-comment line data
@@ -540,16 +557,16 @@ function expandinorder(namesVarsRaw, valuesVarsRaw; adapt_quotation=false, retur
 end
 
 # Read the .vars file and expand variables row by row.
-function parse_varsfile_(fileVars; dlmVars=nothing)
-  arrVars, cmdRowsVars = file2arrayofarrays_(fileVars, comStr; cols=2, delimiter=dlmVars);
+function parse_varsfile_(fileVars; dlmVars=nothing, tagsExpand=nothing)
+  arrVars, cmdRowsVars = file2arrayofarrays_(fileVars, comStr; cols=2, delimiter=dlmVars, tagsExpand=tagsExpand);
   namesVars = columnfrom_arrayofarrays(arrVars, cmdRowsVars, 1);
   valuesVars = columnfrom_arrayofarrays(arrVars, cmdRowsVars, 2);
   return namesVars, valuesVars # This can subsequently be expanded row by row using the expandinorder function.
 end
 
 # Read the .fvars file and expand variables row by row.
-function parse_expandvars_fvarsfile_(fileFvars, namesVars, valuesVars; dlmFvars=nothing, adapt_quotation=false, verbose=false) # Read the .fvars file 
-  arrFvars, cmdRowsFvars = file2arrayofarrays_(fileFvars, comStr; cols=3, delimiter=dlmFvars);
+function parse_expandvars_fvarsfile_(fileFvars, namesVars, valuesVars; dlmFvars=nothing, adapt_quotation=false, verbose=false, tagsExpand=nothing) # Read the .fvars file 
+  arrFvars, cmdRowsFvars = file2arrayofarrays_(fileFvars, comStr; cols=3, delimiter=dlmFvars, tagsExpand=tagsExpand);
   ## Use variables from .vars to expand values in .fvars
   arrExpFvars = expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars; verbose = verbose, adapt_quotation=adapt_quotation);
   # Extract arrays of variable names and variable values
@@ -563,22 +580,22 @@ function parse_expandvars_fvarsfile_(fileFvars, namesVars, valuesVars; dlmFvars=
   return namesFvars, infileColumnsFvars, filePathsFvars
 end
 
-function parse_expandvars_protocol_(fileProtocol, namesVars, valuesVars; adapt_quotation=false, verbose=false)
-  arrProt, cmdRowsProt = file2arrayofarrays_(fileProtocol, comStr; cols=1, delimiter=nothing);
+function parse_expandvars_protocol_(fileProtocol, namesVars, valuesVars; adapt_quotation=false, verbose=false, tagsExpand=nothing)
+  arrProt, cmdRowsProt = file2arrayofarrays_(fileProtocol, comStr; cols=1, delimiter=nothing, tagsExpand=tagsExpand);
   ## Use variables from .vars to expand values in .protocol
   arrProtExpVars = expand_inarrayofarrays(arrProt, cmdRowsProt, namesVars, valuesVars ; verbose = verbose, adapt_quotation=adapt_quotation)
   return arrProtExpVars, cmdRowsProt
 end
 
 # Expand variables in .fvars file using values from list files
-function parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, dlmFvars; verbose=false, adapt_quotation=false)
+function parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, dlmFvars; verbose=false, adapt_quotation=false, tagsExpand=nothing)
   ## Read each list file
   dictListArr = Dict(); # Dictionary with file paths as keys and file contents (arrays of arrays) as values.
   dictCmdLineIdxs = Dict(); #previously: # arrCmdLineIdxs = Array(Array, length(filePathsFvars) ); # Array for storing line counts from input files
   idx=0;
   for file in filePathsFvars
     idx+=1;
-    arrList, cmdRowsList = file2arrayofarrays_(file, comStr; cols=0, delimiter=dlmFvars);
+    arrList, cmdRowsList = file2arrayofarrays_(file, comStr; cols=0, delimiter=dlmFvars, tagsExpand=tagsExpand);
     arrListExpVars = expand_inarrayofarrays(arrList, cmdRowsList, namesVars, valuesVars ; verbose = verbose, adapt_quotation=adapt_quotation);
     dictListArr[file] = deepcopy(arrListExpVars);
     dictCmdLineIdxs[file] = cmdRowsList; #previously: # arrCmdLineIdxs[idx] = cmdRowsList
@@ -639,7 +656,7 @@ function protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars,
 end
 
 # Get job names by reading protocol file arrays and looking for the first instance of a jobname tag or simply numbering them
-function get_filenames_(arrProt; prefix="", suffix="", timestamp="", tag="#JSUB<filename>")
+function get_summary_names(arrProt; prefix="", suffix="", timestamp="", tag="#JSUB<protocol>")
   jobNames = [];
   lenTag = length(tag);
   idx = 0;
@@ -647,11 +664,11 @@ function get_filenames_(arrProt; prefix="", suffix="", timestamp="", tag="#JSUB<
     idx += 1; # println("\n\nidx = ", idx, "  arr = ", arr, "\n")
     foundName = false;
     for subarr in arr
-      line = join(subarr); # println(subarr); println("line = ", line)
-      if lenTag < length(line) && line[1:lenTag] == tag
+      line = lstrip(join(subarr));
+      if iscomment(line, tag)
         push!(jobNames, string(prefix, line[lenTag+1:end], suffix)); # Use name from file
         foundName = true;
-        break
+        break        
       end
     end
     if !foundName
@@ -686,7 +703,28 @@ function create_summary_files_(arrArrExpFvars, summaryPaths; verbose=verbose)
   return outputPaths
 end
 
-# # Split summary file based on <split> and <group> tags
+# Split summary file array into arrays from which job files will be created.
+function split_summary(summary; tagSplit="#JGROUP")
+  jobs = Dict();
+  current = [];
+  group = "root";
+  tagLength = length(tagSplit);
+  ## Split array of lines into dictionary of groups
+  for arrLine in summary
+    line = lstrip(join(arrLine));
+    if iscomment(line, tagSplit)  # Determine if line begins with tagSplit string
+      jobs[group] = current; # Add existing group to dict
+      current = []; # Clear current group array
+      group = split(line[tagLength+1:end])[1] # Determine group name
+    end
+    push!(current, arrLine)
+  end
+  jobs[group] = current; # Add existing group to dict
+  return jobs
+end
+
+
+
 # function create_summary_tree(arrArrExpFvars; beginSplit="#JSUB<split>", finishSplit="#JSUB<\\split>", beginGroup="#JSUB<group>", finishGroup="#JSUB<\\group>")
 
 # end
