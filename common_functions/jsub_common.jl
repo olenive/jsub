@@ -723,20 +723,79 @@ function split_summary(summary; tagSplit="#JGROUP")
   return jobs
 end
 
+function construct_conditions(arrNames; condition="done", operator="&&")
+  lenArray = length(arrNames);
+  if lenArray == 0
+    return ""
+  else
+    out = string("\'", condition, "(\"", arrNames[1], "\")" )
+    if lenArray > 1
+      for idx = 2:lenArray
+        out = string(out, operator, condition, "(\"", arrNames[idx], "\")")
+      end
+    end
+    return string(out, "\'")
+  end
+end
 
+# Determine parent jobs which must be completed first
+function cmd_await_jobs(jobArray; tagHeader="#BSUB", option="-w", condition="done", tagSplit="#JGROUP")
+  # Check if the first entry in the job array begins with a group tag (tagSplit)
+  if iscomment(join(jobArray[1]), tagSplit)
+    groupString = lstrip(join(jobArray[1]));
+    groupName = "";
+    groupParents = [];
+    if length(groupString) > length(tagSplit)
+      afterTag = split(groupString);
+      groupName = afterTag[1]
+      if length(afterTag) > 2
+        groupParents = afterTag[3:end]
+      end
+    end
+    return string(tagHeader, " ", option, " ", construct_conditions(groupParents; condition=condition))
+  else
+    return ""
+  end
+end
 
-# function create_summary_tree(arrArrExpFvars; beginSplit="#JSUB<split>", finishSplit="#JSUB<\\split>", beginGroup="#JSUB<group>", finishGroup="#JSUB<\\group>")
+# Read job dictionary and return job header
+function create_job_header_string(jobArray; tagHeader="#BSUB", prefix="#!/bin/bash\n", suffix="")
+  arrHeaderRows = jobArray[find((x)->iscomment(join(x), tagHeader), jobArray)] # Extract header rows from among command rows
+  return string(
+    prefix,
+    join( map( x -> join(x), arrHeaderRows), '\n'), 
+    '\n',
+    cmd_await_jobs(jobArray),
+    suffix 
+  );
+end
+
+# # Identify checkpoints so that only the functions that are actually used may be appended
+# function identify_checkpoints(jobArray; checkpointsDict)
+#   #function body
+# end
+
+# function append_string2file_(filePath, text)
 
 # end
 
-# # Take an expanded protocol in the form of an array of arrays and produce a summary file for each entry
-# function create_job_file(pathToSummaryFile; verbose=verbose)
-#   ## Determine job file name and job name
+# function append_file2file_(filePath1, filePath2)
+#   #function body
+# end
 
+# # function create_bashfunctions_string(text)
+# #   return text
+# # end
+
+# function create_jobcommands_string(text)
+#   return text
+# end
+
+# function create_job_strings(jobDict; verbose=false, )
+#   arrJob = [];
 #   ## Write header
-
+#   ## Write functions
 #   ## Write commands
-
 # end
 
 

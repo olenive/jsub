@@ -96,6 +96,7 @@ num_suppressed = [0];
 
 ## Tags
 tagsExpand = Dict(
+  "header" => "#BSUB",
   "tagSummaryName" => "#JSUB<protocol>",
   "tagSplit" => "#JGROUP"
 )
@@ -138,8 +139,8 @@ create_summary_files_(arrArrExpFvars, summaryPaths; verbose=verbose)
 # Note: file2arrayofarrays_ returns a tuple of file contents and line number indices
 summaryFilesData = map((x) -> file2arrayofarrays_(x, "#", cols=1, tagsExpand=tagsExpand), summaryPaths ) 
 
-## Extract the summary array for each file
 ## Split into job arrays
+summaryDicts = map((x) -> split_summary(x; tagSplit=tagsExpand["tagSplit"]), summaryFilesData)
 
 ## Write job files
 

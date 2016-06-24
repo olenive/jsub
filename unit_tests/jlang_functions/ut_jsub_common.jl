@@ -1339,6 +1339,62 @@ Test.with_handler(ut_handler) do
   )
   @test split_summary(suppliedSummaryArray; tagSplit="#JGROUP") == expectedSummaryDict
 
+  ## construct_conditions(arrParents; condition="done", operator="&&")
+  suppliedNames = ["first", "second", "third", "fourth"];
+  expectedString = "\'done(\"first\")&&done(\"second\")&&done(\"third\")&&done(\"fourth\")\'";
+  @test construct_conditions(suppliedNames; condition="done", operator="&&") == expectedString
+
+  ## cmd_await_jobs(jobArray; condition="done", tagSplit="#JGROUP")
+  suppliedJobArray = [];
+  push!(suppliedJobArray, ["#JGROUP second first third fourth fifth"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
+  push!(suppliedJobArray, ["bash echo \"cmd 22\""]);
+  expectedCommand = "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'";
+  @test cmd_await_jobs(suppliedJobArray; tagHeader="#BSUB", option="-w", condition="done", tagSplit="#JGROUP") == expectedCommand
+
+  ## create_job_header_string(jobArray; tagHeader="#BSUB" prefix="#!/bin/bash\n", suffix="")
+  suppliedJobArray = [];
+  push!(suppliedJobArray, ["#JGROUP second first third fourth fifth"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
+  push!(suppliedJobArray, ["#BSUB -J jobID"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 22\""]);
+  push!(suppliedJobArray, ["#BSUB -P grantcode"]);
+  push!(suppliedJobArray, ["#BSUB -w overriding"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 23\""]);
+  headerString = string( 
+    "#!/bin/bash\n",
+    "#BSUB -J jobID\n",
+    "#BSUB -P grantcode\n",
+    "#BSUB -w overriding",
+    '\n',
+    "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
+    "\nheader suffix string"
+  );
+  @test create_job_header_string(suppliedJobArray; tagHeader="#BSUB", prefix="#!/bin/bash\n", suffix="\nheader suffix string") == headerString
+
+
+
+
+
+
+
+
+
+  # # 
+  # jobHeader = string(
+  # "#!/bin/bash\n
+  # #BSUB -J \"$jobID\"\n
+  # #BSUB -n $numberOfCores\n
+  # #BSUB -R \"span[hosts=$numberOfHosts]\"\n
+  # #BSUB -P $grantCode\n
+  # #BSUB -W $wallTime\n
+  # #BSUB -q $queue\n
+  # #BSUB -o output.$jobID\n
+  # #BSUB -e error.$jobID\n"
+  # )
+
+
+
 
   ########################################
 
