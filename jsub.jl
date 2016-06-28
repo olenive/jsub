@@ -101,6 +101,7 @@ tagsExpand = Dict(
   "tagSplit" => "#JGROUP"
 )
 
+## Paths to bash functions {"function name" => "path to file containing function"}
 
 #### FUNCTIONS ####
 include("./common_functions/jsub_common.jl")

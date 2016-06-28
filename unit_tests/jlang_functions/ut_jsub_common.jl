@@ -29,6 +29,21 @@ function ut_report(counter)
   print("\n")
   return nothing
 end
+function compare_arrays(arrA, arrB)
+  arrFalses = []
+  if length(arrA) != length(arrB)
+    println("Different lengths!")
+  end
+  for idx = 1:length(arrA)
+    # println(arrA[idx] == arrB[idx])
+    if (arrA[idx] != arrB[idx])
+      push!(arrFalses, idx)
+      println("idx = ", idx)
+      println(arrA[idx], "\n -VS- \n", arrB[idx])
+    end
+  end
+  return arrFalses
+end 
 ###############
 
 ## Hard coded variables
@@ -1373,6 +1388,13 @@ Test.with_handler(ut_handler) do
     "\nheader suffix string"
   );
   @test create_job_header_string(suppliedJobArray; tagHeader="#BSUB", prefix="#!/bin/bash\n", suffix="\nheader suffix string") == headerString
+  expHeader = string( 
+    "#!/bin/bash\n",
+    '\n',
+    "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
+    ""
+  )
+  @test create_job_header_string(suppliedJobArray; tagHeader="#BSUB", prefix="#!/bin/bash\n", suffix="") == expHeader
 
   ## identify_checkpoints
   suppliedJobArray = [];
@@ -1415,51 +1437,78 @@ Test.with_handler(ut_handler) do
     "dummy12" => "jlang_function_test_files/dummy_bash_functions/dummy12.sh",
   );
   output_dict = Dict(
-    "dummy1" => "function dummy1 {\necho Running_dummy_function_1\n}\n",
-    "dummy2" => "function dummy2 {\necho Running_dummy_function_2\n}\nfunction dummy2_1 {\necho Running_dummy_function_2_1\n}\nfunction dummy2_2 {\necho Running_dummy_function_2_2\n}\n",
-    "dummy2_1" => "function dummy2 {\necho Running_dummy_function_2\n}\nfunction dummy2_1 {\necho Running_dummy_function_2_1\n}\nfunction dummy2_2 {\necho Running_dummy_function_2_2\n}\n",
-    "dummy3" => "function dummy3 {\necho Running_dummy_function_3\n}\n",
-    "dummy10" => "function dummy10 {\necho Running_dummy_function_10\n}\nfunction dummy10_1 {\necho Running_dummy_function_10_1\n}\n",
-    "dummy10_1" => "function dummy10 {\necho Running_dummy_function_10\n}\nfunction dummy10_1 {\necho Running_dummy_function_10_1\n}\n",
-    "dummy11" => "function dummy11 {\necho Running_dummy_function_11\n}\n",
-    "dummy12" => "function dummy12 {\necho Running_dummy_function_12\n}\n",
+    "jlang_function_test_files/dummy_bash_functions/dummy1.sh" => "function dummy1 {\necho Running_dummy_function_1\n}\n",
+    "jlang_function_test_files/dummy_bash_functions/dummy2.sh" => "function dummy2 {\necho Running_dummy_function_2\n}\nfunction dummy2_1 {\necho Running_dummy_function_2_1\n}\nfunction dummy2_2 {\necho Running_dummy_function_2_2\n}\n",
+    "jlang_function_test_files/dummy_bash_functions/dummy3.sh" => "function dummy3 {\necho Running_dummy_function_3\n}\n",
+    "jlang_function_test_files/dummy_bash_functions/dummy10.sh" => "function dummy10 {\necho Running_dummy_function_10\n}\nfunction dummy10_1 {\necho Running_dummy_function_10_1\n}\n",
+    "jlang_function_test_files/dummy_bash_functions/dummy11.sh" => "function dummy11 {\necho Running_dummy_function_11\n}\n",
+    "jlang_function_test_files/dummy_bash_functions/dummy12.sh" => "function dummy12 {\necho Running_dummy_function_12\n}\n",
   );
   @test get_bash_functions_(common_functions, selected_functions) == output_dict
+  # dd = get_bash_functions_(common_functions, selected_functions);
+  # kd = sort(collect(keys(dd))); ko = sort(collect(keys(output_dict)));
+  # vd = sort(collect(values(dd))); vo = sort(collect(values(output_dict)));
+  # compare_arrays(kd, ko); 
+  # compare_arrays(vd, vo);
+
+  ## create_job_file_(filePath, jobArray, bash_functions::Dict; tagBegin="#JSUB<begin_job>", tagFinish="#JSUB<finish_job>", tagHeader="#BSUB", headerPrefix="#!/bin/bash\n" , headerSuffix="")
+  filePath = "jlang_function_test_files/job_files/ut_generated_job.lsf"
+  run(`rm $filePath`)
+  headerString = string( 
+    "#!/bin/bash\n",
+    '\n',
+    "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
+    "\nheader suffix string"
+  );
+  suppliedJobArray = [];
+  push!(suppliedJobArray, ["#JGROUP second first third fourth fifth"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
+  push!(suppliedJobArray, ["#BSUB -J jobID"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 22\""]);
+  push!(suppliedJobArray, ["#BSUB -P grantcode"]);
+  push!(suppliedJobArray, ["#BSUB -w overriding"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 23\""]);
+  create_job_file_(filePath, suppliedJobArray, output_dict; )
+  expected_file_contents = string( 
+    string( 
+      "#!/bin/bash\n",
+      '\n',
+      "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
+      ""
+    ),
+    "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n",
+    "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy1.sh", "\n",
+    "function dummy1 {\necho Running_dummy_function_1\n}\n",
+    "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy10.sh", "\n",
+    "function dummy10 {\necho Running_dummy_function_10\n}\nfunction dummy10_1 {\necho Running_dummy_function_10_1\n}\n",
+    "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy11.sh", "\n",
+    "function dummy11 {\necho Running_dummy_function_11\n}\n",
+    "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy12.sh", "\n",
+    "function dummy12 {\necho Running_dummy_function_12\n}\n",
+    "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy2.sh", "\n",
+    "function dummy2 {\necho Running_dummy_function_2\n}\nfunction dummy2_1 {\necho Running_dummy_function_2_1\n}\nfunction dummy2_2 {\necho Running_dummy_function_2_2\n}\n",
+    "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy3.sh", "\n",
+    "function dummy3 {\necho Running_dummy_function_3\n}\n",
+    "\n#JSUB<begin_job>\n",
+    "#JGROUP second first third fourth fifth", "\n",
+    "bash echo \"cmd 21\"", "\n",
+    "#BSUB -J jobID", "\n",
+    "bash echo \"cmd 22\"", "\n",
+    "#BSUB -P grantcode", "\n",
+    "#BSUB -w overriding", "\n",
+    "bash echo \"cmd 23\"", "\n",
+    "\n#JSUB<finish_job>\n"
+  )
+  observed_file_contents = readall(filePath);
+  @test observed_file_contents == expected_file_contents
+  # arr1 = split(observed_file_contents, '\n')
+  # arr2 = split(expected_file_contents, '\n')
+  # compare_arrays(arr1, arr2)
+  # stream = open("/Users/olenive/work/jsub_pipeliner/unit_tests/jlang_functions/jlang_function_test_files/job_files/compare.txt", "w");
+  # write(stream, expected_file_contents)
+  # close(stream)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-# dd = get_bash_functions_(common_functions, selected_functions);
-# kd = collect(keys(dd)); ko = collect(keys(output_dict));
-# vd = collect(values(dd)); vo = collect(values(output_dict));
-
-# function compare_arrays(arrA, arrB)
-#   arrFalses = []
-#   if length(arrA) != length(arrB)
-#     println("Different lengths!")
-#   end
-#   for idx = 1:length(arrA)
-#     # println(arrA[idx] == arrB[idx])
-#     if (arrA[idx] != arrB[idx])
-#       push!(arrFalses, idx)
-#       println(arrA[idx], "\n -VS- \n", arrB[idx])
-#     end
-#   end
-
-#   return arrFalses
-# end 
-# compare_arrays(kd, ko); 
-# compare_arrays(vd, vo);
 
   # # 
   # jobHeader = string(

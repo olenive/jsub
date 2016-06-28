@@ -766,7 +766,7 @@ function create_job_header_string(jobArray; tagHeader="#BSUB", prefix="#!/bin/ba
     prefix,
     # join( map( x -> join(x), arrHeaderRows), '\n'), 
     '\n',
-    cmd_await_jobs(jobArray),
+    cmd_await_jobs(jobArray, tagHeader=tagHeader),
     suffix 
   );
 end
@@ -792,37 +792,30 @@ function get_bash_functions_(common_functions::Dict, selected_functions::Dict)
   all = merge(common_functions, selected_functions); # merge into one dict
   out = Dict();
   for (key, val) in all # read functions from files
-    out[key] = readall(val);
+    out[val] = readall(val);
   end
   return out # return dict of {function names => function strings}
 end
 
 ## Create job file(s) from summary file
 # Use file2arrayofarrays_(x, "#", cols=1) to read summary file
-function create_job_file_(filePath, jobArray, selected_functions=Dict(); common_functions=Dict() )
+function create_job_file_(filePath, jobArray, files_contents::Dict; tagBegin="#JSUB<begin_job>", tagFinish="#JSUB<finish_job>", tagHeader="#BSUB", headerPrefix="#!/bin/bash\n" , headerSuffix="")
   # Overwrite with header
   stream = open(filePath, "w");
-  write(stream, create_job_header_string(jobArray; tagHeader="#BSUB", prefix="#!/bin/bash\n", suffix=""));
-  close(stream);
+  write(stream, create_job_header_string(jobArray; tagHeader=tagHeader, prefix=headerPrefix, suffix=headerSuffix));
   # Append common functions
-  if length(common_functions) > 0 # get paths 
-    for val in values(common_functions)
-      run(`echo "cat \"$val\" >> \"$filePath\""`);
-    end
-  end
-  # Append selected functions
-  if length(selected_functions) > 0 # get paths 
-    for val in values(selected_functions)
-      run(`echo "cat \"$val\" >> \"$filePath\""`);
-    end
+  write(stream, "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n");
+  for key in sort(collect(keys(files_contents)))
+    write(stream, string("\n# --- From file: ", key, "\n") );
+    write(stream, string(files_contents[key]));
   end
   # Append commands
-  stream = open(filePath, "a")
-  for val in jobArray
-    write(stream, string(join(val), '\n'));
-  end
+  write(stream, string("\n", tagBegin, "\n"));
+  map((x) -> write(stream, join(x), '\n'), jobArray);
+  write(stream, string("\n", tagFinish, "\n"));
   close(stream)
 end
+
 
 
 # function append_string2file_(filePath, text)
