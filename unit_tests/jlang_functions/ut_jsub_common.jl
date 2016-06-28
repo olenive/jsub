@@ -31,10 +31,6 @@ function ut_report(counter)
 end
 ###############
 
-### MACROS ###
-
-##############
-
 ## Hard coded variables
 # First non-whitespace string indicating the start of a comment line
 const comStr="#" # Note: this is expected to be a string ("#") rather than a character ('#').  Changing the string (char) used to indicate comments may cause problems further down the line.
@@ -63,7 +59,7 @@ pathToTestFvars = "jlang_function_test_files/refs_samples.fvars"
 ######## Run tests on functions ########
 ########################################
 ### For each function, declare input argument and expected output, then run the function and check that the outcome matches what is expected.
-println("Running unit tests...")
+println("Running unit tests of julia functions...")
 Test.with_handler(ut_handler) do
 
   ## iscomment
@@ -1361,17 +1357,74 @@ Test.with_handler(ut_handler) do
   push!(suppliedJobArray, ["#BSUB -P grantcode"]);
   push!(suppliedJobArray, ["#BSUB -w overriding"]);
   push!(suppliedJobArray, ["bash echo \"cmd 23\""]);
+  # headerString = string( 
+  #   "#!/bin/bash\n",
+  #   "#BSUB -J jobID\n",
+  #   "#BSUB -P grantcode\n",
+  #   "#BSUB -w overriding",
+  #   '\n',
+  #   "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
+  #   "\nheader suffix string"
+  # );
   headerString = string( 
     "#!/bin/bash\n",
-    "#BSUB -J jobID\n",
-    "#BSUB -P grantcode\n",
-    "#BSUB -w overriding",
     '\n',
     "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
     "\nheader suffix string"
   );
   @test create_job_header_string(suppliedJobArray; tagHeader="#BSUB", prefix="#!/bin/bash\n", suffix="\nheader suffix string") == headerString
 
+  ## identify_checkpoints
+  suppliedJobArray = [];
+  push!(suppliedJobArray, ["#JGROUP second first third fourth fifth"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
+  push!(suppliedJobArray, ["jcheck_filesNotEmpty \"cmd 21\""]);
+  push!(suppliedJobArray, ["#BSUB -J jobID"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 22\""]);
+  push!(suppliedJobArray, ["jcheck_resume"]);
+  push!(suppliedJobArray, ["#BSUB -P grantcode"]);
+  push!(suppliedJobArray, ["#BSUB -w overriding"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 23\""]);
+  push!(suppliedJobArray, ["jcheck_filesNotEmpty \"cmd 23\""]);
+  checkpointsDict = Dict(
+    "jcheck_filesNotEmpty" => "path/to/jcheck_filesNotEmpty.sh",
+    "jcheck_resume" => "path/to/jcheck_resume.sh",
+    "jcheck_something_else" => "path/to/jcheck_something_else.sh",
+    "something_else_entierly" => "some/other/path"
+  );
+  expectedFileSet = Dict(
+    "jcheck_filesNotEmpty" => "path/to/jcheck_filesNotEmpty.sh",
+    "jcheck_resume" => "path/to/jcheck_resume.sh",
+  );
+  @test identify_checkpoints(suppliedJobArray, checkpointsDict; tagCheckpoint="jcheck_") == expectedFileSet
+
+  ## function get_bash_functions_(common_functions::Dict{Any,Any}, selected_functions::Dict{Any,Any})
+  common_functions = Dict(
+    "dummy1" => "jlang_function_test_files/dummy_bash_functions/dummy1.sh",
+    "dummy2" => "jlang_function_test_files/dummy_bash_functions/dummy2.sh",
+    "dummy2_1" => "jlang_function_test_files/dummy_bash_functions/dummy2.sh",
+    "dummy3" => "jlang_function_test_files/dummy_bash_functions/dummy3.sh",
+  );
+  selected_functions = Dict(
+    "dummy1" => "jlang_function_test_files/dummy_bash_functions/dummy1.sh",
+    "dummy2" => "jlang_function_test_files/dummy_bash_functions/dummy2.sh",
+    "dummy2_1" => "jlang_function_test_files/dummy_bash_functions/dummy2.sh",
+    "dummy10" => "jlang_function_test_files/dummy_bash_functions/dummy10.sh",
+    "dummy10_1" => "jlang_function_test_files/dummy_bash_functions/dummy10.sh",
+    "dummy11" => "jlang_function_test_files/dummy_bash_functions/dummy11.sh",
+    "dummy12" => "jlang_function_test_files/dummy_bash_functions/dummy12.sh",
+  );
+  output_dict = Dict(
+    "dummy1" => "function dummy1 {\necho Running_dummy_function_1\n}\n",
+    "dummy2" => "function dummy2 {\necho Running_dummy_function_2\n}\nfunction dummy2_1 {\necho Running_dummy_function_2_1\n}\nfunction dummy2_2 {\necho Running_dummy_function_2_2\n}\n",
+    "dummy2_1" => "function dummy2 {\necho Running_dummy_function_2\n}\nfunction dummy2_1 {\necho Running_dummy_function_2_1\n}\nfunction dummy2_2 {\necho Running_dummy_function_2_2\n}\n",
+    "dummy3" => "function dummy3 {\necho Running_dummy_function_3\n}\n",
+    "dummy10" => "function dummy10 {\necho Running_dummy_function_10\n}\nfunction dummy10_1 {\necho Running_dummy_function_10_1\n}\n",
+    "dummy10_1" => "function dummy10 {\necho Running_dummy_function_10\n}\nfunction dummy10_1 {\necho Running_dummy_function_10_1\n}\n",
+    "dummy11" => "function dummy11 {\necho Running_dummy_function_11\n}\n",
+    "dummy12" => "function dummy12 {\necho Running_dummy_function_12\n}\n",
+  );
+  @test get_bash_functions_(common_functions, selected_functions) == output_dict
 
 
 
@@ -1379,6 +1432,34 @@ Test.with_handler(ut_handler) do
 
 
 
+
+
+
+
+
+
+
+# dd = get_bash_functions_(common_functions, selected_functions);
+# kd = collect(keys(dd)); ko = collect(keys(output_dict));
+# vd = collect(values(dd)); vo = collect(values(output_dict));
+
+# function compare_arrays(arrA, arrB)
+#   arrFalses = []
+#   if length(arrA) != length(arrB)
+#     println("Different lengths!")
+#   end
+#   for idx = 1:length(arrA)
+#     # println(arrA[idx] == arrB[idx])
+#     if (arrA[idx] != arrB[idx])
+#       push!(arrFalses, idx)
+#       println(arrA[idx], "\n -VS- \n", arrB[idx])
+#     end
+#   end
+
+#   return arrFalses
+# end 
+# compare_arrays(kd, ko); 
+# compare_arrays(vd, vo);
 
   # # 
   # jobHeader = string(

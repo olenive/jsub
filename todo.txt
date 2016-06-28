@@ -1,0 +1,4 @@
+
+[ ] Have the user (or default) provide a path to selected functions (dir) and/or path to common_functions (file).
+[ ] Make sure that things run if not .fvars or .vars input files are provided.
+

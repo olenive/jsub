@@ -723,6 +723,7 @@ function split_summary(summary; tagSplit="#JGROUP")
   return jobs
 end
 
+## Creates strings of the form 'done("jobID1")&&done("jobID2")'' (this should probably be refactored to be part of cmd_await_jobs)
 function construct_conditions(arrNames; condition="done", operator="&&")
   lenArray = length(arrNames);
   if lenArray == 0
@@ -760,20 +761,69 @@ end
 
 # Read job dictionary and return job header
 function create_job_header_string(jobArray; tagHeader="#BSUB", prefix="#!/bin/bash\n", suffix="")
-  arrHeaderRows = jobArray[find((x)->iscomment(join(x), tagHeader), jobArray)] # Extract header rows from among command rows
+  # arrHeaderRows = jobArray[find((x)->iscomment(join(x), tagHeader), jobArray)] # Extract header rows from among command rows
   return string(
     prefix,
-    join( map( x -> join(x), arrHeaderRows), '\n'), 
+    # join( map( x -> join(x), arrHeaderRows), '\n'), 
     '\n',
     cmd_await_jobs(jobArray),
     suffix 
   );
 end
 
-# # Identify checkpoints so that only the functions that are actually used may be appended
-# function identify_checkpoints(jobArray; checkpointsDict)
-#   #function body
-# end
+# Identify checkpoints so that only the functions that are actually used may be appended
+function identify_checkpoints(jobArray, checkpointsDict; tagCheckpoint="jcheck_")
+  out = Dict();
+  arrCheckpointRows = jobArray[find((x)->iscomment(join(x), tagCheckpoint), jobArray)]; # Get rows startgin wiht tagCheckpoint
+  arrCheckpointFunctions = unique(map((x)->(split(join(x))[1]), arrCheckpointRows)); # Get the checkpoint function from each of those rows
+  allNames = keys(checkpointsDict);
+  for name in arrCheckpointFunctions
+    if name in allNames
+      out[name] = checkpointsDict[name];
+    else
+      SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in identify_checkpoints) function named \"", name, "\" not found in the dictionary that maps bash function names to file paths where they are stored.");
+    end
+  end
+  return out
+end
+
+# Read bash functions from files into Dict
+function get_bash_functions_(common_functions::Dict, selected_functions::Dict)
+  all = merge(common_functions, selected_functions); # merge into one dict
+  out = Dict();
+  for (key, val) in all # read functions from files
+    out[key] = readall(val);
+  end
+  return out # return dict of {function names => function strings}
+end
+
+## Create job file(s) from summary file
+# Use file2arrayofarrays_(x, "#", cols=1) to read summary file
+function create_job_file_(filePath, jobArray, selected_functions=Dict(); common_functions=Dict() )
+  # Overwrite with header
+  stream = open(filePath, "w");
+  write(stream, create_job_header_string(jobArray; tagHeader="#BSUB", prefix="#!/bin/bash\n", suffix=""));
+  close(stream);
+  # Append common functions
+  if length(common_functions) > 0 # get paths 
+    for val in values(common_functions)
+      run(`echo "cat \"$val\" >> \"$filePath\""`);
+    end
+  end
+  # Append selected functions
+  if length(selected_functions) > 0 # get paths 
+    for val in values(selected_functions)
+      run(`echo "cat \"$val\" >> \"$filePath\""`);
+    end
+  end
+  # Append commands
+  stream = open(filePath, "a")
+  for val in jobArray
+    write(stream, string(join(val), '\n'));
+  end
+  close(stream)
+end
+
 
 # function append_string2file_(filePath, text)
 
