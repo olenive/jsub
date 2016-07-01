@@ -1476,6 +1476,7 @@ Test.with_handler(ut_handler) do
       "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
       ""
     ),
+    "\n# Tag variables\n",
     "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy1.sh", "\n",
     "function dummy1 {\necho Running_dummy_function_1\n}\n",
@@ -1489,6 +1490,7 @@ Test.with_handler(ut_handler) do
     "function dummy2 {\necho Running_dummy_function_2\n}\nfunction dummy2_1 {\necho Running_dummy_function_2_1\n}\nfunction dummy2_2 {\necho Running_dummy_function_2_2\n}\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy3.sh", "\n",
     "function dummy3 {\necho Running_dummy_function_3\n}\n",
+    "\n\n# Commands taken from summary file: ""\n",
     "\n#JSUB<begin_job>\n",
     "#JGROUP second first third fourth fifth", "\n",
     "bash echo \"cmd 21\"", "\n",
@@ -1501,12 +1503,17 @@ Test.with_handler(ut_handler) do
   )
   observed_file_contents = readall(filePath);
   @test observed_file_contents == expected_file_contents
-  # arr1 = split(observed_file_contents, '\n')
-  # arr2 = split(expected_file_contents, '\n')
-  # compare_arrays(arr1, arr2)
-  # stream = open("/Users/olenive/work/jsub_pipeliner/unit_tests/jlang_functions/jlang_function_test_files/job_files/compare.txt", "w");
-  # write(stream, expected_file_contents)
-  # close(stream)
+  arr1 = split(observed_file_contents, '\n')
+  arr2 = split(expected_file_contents, '\n')
+  compare_arrays(arr1, arr2)
+  stream = open("/Users/olenive/work/jsub_pipeliner/unit_tests/jlang_functions/jlang_function_test_files/job_files/compare.txt", "w");
+  write(stream, expected_file_contents)
+  close(stream)
+
+
+
+
+
 
 
 

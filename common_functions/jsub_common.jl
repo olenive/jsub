@@ -799,10 +799,13 @@ end
 
 ## Create job file(s) from summary file
 # Use file2arrayofarrays_(x, "#", cols=1) to read summary file
-function create_job_file_(filePath, jobArray, files_contents::Dict; tagBegin="#JSUB<begin_job>", tagFinish="#JSUB<finish_job>", tagHeader="#BSUB", headerPrefix="#!/bin/bash\n" , headerSuffix="")
+function create_job_file_(filePath, jobArray, files_contents::Dict; tagBegin="#JSUB<begin_job>", tagFinish="#JSUB<finish_job>", tagHeader="#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="")
   # Overwrite with header
   stream = open(filePath, "w");
   write(stream, create_job_header_string(jobArray; tagHeader=tagHeader, prefix=headerPrefix, suffix=headerSuffix));
+  # Append tag variables
+  write(stream, "\n# Tag variables\n");
+
   # Append common functions
   write(stream, "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n");
   for key in sort(collect(keys(files_contents)))
@@ -810,6 +813,7 @@ function create_job_file_(filePath, jobArray, files_contents::Dict; tagBegin="#J
     write(stream, string(files_contents[key]));
   end
   # Append commands
+  write(stream, "\n\n# Commands taken from summary file: $summaryFile\n");
   write(stream, string("\n", tagBegin, "\n"));
   map((x) -> write(stream, join(x), '\n'), jobArray);
   write(stream, string("\n", tagFinish, "\n"));

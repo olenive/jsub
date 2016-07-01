@@ -1,0 +1,16 @@
+#JGROUP second first third fourth fifth
+echo "cmd 21" >> ${JSUB_LOG_FILE}
+dummy1
+jcheck_resume
+#BSUB -J jobID
+echo "cmd 22" >> ${JSUB_LOG_FILE}
+dummy2
+jcheck_resume
+dummy2_1
+#BSUB -o out.pj.output
+echo "cmd 23" >> ${JSUB_LOG_FILE}
+jcheck_resume
+dummy3
+#BSUB -e out.pj.error
+jcheck_resume
+echo "final executed command" >> ${JSUB_LOG_FILE}

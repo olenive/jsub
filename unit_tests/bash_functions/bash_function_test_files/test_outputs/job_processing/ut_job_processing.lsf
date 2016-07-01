@@ -1,3 +1,18 @@
+#!/bin/bash
+set -e
+
+#BSUB header sutff
+
+# General job options
+JSUB_FLAG_TIMESTAMP=false
+JSUB_FLAG_CHECK_VERSIONS=true
+
+# Log and summary file paths
+JSUB_THIS_JOB="$0" # Note: using this will not work on the HPC, "$0" is for testing only, provide the actual file name when running LSF jobs.
+JSUB_LOG_FILE="$1"
+JSUB_SUMMARY_COMPLETED="$2"
+JSUB_SUMMARY_INCOMPLETE="$3"
+
 ## job_processing parses the job file, writes to log and summary files, and calls version control functions on blocks of code.
 # Function allowing job script termination
 trap "exit 1" TERM
@@ -61,3 +76,54 @@ function process_job {
   [ ${JSUB_FLAG_FAIL} = true ] && kill_this_job ${JSUB_THIS_JOB} # Kill the job if a checkpoint fail occured (but let this function do logging etc first)
   return 0
 }
+
+# Attempts to obtain version information about tools and scripts used in a block of bash code.
+function check_versions {
+  echo "Running check_versions"
+}
+
+# Contents inserted from other files (this section is intended to be used only for functions):
+# --- From file: jlang_function_test_files/dummy_bash_functions/dummy1.sh
+function dummy1 {
+echo Running_dummy_function_1 >> ${JSUB_LOG_FILE}
+}
+# --- From file: jlang_function_test_files/dummy_bash_functions/dummy2.sh
+function dummy2 {
+echo Running_dummy_function_2 >> ${JSUB_LOG_FILE}
+}
+function dummy2_1 {
+echo Running_dummy_function_2_1 >> ${JSUB_LOG_FILE}
+}
+# --- From file: jlang_function_test_files/dummy_bash_functions/dummy3.sh
+function dummy3 {
+echo Running_dummy_function_3 >> ${JSUB_LOG_FILE}
+}
+
+function jcheck_resume {
+  echo "Running jcheck_resume $@" >> ${JSUB_LOG_FILE}
+  process_job "YYYYMMDD_HHMMSS"
+}
+
+#JSUB<begin_job>
+#JGROUP second first third fourth fifth
+echo "cmd 21" >> ${JSUB_LOG_FILE}
+dummy1
+jcheck_resume
+#BSUB -J jobID
+echo "cmd 22" >> ${JSUB_LOG_FILE}
+dummy2
+jcheck_resume
+dummy2_1
+#BSUB -o out.pj.output
+echo "cmd 23" >> ${JSUB_LOG_FILE}
+jcheck_resume
+dummy3
+#BSUB -e out.pj.error
+jcheck_resume
+echo "final executed command" >> ${JSUB_LOG_FILE}
+#JSUB<finish_job>
+
+# Finalise job
+process_job
+
+# EOF 

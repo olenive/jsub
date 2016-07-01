@@ -1,6 +1,8 @@
 #!/bin/bash
 
 #BSUB -w 'done("first")&&done("third")&&done("fourth")&&done("fifth")'
+# Tag variables
+
 
 # Contents inserted from other files (this section is intended to be used only for functions):
 
@@ -42,6 +44,9 @@ echo Running_dummy_function_2_2
 function dummy3 {
 echo Running_dummy_function_3
 }
+
+
+# Commands taken from summary file: 
 
 #JSUB<begin_job>
 #JGROUP second first third fourth fifth

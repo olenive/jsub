@@ -1,4 +1,6 @@
 
 [ ] Have the user (or default) provide a path to selected functions (dir) and/or path to common_functions (file).
 [ ] Make sure that things run if not .fvars or .vars input files are provided.
+[ ] Allow for cases where the job created will be run from a different directory to the one it was created in.
+[ ] Pass jsub options to job file when needed.
 
