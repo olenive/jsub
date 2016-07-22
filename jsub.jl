@@ -9,7 +9,7 @@
 
 ## Explanation ##
 
-# This script facilitates the systematic creation and submission of jobs to the LSF queuing system while also writing to log files.
+# This tool facilitates the systematic creation and submission of jobs to the LSF queuing system while also writing to log files.
 
 # Stage 1: Generate summary files for each sample.
 #    inputs: i1.1) A list of sample IDs indicating which samples the job is to be run on.  This may contain more than one column when the the job involves multiple samples.
@@ -144,7 +144,8 @@ summaryFilesData = map((x) -> file2arrayofarrays_(x, "#", cols=1, tagsExpand=tag
 summaryDicts = map((x) -> split_summary(x; tagSplit=tagsExpand["tagSplit"]), summaryFilesData)
 
 ## Write job files
-
+# map( (path) ->
+#   create_job_file_(filePath, jobArray, files_contents::Dict; tagBegin="#JSUB<begin_job>", tagFinish="#JSUB<finish_job>", tagHeader="#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="")
 
 
 

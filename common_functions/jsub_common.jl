@@ -822,28 +822,6 @@ end
 
 
 
-# function append_string2file_(filePath, text)
-
-# end
-
-# function append_file2file_(filePath1, filePath2)
-#   #function body
-# end
-
-# # function create_bashfunctions_string(text)
-# #   return text
-# # end
-
-# function create_jobcommands_string(text)
-#   return text
-# end
-
-# function create_job_strings(jobDict; verbose=false, )
-#   arrJob = [];
-#   ## Write header
-#   ## Write functions
-#   ## Write commands
-# end
 
 
 

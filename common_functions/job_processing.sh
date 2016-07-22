@@ -1,4 +1,4 @@
-## job_processing parses the job file, writes to log and summary files, and calls version control functions on blocks of code.
+## job_processing parses the job file, writes to log and summary files, and calls version control functions.
 # Function allowing job script termination
 trap "exit 1" TERM
 export TOP_PID=$$

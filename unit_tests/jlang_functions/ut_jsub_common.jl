@@ -74,7 +74,7 @@ pathToTestFvars = "jlang_function_test_files/refs_samples.fvars"
 ######## Run tests on functions ########
 ########################################
 ### For each function, declare input argument and expected output, then run the function and check that the outcome matches what is expected.
-println("Running unit tests of julia functions...")
+println("\nRunning unit tests of julia functions...")
 Test.with_handler(ut_handler) do
 
   ## iscomment
@@ -1452,8 +1452,8 @@ Test.with_handler(ut_handler) do
   # compare_arrays(vd, vo);
 
   ## create_job_file_(filePath, jobArray, bash_functions::Dict; tagBegin="#JSUB<begin_job>", tagFinish="#JSUB<finish_job>", tagHeader="#BSUB", headerPrefix="#!/bin/bash\n" , headerSuffix="")
-  filePath = "jlang_function_test_files/job_files/ut_generated_job.lsf"
-  run(`rm $filePath`)
+  filePath = "jlang_function_test_files/job_files/ut_generated_job.lsf";
+  run(`rm $filePath`);
   headerString = string( 
     "#!/bin/bash\n",
     '\n',
@@ -1490,7 +1490,7 @@ Test.with_handler(ut_handler) do
     "function dummy2 {\necho Running_dummy_function_2\n}\nfunction dummy2_1 {\necho Running_dummy_function_2_1\n}\nfunction dummy2_2 {\necho Running_dummy_function_2_2\n}\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy3.sh", "\n",
     "function dummy3 {\necho Running_dummy_function_3\n}\n",
-    "\n\n# Commands taken from summary file: ""\n",
+    "\n\n# Commands taken from summary file: jlang_function_test_files/job_files/ut_generated_job.lsf""\n",
     "\n#JSUB<begin_job>\n",
     "#JGROUP second first third fourth fifth", "\n",
     "bash echo \"cmd 21\"", "\n",
@@ -1501,14 +1501,13 @@ Test.with_handler(ut_handler) do
     "bash echo \"cmd 23\"", "\n",
     "\n#JSUB<finish_job>\n"
   )
-  observed_file_contents = readall(filePath);
-  @test observed_file_contents == expected_file_contents
-  arr1 = split(observed_file_contents, '\n')
-  arr2 = split(expected_file_contents, '\n')
-  compare_arrays(arr1, arr2)
-  stream = open("/Users/olenive/work/jsub_pipeliner/unit_tests/jlang_functions/jlang_function_test_files/job_files/compare.txt", "w");
-  write(stream, expected_file_contents)
-  close(stream)
+  @test expected_file_contents == readall(filePath)
+  # arr1 = split(observed_file_contents, '\n')
+  # arr2 = split(expected_file_contents, '\n')
+  # compare_arrays(arr1, arr2)
+  # stream = open("/jlang_function_test_files/job_files/compare.txt", "w");
+  # write(stream, expected_file_contents)
+  # close(stream)
 
 
 
