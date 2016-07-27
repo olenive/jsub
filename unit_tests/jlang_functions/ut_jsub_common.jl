@@ -64,6 +64,9 @@ global flag_test_fail = false
 
 # Load functions from file
 include("../../common_functions/jsub_common.jl")
+# function inc()
+#   include("../../common_functions/jsub_common.jl")
+# end
 
 # Load test files
 pathToTestProtocol = "jlang_function_test_files/refs_samples.protocol"
@@ -1176,7 +1179,7 @@ Test.with_handler(ut_handler) do
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
-  push!(supSubArray, ["#JSUB<protocol>the second job"]);
+  push!(supSubArray, ["#JSUB<protocol> the second job"]);
   push!(supSubArray, ["bash \${a_bash_script.sh} Lane\"2\"1 Sample002 fileA_Sample002"])
   push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample002  fileB_Sample002"])
   push!(supSubArray, ["./path/to/binary.exe  fileB_Sample002  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
@@ -1184,7 +1187,7 @@ Test.with_handler(ut_handler) do
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script.sh} Lane31 Lane32 Lane33 Sample003 fileA_Sample003"])
-  push!(supSubArray, [" #JSUB<protocol>the third job"]);
+  push!(supSubArray, [" #JSUB<protocol>\tthe third job"]);
   push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample003  fileB_Sample003"])
   push!(supSubArray, ["./path/to/binary.exe  fileB_Sample003  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
@@ -1192,7 +1195,7 @@ Test.with_handler(ut_handler) do
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script.sh} Lane41 Lane42 Lane43 Lane44 Sample004 fileA_Sample004"])
   push!(supSubArray, ["python \${a_python_script.py}                       fileA_Sample004  fileB_Sample004"])
-  push!(supSubArray, ["  #JSUB<protocol>the fourth job"]);
+  push!(supSubArray, ["  #JSUB<protocol> \tthe fourth job"]);
   push!(supSubArray, ["./path/to/binary.exe  fileB_Sample004  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
@@ -1350,6 +1353,40 @@ Test.with_handler(ut_handler) do
   )
   @test split_summary(suppliedSummaryArray; tagSplit="#JGROUP") == expectedSummaryDict
 
+  # suppliedSummaryIndices = [3,4,5];
+  suppliedSummaryArray = [];
+  push!(suppliedSummaryArray, ["#JGROUP zeroth"]);
+  push!(suppliedSummaryArray, ["# This data would come from reading summary files."]);
+  push!(suppliedSummaryArray, ["#JSUB<protocol>ProtocolName"]);
+  push!(suppliedSummaryArray, ["bash echo \"cmd 1\""]);
+  push!(suppliedSummaryArray, ["#JGROUP first"]);
+  push!(suppliedSummaryArray, ["bash echo \"cmd 12\""]);
+  push!(suppliedSummaryArray, ["bash echo \"cmd 13\""]);
+  push!(suppliedSummaryArray, ["#JGROUP second first"]);
+  push!(suppliedSummaryArray, ["bash echo \"cmd 21\""]);
+  push!(suppliedSummaryArray, ["bash echo \"cmd 22\""]);
+  root = [];
+  group0 = [];
+  push!(group0, ["#JGROUP zeroth"]);
+  push!(group0, ["# This data would come from reading summary files."]);
+  push!(group0, ["#JSUB<protocol>ProtocolName"]);
+  push!(group0, ["bash echo \"cmd 1\""]);
+  group1 = [];
+  push!(group1, ["#JGROUP first"]);
+  push!(group1, ["bash echo \"cmd 12\""]);
+  push!(group1, ["bash echo \"cmd 13\""]);
+  group2 = [];
+  push!(group2, ["#JGROUP second first"]);
+  push!(group2, ["bash echo \"cmd 21\""]);
+  push!(group2, ["bash echo \"cmd 22\""]);
+  expectedSummaryDict = Dict(
+    "root" => root,
+    "zeroth" => group0,
+    "first" => group1,
+    "second" => group2
+  )
+  @test split_summary(suppliedSummaryArray; tagSplit="#JGROUP") == expectedSummaryDict
+
   ## construct_conditions(arrParents; condition="done", operator="&&")
   suppliedNames = ["first", "second", "third", "fourth"];
   expectedString = "\'done(\"first\")&&done(\"second\")&&done(\"third\")&&done(\"fourth\")\'";
@@ -1361,7 +1398,15 @@ Test.with_handler(ut_handler) do
   push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
   push!(suppliedJobArray, ["bash echo \"cmd 22\""]);
   expectedCommand = "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'";
-  @test cmd_await_jobs(suppliedJobArray; tagHeader="#BSUB", option="-w", condition="done", tagSplit="#JGROUP") == expectedCommand
+  @test cmd_await_jobs(suppliedJobArray; tagHeader="#BSUB", option="-w", condition="done", tagSplit="#JGROUP", jobID="", jobDate="") == expectedCommand
+
+  ## cmd_await_jobs(jobArray; condition="done", tagSplit="#JGROUP")
+  suppliedJobArray = [];
+  push!(suppliedJobArray, ["#JGROUP second first third fourth fifth"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
+  push!(suppliedJobArray, ["bash echo \"cmd 22\""]);
+  expectedCommand = "#BSUB -w \'done(\"first_ID01\")&&done(\"third_ID01\")&&done(\"fourth_ID01\")&&done(\"fifth_ID01\")\'";
+  @test cmd_await_jobs(suppliedJobArray; tagHeader="#BSUB", option="-w", condition="done", tagSplit="#JGROUP", jobID="_ID01", jobDate="") == expectedCommand
 
   ## create_job_header_string(jobArray; tagHeader="#BSUB" prefix="#!/bin/bash\n", suffix="")
   suppliedJobArray = [];
@@ -1387,14 +1432,21 @@ Test.with_handler(ut_handler) do
     "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
     "\nheader suffix string"
   );
-  @test create_job_header_string(suppliedJobArray; tagHeader="#BSUB", prefix="#!/bin/bash\n", suffix="\nheader suffix string") == headerString
+  @test create_job_header_string(suppliedJobArray; tagHeader="#BSUB", prefix="#!/bin/bash\n", suffix="\nheader suffix string", jobID="", jobDate="") == headerString
   expHeader = string( 
     "#!/bin/bash\n",
     '\n',
     "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
     ""
   )
-  @test create_job_header_string(suppliedJobArray; tagHeader="#BSUB", prefix="#!/bin/bash\n", suffix="") == expHeader
+  @test create_job_header_string(suppliedJobArray; tagHeader="#BSUB", prefix="#!/bin/bash\n", suffix="", jobID="", jobDate="") == expHeader
+  expHeader = string( 
+    "#!/bin/bash\n",
+    '\n',
+    "#BSUB -w \'done(\"firstYYYYMMDD_HHMMSS_ID001\")&&done(\"thirdYYYYMMDD_HHMMSS_ID001\")&&done(\"fourthYYYYMMDD_HHMMSS_ID001\")&&done(\"fifthYYYYMMDD_HHMMSS_ID001\")\'",
+    ""
+  )
+  @test create_job_header_string(suppliedJobArray; tagHeader="#BSUB", prefix="#!/bin/bash\n", suffix="", jobID="ID001", jobDate="YYYYMMDD_HHMMSS") == expHeader
 
   ## identify_checkpoints
   suppliedJobArray = [];
@@ -1468,7 +1520,7 @@ Test.with_handler(ut_handler) do
   push!(suppliedJobArray, ["#BSUB -P grantcode"]);
   push!(suppliedJobArray, ["#BSUB -w overriding"]);
   push!(suppliedJobArray, ["bash echo \"cmd 23\""]);
-  create_job_file_(filePath, suppliedJobArray, output_dict; )
+  create_job_file_(filePath, suppliedJobArray, output_dict; jobID="", jobDate="")
   expected_file_contents = string( 
     string( 
       "#!/bin/bash\n",
@@ -1490,7 +1542,7 @@ Test.with_handler(ut_handler) do
     "function dummy2 {\necho Running_dummy_function_2\n}\nfunction dummy2_1 {\necho Running_dummy_function_2_1\n}\nfunction dummy2_2 {\necho Running_dummy_function_2_2\n}\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy3.sh", "\n",
     "function dummy3 {\necho Running_dummy_function_3\n}\n",
-    "\n\n# Commands taken from summary file: jlang_function_test_files/job_files/ut_generated_job.lsf""\n",
+    "\n\n# Commands taken from summary file: ""\n",
     "\n#JSUB<begin_job>\n",
     "#JGROUP second first third fourth fifth", "\n",
     "bash echo \"cmd 21\"", "\n",
@@ -1509,9 +1561,53 @@ Test.with_handler(ut_handler) do
   # write(stream, expected_file_contents)
   # close(stream)
 
+  # Test to make sure create_job_file_ does not create a job file if the array of commands is empty
+  filePath = "jlang_function_test_files/job_files/ut_generated_empty_job.lsf";
+  if isfile(filePath)
+    run(`rm $filePath`);
+  end
+  headerString = string( 
+    "#!/bin/bash\n",
+    '\n',
+    "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
+    "\nheader suffix string"
+  );
+  suppliedJobArray = [];
+  create_job_file_(filePath, suppliedJobArray, output_dict; )
+  @test isfile(filePath) == false
 
+  ## check_for_bsub_conflicts(jobArray; tag="#BSUB", option="-J")
+  suppliedJobArray = [];
+  push!(suppliedJobArray, ["#JGROUP second first third fourth fifth"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
+  push!(suppliedJobArray, ["#BSUB -J jobID"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 22\""]);
+  push!(suppliedJobArray, ["#BSUB -P grantcode"]);
+  push!(suppliedJobArray, ["#BSUB -w overriding"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 23\""]);
+  @test detect_option_conflicts(suppliedJobArray; tag="#BSUB", option="-J") == false
 
+  suppliedJobArray = [];
+  push!(suppliedJobArray, ["#JGROUP second first third fourth fifth"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
+  push!(suppliedJobArray, ["#BSUB -J jobID"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 22\""]);
+  push!(suppliedJobArray, ["#BSUB -P grantcode"]);
+  push!(suppliedJobArray, ["#BSUB -J jobID"]);
+  push!(suppliedJobArray, ["#BSUB -w overriding"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 23\""]);
+  @test detect_option_conflicts(suppliedJobArray; tag="#BSUB", option="-J") == false
 
+  suppliedJobArray = [];
+  push!(suppliedJobArray, ["#JGROUP second first third fourth fifth"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
+  push!(suppliedJobArray, ["#BSUB -J jobID"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 22\""]);
+  push!(suppliedJobArray, ["#BSUB -P grantcode"]);
+  push!(suppliedJobArray, ["#BSUB -J hobID"]);
+  push!(suppliedJobArray, ["#BSUB -w overriding"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 23\""]);
+  @test detect_option_conflicts(suppliedJobArray; tag="#BSUB", option="-J") == true
 
 
 

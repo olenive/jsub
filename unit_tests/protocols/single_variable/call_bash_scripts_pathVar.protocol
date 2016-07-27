@@ -1,6 +1,0 @@
-#"Errors should not be caused by this comment in icall_bash_scripts_pathVar.protocol."
-/bin/bash "$DIR_BASE"/unit_tests/shell_scripts/utbash01.sh "first/in1" "second/in2" "third/out1" "fourth/out2"
-#"Errors should not be caused by this comment in icall_bash_scripts_pathVar.protocol."
-/bin/bash "$DIR_BASE"/unit_tests/shell_scripts/utbash02.sh                          "third/out1" "fourth/out2" "fifth/out3" "sixth/out4"
-/bin/bash "$DIR_BASE"/unit_tests/shell_scripts/utbash03.sh                                                     "fifth/out3" "sixth/out4" "seventh/out5" "eighth/out6"
-#"Errors should not be caused by this comment in icall_bash_scripts_pathVar.protocol."
