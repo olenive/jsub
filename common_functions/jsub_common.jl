@@ -30,11 +30,15 @@ function isblank(wline) # Check if line is blank
   lstrip(wline) == "" ? true : false
 end
 
-# Identify rows that begin with a tag indicating instructions for jsub.  The values in these rows should be expanded even if they begin with a comment.
-function get_tag_rowindices(tagsExpand)
-
-  return []
+# Remove the end from a string if it matches another string
+function remove_suffix(long, suffix)
+  endswith(long, suffix) ? (return long[1:end - length(suffix)]) : (return long);
 end
+
+# # Identify rows that begin with a tag indicating instructions for jsub.  The values in these rows should be expanded even if they begin with a comment.
+# function get_tag_rowindices(tagsExpand)
+#   return []
+# end
 
 function file2arrayofarrays_(fpath, comStr; cols=0::Integer, delimiter=nothing, verbose=false, tagsExpand=nothing)
   if verbose
@@ -655,9 +659,32 @@ function protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars,
   return arrArrExpFvars
 end
 
-# Get job names by reading protocol file arrays and looking for the first instance of a jobname tag or simply numbering them
-function get_summary_names(arrProt; prefix="", suffix="", timestamp="", tag="#JSUB<protocol>")
-  jobNames = [];
+# Use input protocol, vars and fvars file names to generate a long name string to be used as part of the output summary and job file names.
+function get_longname(pathProtocol, pathVars, pathFvars)
+  baseProtocol = remove_suffix(basename(pathProtocol), ".protocol");
+  baseVars = remove_suffix(basename(pathVars), ".vars");
+  baseFvars = remove_suffix(basename(pathFvars), ".fvars");
+  (length(baseProtocol) > 0 && length(baseVars * baseFvars) > 0) ? dlm1 = "_" : dlm1 = "";
+  (length(baseProtocol * baseVars) > 0 && length(baseFvars) > 0) ? dlm2 = "_" : dlm2 = "";
+  out = string(
+    baseProtocol,
+    dlm1,
+    baseVars,
+    dlm2,
+    baseFvars
+  )
+  if out == ""
+    out = string(hash(pathProtocol*pathVars*pathFvars));
+    if out == ""
+      error(string("Unable to generate name string from the following variables:\n", pathProtocol, "\n", pathVars, "\n", pathFvars))
+    end
+  end
+  return out
+end
+
+# Get summary file names by reading protocol file arrays and looking for the first instance of a tag or simply numbering them
+function get_summary_names(arrProt; prefix="", suffix=".summary", timestamp="", tag="#JSUB<file-name-prefix>", allowNonUnique=false, longName=nothing)
+  summaryNames = [];
   lenTag = length(tag);
   idx = 0;
   for arr in arrProt
@@ -666,17 +693,34 @@ function get_summary_names(arrProt; prefix="", suffix="", timestamp="", tag="#JS
     for subarr in arr
       line = lstrip(join(subarr));
       if iscomment(line, tag)
-        push!(jobNames, string(prefix, lstrip(line[lenTag+1:end]), suffix)); # Use name from file
+        push!(summaryNames, string(prefix, lstrip(line[lenTag+1:end]), suffix)); # Use name from file
         foundName = true;
         break        
       end
     end
     if !foundName
-      push!(jobNames, string(prefix, "job_", dec(idx, 4), timestamp, suffix)); # Use default name
+      length(timestamp) > 0 ? delim = "_" : delim = "";
+      if longName == nothing
+        push!(summaryNames, string(prefix, "summary", dec(idx, 4), delim, timestamp, suffix)); # Use default name
+      else
+        push!(summaryNames, string(prefix, longName, "_", dec(idx, 4), delim, timestamp, suffix)); # Use longName
+      end
     end
   end
-  return jobNames
+  # Check to make sure unique job names are returned (unless the allowNonUnique option is set to true)
+  if !allowNonUnique && length(summaryNames) != length(unique(summaryNames))
+    error(" (in get_summary_names) output list of summary file names contains non-unique entries.")
+  else
+    return summaryNames
+  end
 end
+
+# # Get job file names
+# function get_jobfile_name(summaryName, group; summaryFileExtension=".summary")
+#   baseName = remove_suffix(basename(summaryName), summaryFileExtension); # Remove the .summary file extension
+#   length(group) > 0 ? dlm = "_" : dlm = "";
+#   return string(baseName, dlm, group)
+# end
 
 # Write summary files
 function create_summary_files_(arrArrExpFvars, summaryPaths; verbose=verbose)
@@ -739,16 +783,25 @@ function construct_conditions(arrNames; condition="done", operator="&&")
   end
 end
 
+# Return a job ID with a date or generate a hash from the jobArray
+function jobID_or_hash(jobArray; jobID=nothing, jobDate="")
+  if jobDate == nothing
+    jobDate = "";
+  end
+  if jobID == nothing
+    length(jobDate) > 0 ? delim = "_" : delim = "";
+    jobID = string(jobDate, delim, hash(jobArray));
+  else
+    (length(jobDate) > 0) && (length(jobID) > 0) ? delim = "_" : delim = "";
+    jobID = string(jobDate, delim, jobID);
+  end
+  return jobID
+end
+
 # Determine parent jobs which must be completed first
 function cmd_await_jobs(jobArray; tagHeader="#BSUB", option="-w", condition="done", tagSplit="#JGROUP", jobID=nothing, jobDate=nothing)
   jobDate = get_timestamp_(jobDate);
-  # Generate unique-ish job ID if one is not provided
-  (length(jobDate) > 0) && (length(jobID) > 0) ? delim = "_" : delim = "";
-  if jobID == nothing
-    jobID = string(jobDate, delim, hash(jobArray));
-  else
-    jobID = string(jobDate, delim, jobID);
-  end
+  jobID = jobID_or_hash(jobArray; jobID=jobID) # Generate unique-ish job ID if one is not provided
   # Check if the first entry in the job array begins with a group tag (tagSplit) and use this tag to identify parent jobs
   if iscomment(join(jobArray[1]), tagSplit)
     groupString = lstrip(join(jobArray[1]));
@@ -756,9 +809,9 @@ function cmd_await_jobs(jobArray; tagHeader="#BSUB", option="-w", condition="don
     groupParents = [];
     if length(groupString) > length(tagSplit)
       afterTag = split(groupString);
-      groupName = afterTag[1]
       if length(afterTag) > 2
-        groupParents = map( (x) -> string(x, jobID), afterTag[3:end]);
+        length(jobID) > 0 ? delim = "_" : delim = "";
+        groupParents = map( (x) -> string(jobID, delim, x), afterTag[3:end]);
       end
     end
     return string(tagHeader, " ", option, " ", construct_conditions(groupParents; condition=condition))
@@ -767,14 +820,49 @@ function cmd_await_jobs(jobArray; tagHeader="#BSUB", option="-w", condition="don
   end
 end
 
+# Retrives the group name associated with this job (this not the job ID), assuming that the jobArray is a list of commands with the first entry being of the form "#JGROUP groupName ..."
+function get_groupname(jobArray; tagSplit="#JGROUP")
+  # Get group name
+  groupName = "";
+  if iscomment(join(jobArray[1]), tagSplit)
+    afterTag = split(lstrip(join(jobArray[1])));
+    if length(afterTag) > 1
+      groupName = string(afterTag[2]);
+    else
+      throw("Found a group/split tag without an associated group name", " on line: ", join(jobArray[1]));
+    end
+  end
+  return groupName
+end
+
+## Use summary file name and array of job instructions to get a file name for each job.
+function generate_jobfilepath(summaryName, jobArray; tagSplit="#JGROUP", prefix="", suffix=".lsf")
+  groupName = get_groupname(jobArray, tagSplit=tagSplit);
+  if summaryName != nothing
+    return string(prefix, summaryName, "_", groupName, suffix)
+  else
+    return string(prefix, hash(jobArray), "_", groupName, suffix)
+  end
+end
+
 # Read job dictionary and return job header
-function create_job_header_string(jobArray; tagHeader="#BSUB", prefix="#!/bin/bash\n", suffix="", tagSplit="#JGROUP", jobID=nothing, jobDate=nothing)
+function create_job_header_string(jobArray; tagHeader="#BSUB", prefix="#!/bin/bash\n", suffix="", tagSplit="#JGROUP", jobID=nothing, jobDate=nothing, appendOptions=true)
   # arrHeaderRows = jobArray[find((x)->iscomment(join(x), tagHeader), jobArray)] # Extract header rows from among command rows
+  jobID = jobID_or_hash(jobArray; jobID=jobID, jobDate=jobDate);
+  groupName = get_groupname(jobArray, tagSplit=tagSplit);
+  length(groupName) > 0 ? idDelim = "_" : idDelim = "";
+  # Generate options strings
+  options = "";
+  if appendOptions
+    ## Determine group ID (first entry after group tag (e.g #JGROUP groupID otherGroupID ...))
+    options = string("\n", tagHeader, " -J $jobID", idDelim, groupName, "\n", tagHeader, " -e $jobID", idDelim, groupName, ".error\n", tagHeader, " -o $jobID", idDelim, groupName, ".output\n");
+  end
   return string(
     prefix,
     # join( map( x -> join(x), arrHeaderRows), '\n'), 
     '\n',
     cmd_await_jobs(jobArray, tagHeader=tagHeader, tagSplit=tagSplit, jobID=jobID, jobDate=jobDate),
+    options,
     suffix 
   );
 end
@@ -796,7 +884,7 @@ function identify_checkpoints(jobArray, checkpointsDict; tagCheckpoint="jcheck_"
 end
 
 # Read bash functions from files into Dict
-function get_bash_functions_(common_functions::Dict, selected_functions::Dict)
+function get_bash_functions(common_functions::Dict, selected_functions::Dict)
   all = merge(common_functions, selected_functions); # merge into one dict
   out = Dict();
   for (key, val) in all # read functions from files
@@ -805,28 +893,27 @@ function get_bash_functions_(common_functions::Dict, selected_functions::Dict)
   return out # return dict of {function names => function strings}
 end
 
-## Create job file(s) from summary file
+## Create job file from array of instructions and a dictionary of functions
 # Use file2arrayofarrays_(x, "#", cols=1) to read summary file
-function create_job_file_(filePath, jobArray, files_contents::Dict; tagBegin="#JSUB<begin_job>", tagFinish="#JSUB<finish_job>", tagHeader="#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing)
+function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summaryFileOfOrigin="", tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true)
   # Check if jobArray is empty
   if jobArray == []
     SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_job_file_) Array of job contents is empty, no job file created.");
   else
     # Overwrite with header
-    println("Writing to job file: ", filePath);
-    stream = open(filePath, "w");
-    write(stream, create_job_header_string(jobArray; tagHeader=tagHeader, prefix=headerPrefix, suffix=headerSuffix, jobID=jobID, jobDate=jobDate));
+    println("Writing to job file: ", outFilePath);
+    stream = open(outFilePath, "w");
+    write(stream, create_job_header_string(jobArray; tagHeader=tagHeader, prefix=headerPrefix, suffix=headerSuffix, jobID=jobID, jobDate=jobDate, appendOptions=appendOptions));
     # Append tag variables
     write(stream, "\n# Tag variables\n");
-
     # Append common functions
     write(stream, "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n");
-    for key in sort(collect(keys(files_contents)))
+    for key in sort(collect(keys(functionsDictionary)))
       write(stream, string("\n# --- From file: ", key, "\n") );
-      write(stream, string(files_contents[key]));
+      write(stream, string(functionsDictionary[key]));
     end
     # Append commands
-    write(stream, "\n\n# Commands taken from summary file: $summaryFile\n");
+    write(stream, "\n\n# Commands taken from summary file: $summaryFileOfOrigin\n");
     write(stream, string("\n", tagBegin, "\n"));
     map((x) -> write(stream, join(x), '\n'), jobArray);
     write(stream, string("\n", tagFinish, "\n"));
@@ -834,7 +921,55 @@ function create_job_file_(filePath, jobArray, files_contents::Dict; tagBegin="#J
   end
 end
 
-## Check if a BSUB option appears more than once in the job array.
+## Create all the job files associated with a particular summary file (Note that using the option filePathOverride means input to the directoryForJobFiles and jobFileSuffix options will be ignored)
+function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonFunctions::Dict, checkpointsDict::Dict; directoryForJobFiles="", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
+    tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true
+  )
+  ## For each group in the summary file create a job file
+  for (idx, pair) in enumerate(dictSummaries)
+    group = pair[1];
+    jobArray = pair[2];
+    dictCheckpoints = get_bash_functions(
+      commonFunctions,
+      identify_checkpoints(jobArray, checkpointsDict; tagCheckpoint=tagCheckpoint) ## Extract the checkpoints/bash functions needed for each job file
+    );
+    ## Get job file name from path and group
+    outFilePath = "";
+    if filePathOverride != nothing
+      outFilePath = filePathOverride;
+    else
+      (length(group) > 0 && group != root) ? (group = "_" * group) : (group = ""); # job file specific suffix
+      outFilePath = string(directoryForJobFiles, basename(remove_suffix(summaryFilePath, ".summary")), group, jobFileSuffix); # get longName from file path
+    end
+    create_job_file_(outFilePath, jobArray, dictCheckpoints;  summaryFileOfOrigin=summaryFilePath, 
+      tagBegin=tagBegin, tagFinish=tagFinish, tagHeader=tagHeader, tagCheckpoint=tagCheckpoint, headerPrefix=headerPrefix, headerSuffix=headerSuffix, summaryFile=summaryFile, jobID=jobID, jobDate=jobDate, appendOptions=appendOptions
+    );
+  end
+end
+
+
+# # Use an array of paths and a dictionary of [names -> arrays] to create input to the create_job_file_ function
+# function get_jobdata(filePath, dictSummaries::Dict, checkpointsDict::Dict; fileNameOverride=nothing, root="root", tagCheckpoint="jcheck_")
+#   ## Extract the checkpoints/bash functions needed for each job file
+#   for (idx, pair) in enumerate(dictSummaries)
+#     group = pair[1];
+#     jobArray = pair[2];
+
+#     dictCheckpoints = identify_checkpoints(jobArray, checkpointsDict; tagCheckpoint=tagCheckpoint) # returns a dictionary
+
+#     ## Get job file name from path and group
+#     if fileNameOverride != nothing
+#       filePath = fileNameOverride;
+#     else
+
+#     end
+
+#   end
+
+#   return filePath, jobArray
+# end
+
+## Check if a #BSUB option appears more than once in the job array.
 function detect_option_conflicts(jobArray; tag="#BSUB", option="-J")
   matchIndices = [];
   matchValues = [];
@@ -851,6 +986,7 @@ function detect_option_conflicts(jobArray; tag="#BSUB", option="-J")
   length(unique(matchValues)) > 1 ? (return true) : (return false);
 end
 
+##
 
 
 # EOF

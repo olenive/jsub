@@ -1,0 +1,48 @@
+#!/bin/bash
+
+
+#BSUB -J 4109423206293729507
+#BSUB -e 4109423206293729507.error
+#BSUB -o 4109423206293729507.output
+
+# Tag variables
+
+
+# Contents inserted from other files (this section is intended to be used only for functions):
+
+# --- From file: jlang_function_test_files/dummy_bash_functions/dummy1.sh
+function dummy1 {
+echo Running_dummy_function_1
+}
+
+# --- From file: jlang_function_test_files/dummy_bash_functions/dummy2.sh
+function dummy2 {
+echo Running_dummy_function_2
+}
+function dummy2_1 {
+echo Running_dummy_function_2_1
+}
+function dummy2_2 {
+echo Running_dummy_function_2_2
+}
+
+# --- From file: jlang_function_test_files/dummy_bash_functions/dummy3.sh
+function dummy3 {
+echo Running_dummy_function_3
+}
+
+# --- From file: jlang_function_test_files/dummy_bash_functions/jcheck_resume.sh
+contents of jcheck_resume.sh
+
+
+# Commands taken from summary file: dir/name/is/ignored/ut_create_jobs_from_summary.summary
+
+#JSUB<begin-job>
+# This data would come from reading summary files.
+#JSUB<file-name-prefix>ProtocolName
+bash echo "cmd 01"
+jcheck_resume
+bash echo "cmd 02"
+bash echo "cmd 03"
+
+#JSUB<finish-job>

@@ -97,7 +97,7 @@ num_suppressed = [0];
 ## Tags
 tagsExpand = Dict(
   "header" => "#BSUB",
-  "tagSummaryName" => "#JSUB<protocol>",
+  "tagSummaryName" => "#JSUB<file-name-prefix>",
   "tagSplit" => "#JGROUP"
 )
 
@@ -115,41 +115,45 @@ include("./common_functions/jsub_common.jl")
 
 ######### MAIN #########
 
+## Determine string used in file names
+longName = "longName" #get_longname(fileProtocol, fileVars, fileFvars)
 
-
-## Read .vars file # Extract arrays of variable names and variable values
+## Read protocol, vars and fvars files and expand variables
+# Read .vars file # Extract arrays of variable names and variable values
 namesVarsRaw, valuesVarsRaw = parse_varsfile_(fileVars, tagsExpand=tagsExpand);
-
-## Expand variables in each row from .vars if they were assigned in a higher row (as though they are being assigned at the command line).
+# Expand variables in each row from .vars if they were assigned in a higher row (as though they are being assigned at the command line).
 namesVars, valuesVars = expandinorder(namesVarsRaw, valuesVarsRaw, adapt_quotation=adapt_quotation);
-
-## Read .fvar file (of 3 columns) and expand variables from .vars
+# Read .fvar file (of 3 columns) and expand variables from .vars
 namesFvars, infileColumnsFvars, filePathsFvars = parse_expandvars_fvarsfile_(fileFvars, namesVars, valuesVars; dlmFvars=delimiterFvars, adapt_quotation=adapt_quotation, tagsExpand=tagsExpand);
-
-## Read .protocol file (of 1 column ) and expand variables from .vars
+# Read .protocol file (of 1 column ) and expand variables from .vars
 arrProtExpVars, cmdRowsProt = parse_expandvars_protocol_(fileProtocol, namesVars, valuesVars, adapt_quotation=adapt_quotation);
-
-## Read "list" files and return their contents in a dictionary (key: file path) (value: arrays of arrays) as well as corresponding command line indicies
+# Read "list" files and return their contents in a dictionary (key: file path) (value: arrays of arrays) as well as corresponding command line indicies
 dictListArr, dictCmdLineIdxs = parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, delimiterFvars; verbose=false, adapt_quotation=adapt_quotation, tagsExpand=tagsExpand);
-
-## Use variable values from "list" files to create multiple summary file arrays from the single .protocol file array
+# Use variable values from "list" files to create multiple summary file arrays from the single .protocol file array
 arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs; verbose=verbose, adapt_quotation=adapt_quotation);
 
-## Generate list of job names
-summaryPaths = get_summary_names(arrArrExpFvars; prefix="TEST/", suffix=".summary", timestamp="_YYYYMMDD_HHMMSS");
-
-## Take an expanded protocol in the form of an array of arrays and produce a summary file for each entry
+## Create summary files
+# Generate list of summary file paths.
+summaryPaths = get_summary_names(arrArrExpFvars; tag="#JSUB<file-name-prefix>", # if an entry with this tag is found in the protocol (arrArrExpFvars), the string following the tag will be used as the name
+ longName=longName, # Otherwise the string passed to longName will be used as the basis of the summary file name
+ prefix="TEST/", suffix=".summary", timestamp="YYYYMMDD_HHMMSS"
+);
+# Take an expanded protocol in the form of an array of arrays and produce a summary file for each entry
 create_summary_files_(arrArrExpFvars, summaryPaths; verbose=verbose);
 
-## Read summary files into array
+## Read summary files and use them to create LSF job files
 # Note: file2arrayofarrays_ returns a tuple of file contents (in an array) and line number indices (in an array)
 summaryFilesData = map((x) -> file2arrayofarrays_(x, "#", cols=1, tagsExpand=tagsExpand), summaryPaths );
 
-## Get bash functions from files
-arrDictCheckpoints = map((x) -> identify_checkpoints(x[1], checkpointsDict; tagCheckpoint="jcheck_"), summaryFilesData );
-arrBashFunctions = map((x) -> get_bash_functions_(common_functions, x), arrDictCheckpoints);
+## this can be done inside the create_job_file function
+# # Use summary file path and contents to generate job file names
+# arrJobFileNames = map((x, y) -> get_jobfile_name(x, y[1]), summaryPaths, summaryFilesData);
 
-## Split into job arrays
+# Get bash functions from files
+arrDictCheckpoints = map((x) -> identify_checkpoints(x[1], checkpointsDict; tagCheckpoint="jcheck_"), summaryFilesData );
+arrBashFunctions = map((x) -> get_bash_functions(common_functions, x), arrDictCheckpoints);
+
+# Split into job arrays
 summaryArrDicts = map((x) -> split_summary(x[1]; tagSplit=tagsExpand["tagSplit"]), summaryFilesData);
 
 ## Get job file paths
@@ -157,7 +161,9 @@ summaryArrDicts = map((x) -> split_summary(x[1]; tagSplit=tagsExpand["tagSplit"]
 
 ## Write job files
 map( (path, jobDict) ->
-  create_job_file_(filePath, jobArray, bashFunctions; tagBegin="#JSUB<begin_job>", tagFinish="#JSUB<finish_job>", tagHeader="#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile=""),
+
+  for jobArray in 
+  create_job_file_(filePath, jobArray, bashFunctions; tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile=""),
 
 )
 

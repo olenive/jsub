@@ -1,6 +1,10 @@
 #!/bin/bash
 
-#BSUB -w 'done("first")&&done("third")&&done("fourth")&&done("fifth")'
+#BSUB -w 'done("ID002_first")&&done("ID002_third")&&done("ID002_fourth")&&done("ID002_fifth")'
+#BSUB -J ID002_second
+#BSUB -e ID002_second.error
+#BSUB -o ID002_second.output
+
 # Tag variables
 
 
@@ -48,7 +52,7 @@ echo Running_dummy_function_3
 
 # Commands taken from summary file: 
 
-#JSUB<begin_job>
+#JSUB<begin-job>
 #JGROUP second first third fourth fifth
 bash echo "cmd 21"
 #BSUB -J jobID
@@ -57,4 +61,4 @@ bash echo "cmd 22"
 #BSUB -w overriding
 bash echo "cmd 23"
 
-#JSUB<finish_job>
+#JSUB<finish-job>
