@@ -773,10 +773,10 @@ function construct_conditions(arrNames; condition="done", operator="&&")
   if lenArray == 0
     return ""
   else
-    out = string("\'", condition, "(\"", arrNames[1], "\")" )
+    out = string("\'", condition, "(\"", arrNames[1], "\")" );
     if lenArray > 1
       for idx = 2:lenArray
-        out = string(out, operator, condition, "(\"", arrNames[idx], "\")")
+        out = string(out, operator, condition, "(\"", arrNames[idx], "\")");
       end
     end
     return string(out, "\'")
@@ -799,9 +799,9 @@ function jobID_or_hash(jobArray; jobID=nothing, jobDate="")
 end
 
 # Determine parent jobs which must be completed first
-function cmd_await_jobs(jobArray; tagHeader="#BSUB", option="-w", condition="done", tagSplit="#JGROUP", jobID=nothing, jobDate=nothing)
+function cmd_await_jobs(jobArray; root="root", tagHeader="\n#BSUB", option="-w", condition="done", tagSplit="#JGROUP", jobID=nothing, jobDate=nothing)
   jobDate = get_timestamp_(jobDate);
-  jobID = jobID_or_hash(jobArray; jobID=jobID) # Generate unique-ish job ID if one is not provided
+  jobID = jobID_or_hash(jobArray; jobID=jobID); # Generate unique-ish job ID if one is not provided
   # Check if the first entry in the job array begins with a group tag (tagSplit) and use this tag to identify parent jobs
   if iscomment(join(jobArray[1]), tagSplit)
     groupString = lstrip(join(jobArray[1]));
@@ -809,9 +809,10 @@ function cmd_await_jobs(jobArray; tagHeader="#BSUB", option="-w", condition="don
     groupParents = [];
     if length(groupString) > length(tagSplit)
       afterTag = split(groupString);
-      if length(afterTag) > 2
+      if length(afterTag) > 1
+        length(afterTag) > 2 ? groupNames = [root; afterTag[3:end]] : groupNames = [root]
         length(jobID) > 0 ? delim = "_" : delim = "";
-        groupParents = map( (x) -> string(jobID, delim, x), afterTag[3:end]);
+        groupParents = map( (x) -> string(jobID, delim, x), groupNames); # Note that a root job is always added
       end
     end
     return string(tagHeader, " ", option, " ", construct_conditions(groupParents; condition=condition))
@@ -846,7 +847,7 @@ function generate_jobfilepath(summaryName, jobArray; tagSplit="#JGROUP", prefix=
 end
 
 # Read job dictionary and return job header
-function create_job_header_string(jobArray; tagHeader="#BSUB", prefix="#!/bin/bash\n", suffix="", tagSplit="#JGROUP", jobID=nothing, jobDate=nothing, appendOptions=true)
+function create_job_header_string(jobArray; root="root", tagHeader="\n#BSUB", prefix="#!/bin/bash\n", suffix="", tagSplit="#JGROUP", jobID=nothing, jobDate=nothing, appendOptions=true)
   # arrHeaderRows = jobArray[find((x)->iscomment(join(x), tagHeader), jobArray)] # Extract header rows from among command rows
   jobID = jobID_or_hash(jobArray; jobID=jobID, jobDate=jobDate);
   groupName = get_groupname(jobArray, tagSplit=tagSplit);
@@ -855,13 +856,13 @@ function create_job_header_string(jobArray; tagHeader="#BSUB", prefix="#!/bin/ba
   options = "";
   if appendOptions
     ## Determine group ID (first entry after group tag (e.g #JGROUP groupID otherGroupID ...))
-    options = string("\n", tagHeader, " -J $jobID", idDelim, groupName, "\n", tagHeader, " -e $jobID", idDelim, groupName, ".error\n", tagHeader, " -o $jobID", idDelim, groupName, ".output\n");
+    options = string(tagHeader, " -J $jobID", idDelim, groupName, tagHeader, " -e $jobID", idDelim, groupName, ".error", tagHeader, " -o $jobID", idDelim, groupName, ".output", "\n");
   end
   return string(
     prefix,
     # join( map( x -> join(x), arrHeaderRows), '\n'), 
-    '\n',
-    cmd_await_jobs(jobArray, tagHeader=tagHeader, tagSplit=tagSplit, jobID=jobID, jobDate=jobDate),
+    # '\n',
+    cmd_await_jobs(jobArray, root=root, tagHeader=tagHeader, tagSplit=tagSplit, jobID=jobID, jobDate=jobDate),
     options,
     suffix 
   );
@@ -895,7 +896,7 @@ end
 
 ## Create job file from array of instructions and a dictionary of functions
 # Use file2arrayofarrays_(x, "#", cols=1) to read summary file
-function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summaryFileOfOrigin="", tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true)
+function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summaryFileOfOrigin="", root="root", tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true)
   # Check if jobArray is empty
   if jobArray == []
     SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_job_file_) Array of job contents is empty, no job file created.");
@@ -903,7 +904,7 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summ
     # Overwrite with header
     println("Writing to job file: ", outFilePath);
     stream = open(outFilePath, "w");
-    write(stream, create_job_header_string(jobArray; tagHeader=tagHeader, prefix=headerPrefix, suffix=headerSuffix, jobID=jobID, jobDate=jobDate, appendOptions=appendOptions));
+    write(stream, create_job_header_string(jobArray; root=root, tagHeader=tagHeader, prefix=headerPrefix, suffix=headerSuffix, jobID=jobID, jobDate=jobDate, appendOptions=appendOptions));
     # Append tag variables
     write(stream, "\n# Tag variables\n");
     # Append common functions
@@ -923,7 +924,7 @@ end
 
 ## Create all the job files associated with a particular summary file (Note that using the option filePathOverride means input to the directoryForJobFiles and jobFileSuffix options will be ignored)
 function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonFunctions::Dict, checkpointsDict::Dict; directoryForJobFiles="", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
-    tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true
+    tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n", headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true
   )
   ## For each group in the summary file create a job file
   for (idx, pair) in enumerate(dictSummaries)
@@ -938,12 +939,14 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
     if filePathOverride != nothing
       outFilePath = filePathOverride;
     else
-      (length(group) > 0 && group != root) ? (group = "_" * group) : (group = ""); # job file specific suffix
-      outFilePath = string(directoryForJobFiles, basename(remove_suffix(summaryFilePath, ".summary")), group, jobFileSuffix); # get longName from file path
+      (length(group) > 0) ? (group = "_" * group) : (group = ""); # # (length(group) > 0 && group != root) ? (group = "_" * group) : (group = ""); # job file specific suffix
+      outFilePath = string(directoryForJobFiles, "/", basename(remove_suffix(summaryFilePath, ".summary")), group, jobFileSuffix); # get longName from file path
     end
-    create_job_file_(outFilePath, jobArray, dictCheckpoints;  summaryFileOfOrigin=summaryFilePath, 
+    create_job_file_(outFilePath, jobArray, dictCheckpoints;  summaryFileOfOrigin=summaryFilePath, root=root,
       tagBegin=tagBegin, tagFinish=tagFinish, tagHeader=tagHeader, tagCheckpoint=tagCheckpoint, headerPrefix=headerPrefix, headerSuffix=headerSuffix, summaryFile=summaryFile, jobID=jobID, jobDate=jobDate, appendOptions=appendOptions
     );
+    # println(dictCheckpoints);
+    # println(dictCheckpoints["jlang_function_test_files/dummy_bash_functions/jcheck_resume.sh"]);
   end
 end
 

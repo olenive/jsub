@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#BSUB -w 'done("ID002_first")&&done("ID002_third")&&done("ID002_fourth")&&done("ID002_fifth")'
+#BSUB -w 'done("ID002_root")&&done("ID002_first")&&done("ID002_third")&&done("ID002_fourth")&&done("ID002_fifth")'
 #BSUB -J ID002_second
 #BSUB -e ID002_second.error
 #BSUB -o ID002_second.output

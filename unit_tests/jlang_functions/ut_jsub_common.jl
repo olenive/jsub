@@ -36,10 +36,23 @@ function compare_arrays(arrA, arrB)
   end
   for idx = 1:length(arrA)
     # println(arrA[idx] == arrB[idx])
-    if (arrA[idx] != arrB[idx])
-      push!(arrFalses, idx)
-      println("idx = ", idx)
-      println(arrA[idx], "\n -VS- \n", arrB[idx])
+    try
+      if (arrA[idx] != arrB[idx])
+        push!(arrFalses, idx)
+        println(" -- Mismatch on line: ", idx)
+        println(arrA[idx], "\n", arrB[idx])
+        println("\n")
+      end
+    catch
+      print(" -- Remaining unmatched lines:")
+      if idx <= length(arrA)
+        print(" from array A\n");
+        println(arrA[idx]);
+      end
+      if idx <= length(arrB)
+        print(" from array B\n");
+        println(arrB[idx]);
+      end
     end
   end
   return arrFalses
@@ -1476,22 +1489,22 @@ Test.with_handler(ut_handler) do
   push!(suppliedJobArray, ["#JGROUP second first third fourth fifth"]);
   push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
   push!(suppliedJobArray, ["bash echo \"cmd 22\""]);
-  expectedCommand = "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'";
-  @test cmd_await_jobs(suppliedJobArray; tagHeader="#BSUB", option="-w", condition="done", tagSplit="#JGROUP", jobID="", jobDate="") == expectedCommand
+  expectedCommand = "\n#BSUB -w \'done(\"root\")&&done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'";
+  @test cmd_await_jobs(suppliedJobArray; option="-w", condition="done", tagSplit="#JGROUP", jobID="", jobDate="") == expectedCommand
 
   suppliedJobArray = [];
   push!(suppliedJobArray, ["#JGROUP second first third fourth fifth"]);
   push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
   push!(suppliedJobArray, ["bash echo \"cmd 22\""]);
-  expectedCommand = "#BSUB -w \'done(\"11331234539506827047_first\")&&done(\"11331234539506827047_third\")&&done(\"11331234539506827047_fourth\")&&done(\"11331234539506827047_fifth\")\'";
-  @test cmd_await_jobs(suppliedJobArray; tagHeader="#BSUB", option="-w", condition="done", tagSplit="#JGROUP", jobID=nothing) == expectedCommand
+  expectedCommand = "\n#BSUB -w \'done(\"11331234539506827047_root\")&&done(\"11331234539506827047_first\")&&done(\"11331234539506827047_third\")&&done(\"11331234539506827047_fourth\")&&done(\"11331234539506827047_fifth\")\'";
+  @test cmd_await_jobs(suppliedJobArray; option="-w", condition="done", tagSplit="#JGROUP", jobID=nothing) == expectedCommand
 
   suppliedJobArray = [];
   push!(suppliedJobArray, ["#JGROUP second first third fourth fifth"]);
   push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
   push!(suppliedJobArray, ["bash echo \"cmd 22\""]);
-  expectedCommand = "#BSUB -w \'done(\"ID01_first\")&&done(\"ID01_third\")&&done(\"ID01_fourth\")&&done(\"ID01_fifth\")\'";
-  @test cmd_await_jobs(suppliedJobArray; tagHeader="#BSUB", option="-w", condition="done", tagSplit="#JGROUP", jobID="ID01", jobDate="") == expectedCommand
+  expectedCommand = "\n#BSUB -w \'done(\"ID01_root\")&&done(\"ID01_first\")&&done(\"ID01_third\")&&done(\"ID01_fourth\")&&done(\"ID01_fifth\")\'";
+  @test cmd_await_jobs(suppliedJobArray; option="-w", condition="done", tagSplit="#JGROUP", jobID="ID01", jobDate="") == expectedCommand
 
   ## create_job_header_string(jobArray; tagHeader="#BSUB" prefix="#!/bin/bash\n", suffix="")
   suppliedJobArray = [];
@@ -1502,36 +1515,27 @@ Test.with_handler(ut_handler) do
   push!(suppliedJobArray, ["#BSUB -P grantcode"]);
   push!(suppliedJobArray, ["#BSUB -w overriding"]);
   push!(suppliedJobArray, ["bash echo \"cmd 23\""]);
-  # headerString = string( 
-  #   "#!/bin/bash\n",
-  #   "#BSUB -J jobID\n",
-  #   "#BSUB -P grantcode\n",
-  #   "#BSUB -w overriding",
-  #   '\n',
-  #   "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
-  #   "\nheader suffix string"
-  # );
-  headerString = string( 
+  expHeader = string( 
     "#!/bin/bash\n",
     '\n',
-    "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
+    "#BSUB -w \'done(\"root\")&&done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
     "\nheader suffix string"
   );
-  @test create_job_header_string(suppliedJobArray; tagHeader="#BSUB", prefix="#!/bin/bash\n", suffix="\nheader suffix string", jobID="", jobDate="", appendOptions=false) == headerString
+  @test create_job_header_string(suppliedJobArray; prefix="#!/bin/bash\n", suffix="\nheader suffix string", jobID="", jobDate="", appendOptions=false) == expHeader
   expHeader = string( 
     "#!/bin/bash\n",
     '\n',
-    "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
+    "#BSUB -w \'done(\"root\")&&done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
     ""
   )
-  @test create_job_header_string(suppliedJobArray; tagHeader="#BSUB", prefix="#!/bin/bash\n", suffix="", jobID="", jobDate="", appendOptions=false) == expHeader
+  @test create_job_header_string(suppliedJobArray; prefix="#!/bin/bash\n", suffix="", jobID="", jobDate="", appendOptions=false) == expHeader
   expHeader = string( 
     "#!/bin/bash\n",
     '\n',
-    "#BSUB -w \'done(\"YYYYMMDD_HHMMSS_ID001_first\")&&done(\"YYYYMMDD_HHMMSS_ID001_third\")&&done(\"YYYYMMDD_HHMMSS_ID001_fourth\")&&done(\"YYYYMMDD_HHMMSS_ID001_fifth\")\'",
+    "#BSUB -w \'done(\"YYYYMMDD_HHMMSS_ID001_root\")&&done(\"YYYYMMDD_HHMMSS_ID001_first\")&&done(\"YYYYMMDD_HHMMSS_ID001_third\")&&done(\"YYYYMMDD_HHMMSS_ID001_fourth\")&&done(\"YYYYMMDD_HHMMSS_ID001_fifth\")\'",
     ""
   )
-  @test create_job_header_string(suppliedJobArray; tagHeader="#BSUB", prefix="#!/bin/bash\n", suffix="", jobID="ID001", jobDate="YYYYMMDD_HHMMSS", appendOptions=false) == expHeader
+  @test create_job_header_string(suppliedJobArray; prefix="#!/bin/bash\n", suffix="", jobID="ID001", jobDate="YYYYMMDD_HHMMSS", appendOptions=false) == expHeader
 
   ## identify_checkpoints
   suppliedJobArray = [];
@@ -1610,7 +1614,7 @@ Test.with_handler(ut_handler) do
     string( 
       "#!/bin/bash\n",
       '\n',
-      "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
+      "#BSUB -w \'done(\"root\")&&done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
       ""
     ),
     "\n# Tag variables\n",
@@ -1666,7 +1670,7 @@ Test.with_handler(ut_handler) do
     string( 
       "#!/bin/bash\n",
       '\n',
-      "#BSUB -w \'done(\"ID002_first\")&&done(\"ID002_third\")&&done(\"ID002_fourth\")&&done(\"ID002_fifth\")\'",
+      "#BSUB -w \'done(\"ID002_root\")&&done(\"ID002_first\")&&done(\"ID002_third\")&&done(\"ID002_fourth\")&&done(\"ID002_fifth\")\'",
       string("\n", "#BSUB", " -J ID002_second\n", "#BSUB", " -e ID002_second.error\n", "#BSUB", " -o ID002_second.output\n"),
       ""
     ),
@@ -1800,6 +1804,24 @@ Test.with_handler(ut_handler) do
   ## create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, checkpointsDict::Dict; filePathOverride=nothing, root="root",
   ##     tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true
   ##   )
+  checkpointsDict = Dict(
+    "jcheck_filesNotEmpty" => "jlang_function_test_files/dummy_bash_functions/jcheck_filesNotEmpty.sh",
+    "jcheck_resume" => "jlang_function_test_files/dummy_bash_functions/jcheck_resume.sh",
+    "jcheck_something_else" => "jlang_function_test_files/dummy_bash_functions/jcheck_something_else.sh",
+    "something_else_entierly" => "some/other/path"
+  );
+  commonFunctions = Dict(
+    "dummy1" => "jlang_function_test_files/dummy_bash_functions/dummy1.sh",
+    "dummy2" => "jlang_function_test_files/dummy_bash_functions/dummy2.sh",
+    "dummy2_1" => "jlang_function_test_files/dummy_bash_functions/dummy2.sh",
+    "dummy3" => "jlang_function_test_files/dummy_bash_functions/dummy3.sh",
+  );
+  headerString = string( 
+    "#!/bin/bash\n",
+    '\n',
+    "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
+    "\nheader suffix string"
+  );
   summaryFilePath = "dir/name/is/ignored/ut_create_jobs_from_summary.summary"
   @test isfile(summaryFilePath) == false
   # Supplied input
@@ -1825,90 +1847,140 @@ Test.with_handler(ut_handler) do
   push!(root, ["bash echo \"cmd 01\""]);
   push!(root, ["jcheck_resume"]);
   push!(root, ["bash echo \"cmd 02\""]);
+  push!(root, ["dummy10 arg1 arg2"]);
   push!(root, ["bash echo \"cmd 03\""]);
   group1 = [];
   push!(group1, ["#JGROUP first"]);
   push!(group1, ["bash echo \"cmd 12\""]);
   push!(group1, ["jcheck_resume"]);
+  push!(group1, ["dummy10_1 arg1_1 arg2_1"]);
   push!(group1, ["bash echo \"cmd 13\""]);
   group2 = [];
   push!(group2, ["#JGROUP second first"]);
   push!(group2, ["bash echo \"cmd 21\""]);
   push!(group2, ["jcheck_resume"]);
+  push!(group2, ["dummy12 arg1 arg2"]);
   push!(group2, ["bash echo \"cmd 22\""]);
   suppliedSummaryDict = Dict(
     "root" => root,
     "first" => group1,
     "second" => group2
   )
-  checkpointsDict = Dict(
-    "jcheck_filesNotEmpty" => "jlang_function_test_files/dummy_bash_functions/jcheck_filesNotEmpty.sh",
-    "jcheck_resume" => "jlang_function_test_files/dummy_bash_functions/jcheck_resume.sh",
-    "jcheck_something_else" => "jlang_function_test_files/dummy_bash_functions/jcheck_something_else.sh",
-    "something_else_entierly" => "some/other/path"
-  );
-  commonFunctions = Dict(
-    "dummy1" => "jlang_function_test_files/dummy_bash_functions/dummy1.sh",
-    "dummy2" => "jlang_function_test_files/dummy_bash_functions/dummy2.sh",
-    "dummy2_1" => "jlang_function_test_files/dummy_bash_functions/dummy2.sh",
-    "dummy3" => "jlang_function_test_files/dummy_bash_functions/dummy3.sh",
-  );
-  selectedFunctions = Dict(
-    "dummy1" => "jlang_function_test_files/dummy_bash_functions/dummy1.sh",
-    "dummy2" => "jlang_function_test_files/dummy_bash_functions/dummy2.sh",
-    "dummy2_1" => "jlang_function_test_files/dummy_bash_functions/dummy2.sh",
-    "dummy10" => "jlang_function_test_files/dummy_bash_functions/dummy10.sh",
-    "dummy10_1" => "jlang_function_test_files/dummy_bash_functions/dummy10.sh",
-    "dummy11" => "jlang_function_test_files/dummy_bash_functions/dummy11.sh",
-    "dummy12" => "jlang_function_test_files/dummy_bash_functions/dummy12.sh",
-  );
-  headerString = string( 
-    "#!/bin/bash\n",
-    '\n',
-    "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
-    "\nheader suffix string"
-  );
-  expected_file_contents = string( 
-    string( 
+  expectedFilePath01 = "jlang_function_test_files/job_files/ut_create_jobs_from_summary_root.lsf"
+  try run(`rm $expectedFilePath01`) end
+  expectedFileHeader01 = string( 
       "#!/bin/bash\n",
-      '\n',
-      "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
-      ""
-    ),
+      "\n#BSUB -J JOBDATE0_000000_jobID0000",
+      "\n#BSUB -e JOBDATE0_000000_jobID0000.error",
+      "\n#BSUB -o JOBDATE0_000000_jobID0000.output",
+      "\n"
+    )
+  expectedFileContents01 = string( 
+    expectedFileHeader01,
     "\n# Tag variables\n",
     "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy1.sh", "\n",
     "function dummy1 {\necho Running_dummy_function_1\n}\n",
-    "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy10.sh", "\n",
-    "function dummy10 {\necho Running_dummy_function_10\n}\nfunction dummy10_1 {\necho Running_dummy_function_10_1\n}\n",
-    "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy11.sh", "\n",
-    "function dummy11 {\necho Running_dummy_function_11\n}\n",
-    "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy12.sh", "\n",
-    "function dummy12 {\necho Running_dummy_function_12\n}\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy2.sh", "\n",
     "function dummy2 {\necho Running_dummy_function_2\n}\nfunction dummy2_1 {\necho Running_dummy_function_2_1\n}\nfunction dummy2_2 {\necho Running_dummy_function_2_2\n}\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy3.sh", "\n",
     "function dummy3 {\necho Running_dummy_function_3\n}\n",
-    "\n\n# Commands taken from summary file: ""\n",
+    "\n# --- From file: jlang_function_test_files/dummy_bash_functions/jcheck_resume.sh", "\n",
+    "contents of jcheck_resume.sh", "\n",
+    "\n\n# Commands taken from summary file: dir/name/is/ignored/ut_create_jobs_from_summary.summary""\n",
     "\n#JSUB<begin-job>\n",
-    "#JGROUP second first third fourth fifth", "\n",
-    "bash echo \"cmd 21\"", "\n",
-    "#BSUB -J jobID", "\n",
-    "bash echo \"cmd 22\"", "\n",
-    "#BSUB -P grantcode", "\n",
-    "#BSUB -w overriding", "\n",
-    "bash echo \"cmd 23\"", "\n",
+    "# This data would come from reading summary files.", "\n",
+    "#JSUB<file-name-prefix>ProtocolName", "\n",
+    "bash echo \"cmd 01\"", "\n",
+    "jcheck_resume", "\n",
+    "bash echo \"cmd 02\"", "\n",
+    "dummy10 arg1 arg2", "\n",
+    "bash echo \"cmd 03\"", "\n",
     "\n#JSUB<finish-job>\n"
   )
-  # @test expected_file_contents == readall(filePath)
-  # arr1 = split(readall(filePath), '\n')
-  # arr2 = split(expected_file_contents, '\n')
-  # compare_arrays(arr1, arr2)
-
-  create_jobs_from_summary_(summaryFilePath, suppliedSummaryDict, commonFunctions, checkpointsDict; directoryForJobFiles="", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
-    tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true
+  expectedFilePath02 = "jlang_function_test_files/job_files/ut_create_jobs_from_summary_first.lsf"
+  try run(`rm $expectedFilePath02`) end
+  expectedFileHeader02 = string( 
+      "#!/bin/bash\n",
+      "\n#BSUB -w \'done(\"JOBDATE0_000000_jobID0000_root\")\'",
+      "\n#BSUB -J JOBDATE0_000000_jobID0000_first",
+      "\n#BSUB -e JOBDATE0_000000_jobID0000_first.error",
+      "\n#BSUB -o JOBDATE0_000000_jobID0000_first.output",
+      "\n"
+    )
+  expectedFileContents02 = string( 
+    expectedFileHeader02,
+    "\n# Tag variables\n",
+    "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n",
+    "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy1.sh", "\n",
+    "function dummy1 {\necho Running_dummy_function_1\n}\n",
+    "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy2.sh", "\n",
+    "function dummy2 {\necho Running_dummy_function_2\n}\nfunction dummy2_1 {\necho Running_dummy_function_2_1\n}\nfunction dummy2_2 {\necho Running_dummy_function_2_2\n}\n",
+    "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy3.sh", "\n",
+    "function dummy3 {\necho Running_dummy_function_3\n}\n",
+    "\n# --- From file: jlang_function_test_files/dummy_bash_functions/jcheck_resume.sh", "\n",
+    "contents of jcheck_resume.sh", "\n",
+    "\n\n# Commands taken from summary file: dir/name/is/ignored/ut_create_jobs_from_summary.summary""\n",
+    "\n#JSUB<begin-job>\n",
+    "#JGROUP first", "\n",
+    "bash echo \"cmd 12\"", "\n",
+    "jcheck_resume", "\n",
+    "dummy10_1 arg1_1 arg2_1", "\n",
+    "bash echo \"cmd 13\"", "\n",
+    "\n#JSUB<finish-job>\n"
   )
-  @test isfile(summaryFilePath) == false
+  expectedFilePath03 = "jlang_function_test_files/job_files/ut_create_jobs_from_summary_second.lsf"
+  try run(`rm $expectedFilePath03`) end
+  expectedFileHeader03 = string( 
+      "#!/bin/bash\n",
+      "\n#BSUB -w \'done(\"JOBDATE0_000000_jobID0000_root\")&&done(\"JOBDATE0_000000_jobID0000_first\")\'",
+      "\n#BSUB -J JOBDATE0_000000_jobID0000_second",
+      "\n#BSUB -e JOBDATE0_000000_jobID0000_second.error",
+      "\n#BSUB -o JOBDATE0_000000_jobID0000_second.output",
+      "\n"
+    )
+  expectedFileContents03 = string( 
+    expectedFileHeader03,
+    "\n# Tag variables\n",
+    "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n",
+    "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy1.sh", "\n",
+    "function dummy1 {\necho Running_dummy_function_1\n}\n",
+    "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy2.sh", "\n",
+    "function dummy2 {\necho Running_dummy_function_2\n}\nfunction dummy2_1 {\necho Running_dummy_function_2_1\n}\nfunction dummy2_2 {\necho Running_dummy_function_2_2\n}\n",
+    "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy3.sh", "\n",
+    "function dummy3 {\necho Running_dummy_function_3\n}\n",
+    "\n# --- From file: jlang_function_test_files/dummy_bash_functions/jcheck_resume.sh", "\n",
+    "contents of jcheck_resume.sh", "\n",
+    "\n\n# Commands taken from summary file: dir/name/is/ignored/ut_create_jobs_from_summary.summary""\n",
+    "\n#JSUB<begin-job>\n",
+    "#JGROUP second first", "\n",
+    "bash echo \"cmd 21\"", "\n",
+    "jcheck_resume", "\n",
+    "dummy12 arg1 arg2", "\n",
+    "bash echo \"cmd 22\"", "\n",
+    "\n#JSUB<finish-job>\n"
+  )
+  @test create_job_header_string(root, jobID="JOBDATE0_000000_jobID0000") == expectedFileHeader01
+  @test create_job_header_string(group1, jobID="JOBDATE0_000000_jobID0000") == expectedFileHeader02
+  @test create_job_header_string(group2, jobID="JOBDATE0_000000_jobID0000") == expectedFileHeader03
+  create_jobs_from_summary_(summaryFilePath, suppliedSummaryDict, commonFunctions, checkpointsDict; 
+    directoryForJobFiles="jlang_function_test_files/job_files", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
+    #tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true
+    jobID="jobID0000", jobDate="JOBDATE0_000000"
+  )
+  @test expectedFileContents01 == readall(expectedFilePath01)
+  # O=split(readall(expectedFilePath01), '\n')
+  # E=split(expectedFileContents01, '\n')
+  # compare_arrays(split(readall(expectedFilePath01), '\n'), split(expectedFileContents01, '\n'))
+  @test expectedFileContents02 == readall(expectedFilePath02)
+  # O=split(readall(expectedFilePath02), '\n')
+  # E=split(expectedFileContents02, '\n')
+  # compare_arrays(split(readall(expectedFilePath02), '\n'), split(expectedFileContents02, '\n'))
+  @test expectedFileContents03 == readall(expectedFilePath03)
+
+  # compare_arrays(expectedFileContents03, readall(expectedFilePath03))
+
+
 
   # # 
   # jobHeader = string(
