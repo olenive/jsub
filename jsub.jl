@@ -102,7 +102,7 @@ tagsExpand = Dict(
 )
 
 ## Paths to bash functions {"function name" => "path to file containing function"}
-common_functions = Dict(
+commonFunctions = Dict(
   "kill_this_job" => "common_functions/job_processing.sh",
   "process_job" => "common_functions/job_processing.sh",
 )
@@ -136,7 +136,7 @@ arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infi
 # Generate list of summary file paths.
 summaryPaths = get_summary_names(arrArrExpFvars; tag="#JSUB<file-name-prefix>", # if an entry with this tag is found in the protocol (arrArrExpFvars), the string following the tag will be used as the name
  longName=longName, # Otherwise the string passed to longName will be used as the basis of the summary file name
- prefix="TEST/", suffix=".summary", timestamp="YYYYMMDD_HHMMSS"
+ prefix="TEST/summaries", suffix=".summary", timestamp="YYYYMMDD_HHMMSS"
 );
 # Take an expanded protocol in the form of an array of arrays and produce a summary file for each entry
 create_summary_files_(arrArrExpFvars, summaryPaths; verbose=verbose);
@@ -151,20 +151,21 @@ summaryFilesData = map((x) -> file2arrayofarrays_(x, "#", cols=1, tagsExpand=tag
 
 # Get bash functions from files
 arrDictCheckpoints = map((x) -> identify_checkpoints(x[1], checkpointsDict; tagCheckpoint="jcheck_"), summaryFilesData );
-arrBashFunctions = map((x) -> get_bash_functions(common_functions, x), arrDictCheckpoints);
+arrBashFunctions = map((x) -> get_bash_functions(commonFunctions, x), arrDictCheckpoints);
 
-# Split into job arrays
+# Split summary file contents into job arrays stored in dictionaries
 summaryArrDicts = map((x) -> split_summary(x[1]; tagSplit=tagsExpand["tagSplit"]), summaryFilesData);
 
-## Get job file paths
+## Get job IDs from summary basenames
+arrJobIDs = map((x) -> basename(remove_suffix(x, ".summary")) , summaryPaths)
 
+# ## Check and warn if there are conflicting options in the job arrays
+# map((x) -> detect_option_conflicts(jobArray, tag="#BSUB", option="-J"), 
 
 ## Write job files
-map( (path, jobDict) ->
-
-  for jobArray in 
-  create_job_file_(filePath, jobArray, bashFunctions; tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile=""),
-
+map((summaryFilePath, dictSummaries, jobID) -> create_jobs_from_summary_(summaryFilePath, dictSummaries, commonFunctions, checkpointsDict; 
+  directoryForJobFiles="TEST/jobfiles", jobID=jobID, jobDate=get_timestamp_(nothing)), headerSuffix="\n#BSUB -P prepay-houlston"
+  summaryPaths, summaryArrDicts, arrJobIDs
 )
 
 

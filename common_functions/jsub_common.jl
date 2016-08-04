@@ -30,6 +30,11 @@ function isblank(wline) # Check if line is blank
   lstrip(wline) == "" ? true : false
 end
 
+# Remove the begining of a string if it matches another string
+function remove_prefix(long, prefix)
+  startswith(long, prefix) ? (return long[length(prefix)+1:end]) : (return long);
+end
+
 # Remove the end from a string if it matches another string
 function remove_suffix(long, suffix)
   endswith(long, suffix) ? (return long[1:end - length(suffix)]) : (return long);
@@ -847,7 +852,7 @@ function generate_jobfilepath(summaryName, jobArray; tagSplit="#JGROUP", prefix=
 end
 
 # Read job dictionary and return job header
-function create_job_header_string(jobArray; root="root", tagHeader="\n#BSUB", prefix="#!/bin/bash\n", suffix="", tagSplit="#JGROUP", jobID=nothing, jobDate=nothing, appendOptions=true)
+function create_job_header_string(jobArray; root="root", tagHeader="\n#BSUB", prefix="#!/bin/bash\n", suffix="", tagSplit="#JGROUP", jobID=nothing, jobDate=nothing, appendOptions=true, rootSleepSeconds=nothing)
   # arrHeaderRows = jobArray[find((x)->iscomment(join(x), tagHeader), jobArray)] # Extract header rows from among command rows
   jobID = jobID_or_hash(jobArray; jobID=jobID, jobDate=jobDate);
   groupName = get_groupname(jobArray, tagSplit=tagSplit);
@@ -858,12 +863,18 @@ function create_job_header_string(jobArray; root="root", tagHeader="\n#BSUB", pr
     ## Determine group ID (first entry after group tag (e.g #JGROUP groupID otherGroupID ...))
     options = string(tagHeader, " -J $jobID", idDelim, groupName, tagHeader, " -e $jobID", idDelim, groupName, ".error", tagHeader, " -o $jobID", idDelim, groupName, ".output", "\n");
   end
+  # If this is a root job, add a wait (sleep) command to give enough time for jobs which depend on this one to be submitted.  This may not be strictly necessary or may need to be made more robust depending on how LSF actually handles these things and the response times of the system in question.
+  waitInstructions = "";
+  if rootSleepSeconds != nothing && groupName == ""
+    waitInstructions = string("\nsleep ", rootSleepSeconds, "\n");
+  end
   return string(
     prefix,
     # join( map( x -> join(x), arrHeaderRows), '\n'), 
     # '\n',
     cmd_await_jobs(jobArray, root=root, tagHeader=tagHeader, tagSplit=tagSplit, jobID=jobID, jobDate=jobDate),
     options,
+    waitInstructions,
     suffix 
   );
 end
@@ -896,7 +907,7 @@ end
 
 ## Create job file from array of instructions and a dictionary of functions
 # Use file2arrayofarrays_(x, "#", cols=1) to read summary file
-function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summaryFileOfOrigin="", root="root", tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true)
+function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summaryFileOfOrigin="", root="root", tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true, rootSleepSeconds=nothing)
   # Check if jobArray is empty
   if jobArray == []
     SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_job_file_) Array of job contents is empty, no job file created.");
@@ -904,7 +915,7 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summ
     # Overwrite with header
     println("Writing to job file: ", outFilePath);
     stream = open(outFilePath, "w");
-    write(stream, create_job_header_string(jobArray; root=root, tagHeader=tagHeader, prefix=headerPrefix, suffix=headerSuffix, jobID=jobID, jobDate=jobDate, appendOptions=appendOptions));
+    write(stream, create_job_header_string(jobArray; root=root, tagHeader=tagHeader, prefix=headerPrefix, suffix=headerSuffix, jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds));
     # Append tag variables
     write(stream, "\n# Tag variables\n");
     # Append common functions
@@ -924,11 +935,15 @@ end
 
 ## Create all the job files associated with a particular summary file (Note that using the option filePathOverride means input to the directoryForJobFiles and jobFileSuffix options will be ignored)
 function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonFunctions::Dict, checkpointsDict::Dict; directoryForJobFiles="", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
-    tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n", headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true
+    tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n", headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true, rootSleepSeconds=nothing
   )
   ## For each group in the summary file create a job file
   for (idx, pair) in enumerate(dictSummaries)
     group = pair[1];
+    if length(dictSummaries) == 1 
+      group = ""; # If there is only one job file produced from this summary, there is no need to append the root group name to the file name
+      rootSleepSeconds=nothing; # No need to add a sleep command since there will be no submitted jobs that are dependent on this one existing.
+    end
     jobArray = pair[2];
     dictCheckpoints = get_bash_functions(
       commonFunctions,
@@ -942,35 +957,16 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
       (length(group) > 0) ? (group = "_" * group) : (group = ""); # # (length(group) > 0 && group != root) ? (group = "_" * group) : (group = ""); # job file specific suffix
       outFilePath = string(directoryForJobFiles, "/", basename(remove_suffix(summaryFilePath, ".summary")), group, jobFileSuffix); # get longName from file path
     end
-    create_job_file_(outFilePath, jobArray, dictCheckpoints;  summaryFileOfOrigin=summaryFilePath, root=root,
-      tagBegin=tagBegin, tagFinish=tagFinish, tagHeader=tagHeader, tagCheckpoint=tagCheckpoint, headerPrefix=headerPrefix, headerSuffix=headerSuffix, summaryFile=summaryFile, jobID=jobID, jobDate=jobDate, appendOptions=appendOptions
+    ## Check for conflicting -J options
+    if detect_option_conflicts(jobArray; tag=remove_prefix(tagHeader, "\n"), option="-J")
+      SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_jobs_from_summary_) found conflicting instances of #BSUB -J in the following array of commands:\n", jobArray);
+    end
+    ## Create job file
+    create_job_file_(outFilePath, jobArray, dictCheckpoints; summaryFileOfOrigin=summaryFilePath, root=root,
+      tagBegin=tagBegin, tagFinish=tagFinish, tagHeader=tagHeader, tagCheckpoint=tagCheckpoint, headerPrefix=headerPrefix, headerSuffix=headerSuffix, summaryFile=summaryFile, jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds
     );
-    # println(dictCheckpoints);
-    # println(dictCheckpoints["jlang_function_test_files/dummy_bash_functions/jcheck_resume.sh"]);
   end
 end
-
-
-# # Use an array of paths and a dictionary of [names -> arrays] to create input to the create_job_file_ function
-# function get_jobdata(filePath, dictSummaries::Dict, checkpointsDict::Dict; fileNameOverride=nothing, root="root", tagCheckpoint="jcheck_")
-#   ## Extract the checkpoints/bash functions needed for each job file
-#   for (idx, pair) in enumerate(dictSummaries)
-#     group = pair[1];
-#     jobArray = pair[2];
-
-#     dictCheckpoints = identify_checkpoints(jobArray, checkpointsDict; tagCheckpoint=tagCheckpoint) # returns a dictionary
-
-#     ## Get job file name from path and group
-#     if fileNameOverride != nothing
-#       filePath = fileNameOverride;
-#     else
-
-#     end
-
-#   end
-
-#   return filePath, jobArray
-# end
 
 ## Check if a #BSUB option appears more than once in the job array.
 function detect_option_conflicts(jobArray; tag="#BSUB", option="-J")

@@ -109,6 +109,11 @@ Test.with_handler(ut_handler) do
   @test isblank(" \"") == false
   @test isblank("			'#") == false
 
+  ## remove_prefix(long, prefix)
+  @test remove_prefix("summary.summary.summar.summary.summary", "summary.") == "summary.summar.summary.summary"
+  @test remove_prefix("summary.summary.summar.summary.summaryX", "summary.") == "summary.summar.summary.summaryX"
+  @test remove_prefix("\n#BSUB", "\n") == "#BSUB"
+
   ## remove_suffix(long, suffix)
   @test remove_suffix("summary.summary.summar.summary.summary", ".summary") == "summary.summary.summar.summary"
   @test remove_suffix("summary.summary.summar.summary.summaryX", ".summary") == "summary.summary.summar.summary.summaryX"
@@ -1537,6 +1542,52 @@ Test.with_handler(ut_handler) do
   )
   @test create_job_header_string(suppliedJobArray; prefix="#!/bin/bash\n", suffix="", jobID="ID001", jobDate="YYYYMMDD_HHMMSS", appendOptions=false) == expHeader
 
+  # This call should not add a "\nsleep 2.5" command because the default value of rootSleepSeconds=nothing
+  suppliedJobArray = [];
+  push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
+  push!(suppliedJobArray, ["#BSUB -J jobID"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 22\""]);
+  push!(suppliedJobArray, ["#BSUB -P grantcode"]);
+  push!(suppliedJobArray, ["#BSUB -w overriding"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 23\""]);
+  expHeader = string( 
+    "#!/bin/bash\n",
+    "suffixstuff"
+  );
+  @test create_job_header_string(suppliedJobArray; prefix="#!/bin/bash\n", suffix="suffixstuff", jobID="ID001", jobDate="YYYYMMDD_HHMMSS", appendOptions=false) == expHeader
+  
+  # This call should add a "\nsleep 2.5\n" command
+  suppliedJobArray = [];
+  push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
+  push!(suppliedJobArray, ["#BSUB -J jobID"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 22\""]);
+  push!(suppliedJobArray, ["#BSUB -P grantcode"]);
+  push!(suppliedJobArray, ["#BSUB -w overriding"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 23\""]);
+  expHeader = string( 
+    "#!/bin/bash\n",
+    "\nsleep 2.5\n",
+    "suffixstuff"
+  );
+  @test create_job_header_string(suppliedJobArray; rootSleepSeconds="2.5", prefix="#!/bin/bash\n", suffix="suffixstuff", jobID="ID001", jobDate="YYYYMMDD_HHMMSS", appendOptions=false) == expHeader
+
+  # This call should not add a sleep command because #JGROUP at the start of the suppliedJobArray indicates that this is not a root job
+  suppliedJobArray = [];
+  push!(suppliedJobArray, ["#JGROUP second first third fourth fifth"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
+  push!(suppliedJobArray, ["#BSUB -J jobID"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 22\""]);
+  push!(suppliedJobArray, ["#BSUB -P grantcode"]);
+  push!(suppliedJobArray, ["#BSUB -w overriding"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 23\""]);
+  expHeader = string( 
+    "#!/bin/bash\n",
+    '\n',
+    "#BSUB -w \'done(\"YYYYMMDD_HHMMSS_ID001_root\")&&done(\"YYYYMMDD_HHMMSS_ID001_first\")&&done(\"YYYYMMDD_HHMMSS_ID001_third\")&&done(\"YYYYMMDD_HHMMSS_ID001_fourth\")&&done(\"YYYYMMDD_HHMMSS_ID001_fifth\")\'",
+    "suffixstuff"
+  );
+  @test create_job_header_string(suppliedJobArray; rootSleepSeconds="2.5", prefix="#!/bin/bash\n", suffix="suffixstuff", jobID="ID001", jobDate="YYYYMMDD_HHMMSS", appendOptions=false) == expHeader
+
   ## identify_checkpoints
   suppliedJobArray = [];
   push!(suppliedJobArray, ["#JGROUP second first third fourth fifth"]);
@@ -1977,10 +2028,64 @@ Test.with_handler(ut_handler) do
   # E=split(expectedFileContents02, '\n')
   # compare_arrays(split(readall(expectedFilePath02), '\n'), split(expectedFileContents02, '\n'))
   @test expectedFileContents03 == readall(expectedFilePath03)
-
   # compare_arrays(expectedFileContents03, readall(expectedFilePath03))
 
-
+  # Test for the rootSleepSeconds option
+  create_jobs_from_summary_(summaryFilePath, suppliedSummaryDict, commonFunctions, checkpointsDict; 
+    directoryForJobFiles="jlang_function_test_files/job_files", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
+    #tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true
+    jobID="jobID0000", jobDate="JOBDATE0_000000", rootSleepSeconds=nothing
+  )
+  @test expectedFileContents01 == readall(expectedFilePath01)
+  @test expectedFileContents02 == readall(expectedFilePath02)
+  @test expectedFileContents03 == readall(expectedFilePath03)
+  expectedFilePath01 = "jlang_function_test_files/job_files/ut_create_jobs_from_summary_root.lsf"
+  try run(`rm $expectedFilePath01`) end
+  expectedFileHeader01 = string( 
+      "#!/bin/bash\n",
+      "\n#BSUB -J JOBDATE0_000000_jobID0000",
+      "\n#BSUB -e JOBDATE0_000000_jobID0000.error",
+      "\n#BSUB -o JOBDATE0_000000_jobID0000.output",
+      "\n\nsleep 7.7",
+      "\n"
+    )
+  expectedFileContents01 = string( 
+    expectedFileHeader01,
+    "\n# Tag variables\n",
+    "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n",
+    "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy1.sh", "\n",
+    "function dummy1 {\necho Running_dummy_function_1\n}\n",
+    "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy2.sh", "\n",
+    "function dummy2 {\necho Running_dummy_function_2\n}\nfunction dummy2_1 {\necho Running_dummy_function_2_1\n}\nfunction dummy2_2 {\necho Running_dummy_function_2_2\n}\n",
+    "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy3.sh", "\n",
+    "function dummy3 {\necho Running_dummy_function_3\n}\n",
+    "\n# --- From file: jlang_function_test_files/dummy_bash_functions/jcheck_resume.sh", "\n",
+    "contents of jcheck_resume.sh", "\n",
+    "\n\n# Commands taken from summary file: dir/name/is/ignored/ut_create_jobs_from_summary.summary""\n",
+    "\n#JSUB<begin-job>\n",
+    "# This data would come from reading summary files.", "\n",
+    "#JSUB<file-name-prefix>ProtocolName", "\n",
+    "bash echo \"cmd 01\"", "\n",
+    "jcheck_resume", "\n",
+    "bash echo \"cmd 02\"", "\n",
+    "dummy10 arg1 arg2", "\n",
+    "bash echo \"cmd 03\"", "\n",
+    "\n#JSUB<finish-job>\n"
+  )
+  create_jobs_from_summary_(summaryFilePath, suppliedSummaryDict, commonFunctions, checkpointsDict; 
+    directoryForJobFiles="jlang_function_test_files/job_files", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
+    #tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true
+    jobID="jobID0000", jobDate="JOBDATE0_000000", rootSleepSeconds="7.7"
+  )
+  @test expectedFileContents01 == readall(expectedFilePath01)
+  # O=split(readall(expectedFilePath01), '\n')
+  # E=split(expectedFileContents01, '\n')
+  # compare_arrays(split(readall(expectedFilePath01), '\n'), split(expectedFileContents01, '\n'))
+  @test expectedFileContents02 == readall(expectedFilePath02)
+  # O=split(readall(expectedFilePath02), '\n')
+  # E=split(expectedFileContents02, '\n')
+  # compare_arrays(split(readall(expectedFilePath02), '\n'), split(expectedFileContents02, '\n'))
+  @test expectedFileContents03 == readall(expectedFilePath03)
 
   # # 
   # jobHeader = string(

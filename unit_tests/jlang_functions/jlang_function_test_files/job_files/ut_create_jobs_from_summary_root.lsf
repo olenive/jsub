@@ -4,6 +4,8 @@
 #BSUB -e JOBDATE0_000000_jobID0000.error
 #BSUB -o JOBDATE0_000000_jobID0000.output
 
+sleep 7.7
+
 # Tag variables
 
 
