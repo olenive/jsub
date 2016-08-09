@@ -1,5 +1,5 @@
 # This data would come from reading summary files.
-#JSUB<file-name-prefix>ProtocolName
+#JSUB<summary-name>ProtocolName
 bash echo "cmd 1"
 #JGROUP first
 bash echo "cmd 12"

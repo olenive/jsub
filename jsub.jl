@@ -46,18 +46,21 @@
 ####### INPUTS #######
 
 # Protocol file
-baseDirectory="/Users/olenive/work/jsub_pipeliner/unit_tests/protocols/sample_variables"
+baseDirectory="/Users/olenive/work/jsub_pipeliner/unit_tests/protocols/sample_variables";
 
 #fileProtocol="/Users/olenive/work/jsub_pipeliner/unit_tests/protocols/basic/call_bash_scripts_01imac.protocol"
 #fileProtocol="/Users/olenive/work/jsub_pipeliner/unit_tests/protocols/single_variable/call_bash_scripts_pathVar.protocol"
-fileProtocol="/Users/olenive/work/jsub_pipeliner/unit_tests/protocols/sample_variables/call_bash_scripts_pathVar_sampleVars.protocol"
+fileProtocol="/Users/olenive/work/jsub_pipeliner/unit_tests/protocols/sample_variables/call_bash_scripts_pathVar_sampleVars.protocol";
 
 # Variables file
-fileVars="/Users/olenive/work/jsub_pipeliner/unit_tests/protocols/sample_variables/call_bash_scripts_pathVar_sampleVars.vars"
+fileVars="/Users/olenive/work/jsub_pipeliner/unit_tests/protocols/sample_variables/call_bash_scripts_pathVar_sampleVars.vars";
 
 # Variables from list
 #fileFvars="/Users/olenive/work/jsub_pipeliner/unit_tests/protocols/sample_variables/call_bash_scripts_pathVar_sampleVars.fvars"
-fileFvars="/Users/olenive/work/jsub_pipeliner/unit_tests/protocols/split/refs_samples.fvars"
+fileFvars="/Users/olenive/work/jsub_pipeliner/unit_tests/protocols/split/refs_samples.fvars";
+
+summaryFilePrefix="TEST/summaries";
+jobFilePrefix="TEST/jobfiles";
 
 ## Default job header values
 # jobID="LSFjob";
@@ -66,6 +69,9 @@ fileFvars="/Users/olenive/work/jsub_pipeliner/unit_tests/protocols/split/refs_sa
 # wallTime="8:00";
 # queue="normal"
 # grantCode="prepay-houlston"
+
+# String added to the header of every job file
+commonHeaderSuffix = "\n#BSUB -P prepay-houlston";
 
 # jobHeader = string(
 # "#!/bin/bash\n
@@ -97,7 +103,7 @@ num_suppressed = [0];
 ## Tags
 tagsExpand = Dict(
   "header" => "#BSUB",
-  "tagSummaryName" => "#JSUB<file-name-prefix>",
+  "tagSummaryName" => "#JSUB<summary-name>",
   "tagSplit" => "#JGROUP"
 )
 
@@ -134,9 +140,9 @@ arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infi
 
 ## Create summary files
 # Generate list of summary file paths.
-summaryPaths = get_summary_names(arrArrExpFvars; tag="#JSUB<file-name-prefix>", # if an entry with this tag is found in the protocol (arrArrExpFvars), the string following the tag will be used as the name
+summaryPaths = get_summary_names(arrArrExpFvars; tag="#JSUB<summary-name>", # if an entry with this tag is found in the protocol (arrArrExpFvars), the string following the tag will be used as the name
  longName=longName, # Otherwise the string passed to longName will be used as the basis of the summary file name
- prefix="TEST/summaries", suffix=".summary", timestamp="YYYYMMDD_HHMMSS"
+ prefix=summaryFilePrefix, suffix=".summary", timestamp="YYYYMMDD_HHMMSS"
 );
 # Take an expanded protocol in the form of an array of arrays and produce a summary file for each entry
 create_summary_files_(arrArrExpFvars, summaryPaths; verbose=verbose);
@@ -164,7 +170,7 @@ arrJobIDs = map((x) -> basename(remove_suffix(x, ".summary")) , summaryPaths)
 
 ## Write job files
 map((summaryFilePath, dictSummaries, jobID) -> create_jobs_from_summary_(summaryFilePath, dictSummaries, commonFunctions, checkpointsDict; 
-  directoryForJobFiles="TEST/jobfiles", jobID=jobID, jobDate=get_timestamp_(nothing)), headerSuffix="\n#BSUB -P prepay-houlston"
+  directoryForJobFiles=jobFilePrefix, jobID=jobID, jobDate=get_timestamp_(nothing), headerSuffix=commonHeaderSuffix),
   summaryPaths, summaryArrDicts, arrJobIDs
 )
 

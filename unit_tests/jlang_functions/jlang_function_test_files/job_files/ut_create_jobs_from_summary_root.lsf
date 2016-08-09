@@ -40,7 +40,7 @@ contents of jcheck_resume.sh
 
 #JSUB<begin-job>
 # This data would come from reading summary files.
-#JSUB<file-name-prefix>ProtocolName
+#JSUB<summary-name>ProtocolName
 bash echo "cmd 01"
 jcheck_resume
 bash echo "cmd 02"

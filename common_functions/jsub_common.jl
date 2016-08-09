@@ -688,7 +688,7 @@ function get_longname(pathProtocol, pathVars, pathFvars)
 end
 
 # Get summary file names by reading protocol file arrays and looking for the first instance of a tag or simply numbering them
-function get_summary_names(arrProt; prefix="", suffix=".summary", timestamp="", tag="#JSUB<file-name-prefix>", allowNonUnique=false, longName=nothing)
+function get_summary_names(arrProt; prefix="", suffix=".summary", timestamp="", tag="#JSUB<summary-name>", allowNonUnique=false, longName=nothing)
   summaryNames = [];
   lenTag = length(tag);
   idx = 0;
@@ -733,6 +733,10 @@ function create_summary_files_(arrArrExpFvars, summaryPaths; verbose=verbose)
   ## Check that number of elements in array matches number of file paths
   if length(arrArrExpFvars) != length(summaryPaths)
     SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_summary_files_) number of elements in data array (", length(arrArrExpFvars), ") does not match number of file paths provided (", length(summaryPaths), "). Excess data will not be written to files." );
+  end
+  ## Check that summary file names are unique
+  if length(unique(summaryPaths)) != length(summaryPaths)
+    SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_summary_files_) number of unique summary file paths (", length(unique(summaryPaths)), ") does not match total number of file paths provided (", length(summaryPaths), ")." );
   end
   ## Write lines to files
   ipath = 0;
@@ -937,6 +941,7 @@ end
 function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonFunctions::Dict, checkpointsDict::Dict; directoryForJobFiles="", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
     tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n", headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true, rootSleepSeconds=nothing
   )
+  arrJobFilePaths = [];
   ## For each group in the summary file create a job file
   for (idx, pair) in enumerate(dictSummaries)
     group = pair[1];
@@ -962,10 +967,16 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
       SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_jobs_from_summary_) found conflicting instances of #BSUB -J in the following array of commands:\n", jobArray);
     end
     ## Create job file
+    push!(arrJobFilePaths, outFilePath)
     create_job_file_(outFilePath, jobArray, dictCheckpoints; summaryFileOfOrigin=summaryFilePath, root=root,
       tagBegin=tagBegin, tagFinish=tagFinish, tagHeader=tagHeader, tagCheckpoint=tagCheckpoint, headerPrefix=headerPrefix, headerSuffix=headerSuffix, summaryFile=summaryFile, jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds
     );
   end
+  ## Check that summary file names are unique
+  if length(unique(arrJobFilePaths)) != length(arrJobFilePaths)
+    SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_jobs_from_summary_) number of unique job file paths (", length(unique(arrJobFilePaths)), ") does not match total number of file paths generated (", length(arrJobFilePaths), ")." );
+  end
+  return arrJobFilePaths
 end
 
 ## Check if a #BSUB option appears more than once in the job array.
