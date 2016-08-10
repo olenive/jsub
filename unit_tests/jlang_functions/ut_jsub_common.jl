@@ -1127,7 +1127,7 @@ Test.with_handler(ut_handler) do
   "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\""
   "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\""
   ];
-  # These array contain data that would be read from list files into dictionaries
+  # These arrays contain data that would be read from list files into dictionaries
   arrFileContents1 = [];
   push!(arrFileContents1, ["\"path\/to\/\"Lane'\"1\"1'", "path\/to\"Lane\"\"1\"2"]);
   push!(arrFileContents1, ["Lane\"2\"1"]);
@@ -1492,7 +1492,7 @@ Test.with_handler(ut_handler) do
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray);
   # Expected output consists of files written to disk
-  create_summary_files_(supSummaryArrayOfArrays, summaryPaths; verbose=true)
+  create_summary_files_(supSummaryArrayOfArrays, summaryPaths; verbose=false)
   # Read output back into array of arrays of arrays and check if it matches what was supplied
   @test map((x) -> file2arrayofarrays_(x, "#", cols=1)[1], summaryPaths ) == supSummaryArrayOfArrays
 

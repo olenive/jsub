@@ -688,7 +688,10 @@ function get_longname(pathProtocol, pathVars, pathFvars)
 end
 
 # Get summary file names by reading protocol file arrays and looking for the first instance of a tag or simply numbering them
-function get_summary_names(arrProt; prefix="", suffix=".summary", timestamp="", tag="#JSUB<summary-name>", allowNonUnique=false, longName=nothing)
+function get_summary_names(arrProt; prefix=nothing, suffix=".summary", timestamp="", tag="#JSUB<summary-name>", allowNonUnique=false, longName=nothing)
+  if prefix == nothing
+    prefix = "";
+  end
   summaryNames = [];
   lenTag = length(tag);
   idx = 0;
@@ -911,13 +914,15 @@ end
 
 ## Create job file from array of instructions and a dictionary of functions
 # Use file2arrayofarrays_(x, "#", cols=1) to read summary file
-function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summaryFileOfOrigin="", root="root", tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true, rootSleepSeconds=nothing)
+function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summaryFileOfOrigin="", root="root", tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true, rootSleepSeconds=nothing, verbose=false)
   # Check if jobArray is empty
   if jobArray == []
     SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_job_file_) Array of job contents is empty, no job file created.");
   else
     # Overwrite with header
-    println("Writing to job file: ", outFilePath);
+    if (verbose) 
+      println("Writing to job file: ", outFilePath);
+    end
     stream = open(outFilePath, "w");
     write(stream, create_job_header_string(jobArray; root=root, tagHeader=tagHeader, prefix=headerPrefix, suffix=headerSuffix, jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds));
     # Append tag variables
@@ -939,7 +944,7 @@ end
 
 ## Create all the job files associated with a particular summary file (Note that using the option filePathOverride means input to the directoryForJobFiles and jobFileSuffix options will be ignored)
 function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonFunctions::Dict, checkpointsDict::Dict; directoryForJobFiles="", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
-    tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n", headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true, rootSleepSeconds=nothing
+    tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n", headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true, rootSleepSeconds=nothing, verbose=false
   )
   arrJobFilePaths = [];
   ## For each group in the summary file create a job file
@@ -969,7 +974,7 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
     ## Create job file
     push!(arrJobFilePaths, outFilePath)
     create_job_file_(outFilePath, jobArray, dictCheckpoints; summaryFileOfOrigin=summaryFilePath, root=root,
-      tagBegin=tagBegin, tagFinish=tagFinish, tagHeader=tagHeader, tagCheckpoint=tagCheckpoint, headerPrefix=headerPrefix, headerSuffix=headerSuffix, summaryFile=summaryFile, jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds
+      tagBegin=tagBegin, tagFinish=tagFinish, tagHeader=tagHeader, tagCheckpoint=tagCheckpoint, headerPrefix=headerPrefix, headerSuffix=headerSuffix, summaryFile=summaryFile, jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds, verbose=verbose
     );
   end
   ## Check that summary file names are unique
