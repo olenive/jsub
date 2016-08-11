@@ -40,6 +40,8 @@ using ArgParse
 
 #################
 
+sourcePath = dirname(Base.source_path()) * "/"; # Get the path to the jsub.jl file
+
 ### TODO: INPUT CHECKS ###
 
 
@@ -55,7 +57,7 @@ fileVars="/Users/olenive/work/jsub_pipeliner/unit_tests/protocols/sample_variabl
 fileFvars="/Users/olenive/work/jsub_pipeliner/unit_tests/protocols/split/refs_samples.fvars";
 
 # summaryFilePrefix="TEST/summaries/";
-jobFilePrefix="TEST/jobfiles";
+jobFilePrefix = sourcePath * "TEST/jobfiles";
 
 ## Default job header values
 # jobID="LSFjob";
@@ -104,8 +106,8 @@ tagsExpand = Dict(
 
 ## Paths to bash functions {"function name" => "path to file containing function"}
 commonFunctions = Dict(
-  "kill_this_job" => "common_functions/job_processing.sh",
-  "process_job" => "common_functions/job_processing.sh",
+  "kill_this_job" => sourcePath * "common_functions/job_processing.sh",
+  "process_job" => sourcePath * "common_functions/job_processing.sh",
 )
 checkpointsDict = Dict()
 
@@ -116,116 +118,124 @@ include("./common_functions/jsub_common.jl")
 
 ######### MAIN #########
 # function main(args)
-  ## Argparse settings
-  argSettings = ArgParseSettings(description = "Julia program for systematically generating LSF jobs which write to log files.");
+## Argparse settings
+argSettings = ArgParseSettings(description = "Julia program for systematically generating LSF jobs which write to log files.");
 
-  @add_arg_table argSettings begin
-      "-v", "--verbose"
-      "-s", "--summary"
-      "protocol"
-      "-l", "--list"
-      "-r", "--vars"
-      "-f", "--fvars"
-      "--summary-prefix"
+@add_arg_table argSettings begin
+  "-v", "--verbose"
+    action = :store_true
+    help = "Verbose mode prints warnings and additional information to std out." 
+  "-s", "--summary"
+    action = :store_true
+    help = "Generate summary files from protocol and .vars, .fvars and list files (where supplied).  Stops after generating summary files."
+
+
+
+  "protocol"
+  "-l", "--list"
+  "-r", "--vars"
+  "-f", "--fvars"
+  "--summary-prefix"
+
+  "--opt1"
+    help = "an option"     # used by the help screen
+  "--opt2", "-o"
+    action = :store_true   # this makes it a flag
+    help = "a flag"
+
+end
+
+parsed_args = parse_args(argSettings) # the result is a Dict{String,Any}
+println("Parsed args:")
+for (key,val) in parsed_args
+    println("  $key  =>  $(repr(val))")
+end
+
+## Store flag states
+flagVerbose = parsed_args["verbose"];
+flagSummary = parsed_args["summary"];
+
+## Determine string used in file names
+longName = "longName" #get_longname(fileProtocol, fileVars, fileFvars)
+
+## Extract file paths from arguments
+fileProtocol = "";
+if parsed_args["protocol"] == nothing
+  error("Please supply a path to a protocol file as the first argument.");
+  return 1
+else
+  fileProtocol = parsed_args["protocol"];
+end
+
+## Read protocol, vars and fvars files and expand variables
+flagVerbose && println("## Read protocol, vars and fvars files and expand variables");
+namesVars = []; valuesVars = [];
+if parsed_args["vars"] != nothing
+  # Read .vars file # Extract arrays of variable names and variable values
+  namesVarsRaw, valuesVarsRaw = parse_varsfile_(parsed_args["vars"], tagsExpand=tagsExpand);
+  # Expand variables in each row from .vars if they were assigned in a higher row (as though they are being assigned at the command line).
+  namesVars, valuesVars = expandinorder(namesVarsRaw, valuesVarsRaw, adapt_quotation=adapt_quotation);
+end
+namesFvars = []; infileColumnsFvars = []; filePathsFvars = [];
+if parsed_args["fvars"] != nothing
+  # Read .fvar file (of 3 columns) and expand variables from .vars
+  namesFvars, infileColumnsFvars, filePathsFvars = parse_expandvars_fvarsfile_(fileFvars, namesVars, valuesVars; dlmFvars=delimiterFvars, adapt_quotation=adapt_quotation, tagsExpand=tagsExpand);
+end
+
+# Read .protocol file (of 1 column ) and expand variables from .vars
+flagVerbose && println("# Read .protocol file (of 1 column ) and expand variables from .vars");
+arrProtExpVars, cmdRowsProt = parse_expandvars_protocol_(fileProtocol, namesVars, valuesVars, adapt_quotation=adapt_quotation);
+
+dictListArr = Dict(); dictCmdLineIdxs = Dict();
+if parsed_args["list"] != nothing
+  # Read "list" files and return their contents in a dictionary (key: file path) (value: arrays of arrays) as well as corresponding command line indicies
+  dictListArr, dictCmdLineIdxs = parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, delimiterFvars; verbose=false, adapt_quotation=adapt_quotation, tagsExpand=tagsExpand);
+  if length(keys(dictListArr)) != length(keys(dictCmdLineIdxs))
+    error("Numbers of command rows (", length(keys(dictListArr)), ") and command row indices (", length(keys(dictCmdLineIdxs)), ") in list file (", filePathsFvars, ") do not match.")
   end
+end
 
-  parsed_args = parse_args(argSettings) # the result is a Dict{String,Any}
-  println("Parsed args:")
-  for (key,val) in parsed_args
-      println("  $key  =>  $(repr(val))")
-  end
+# Use variable values from "list" files to create multiple summary file arrays from the single .protocol file array
+flagVerbose && println("# Use variable values from \"list\" files to create multiple summary file arrays from the single .protocol file array");
+arrArrExpFvars = [];
+if length(keys(dictListArr)) != 0 && length(keys(dictCmdLineIdxs)) != 0
+  arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs; verbose=verbose, adapt_quotation=adapt_quotation);
+else
+  push!(arrArrExpFvars, arrProtExpVars) # If there is no data from list files, simply proceed using the protocol with expanded varibles (if applicable)
+end
 
-  ## Determine string used in file names
-  longName = "longName" #get_longname(fileProtocol, fileVars, fileFvars)
+## Create summary files
+# Generate list of summary file paths.
+println("# Generate list of summary file paths.")
+summaryPaths = get_summary_names(arrArrExpFvars; tag="#JSUB<summary-name>", # if an entry with this tag is found in the protocol (arrArrExpFvars), the string following the tag will be used as the name
+  longName=longName, # Otherwise the string passed to longName will be used as the basis of the summary file name
+  prefix=parsed_args["summary-prefix"], suffix=".summary", timestamp="YYYYMMDD_HHMMSS"
+);
+# Take an expanded protocol in the form of an array of arrays and produce a summary file for each entry
+println("# Take an expanded protocol in the form of an array of arrays and produce a summary file for each entry")
+println(summaryPaths)
+create_summary_files_(arrArrExpFvars, summaryPaths; verbose=verbose);
 
-  ## Extract file paths from arguments
-  fileProtocol = "";
-  if parsed_args["protocol"] == nothing
-    error("Please supply a path to a protocol file as the first argument.");
-    return 1
-  else
-    fileProtocol = parsed_args["protocol"];
-  end
+flagVerbose && println("Reading summary files to be used for job files");
+# Note: file2arrayofarrays_ returns a tuple of file contents (in an array) and line number indices (in an array)
+summaryFilesData = map((x) -> file2arrayofarrays_(x, "#", cols=1, tagsExpand=tagsExpand), summaryPaths );
 
-  ## Read protocol, vars and fvars files and expand variables
-  println("## Read protocol, vars and fvars files and expand variables")
-  namesVars = []; valuesVars = [];
-  if parsed_args["vars"] != nothing
-    # Read .vars file # Extract arrays of variable names and variable values
-    namesVarsRaw, valuesVarsRaw = parse_varsfile_(parsed_args["vars"], tagsExpand=tagsExpand);
-    # Expand variables in each row from .vars if they were assigned in a higher row (as though they are being assigned at the command line).
-    namesVars, valuesVars = expandinorder(namesVarsRaw, valuesVarsRaw, adapt_quotation=adapt_quotation);
-  end
-  namesFvars = []; infileColumnsFvars = []; filePathsFvars = [];
-  if parsed_args["fvars"] != nothing
-    # Read .fvar file (of 3 columns) and expand variables from .vars
-    namesFvars, infileColumnsFvars, filePathsFvars = parse_expandvars_fvarsfile_(fileFvars, namesVars, valuesVars; dlmFvars=delimiterFvars, adapt_quotation=adapt_quotation, tagsExpand=tagsExpand);
-  end
+flagVerbose && println("Importing bash functions from files");
+arrDictCheckpoints = map((x) -> identify_checkpoints(x[1], checkpointsDict; tagCheckpoint="jcheck_"), summaryFilesData );
+arrBashFunctions = map((x) -> get_bash_functions(commonFunctions, x), arrDictCheckpoints);
 
-  # Read .protocol file (of 1 column ) and expand variables from .vars
-  println("# Read .protocol file (of 1 column ) and expand variables from .vars")
-  arrProtExpVars, cmdRowsProt = parse_expandvars_protocol_(fileProtocol, namesVars, valuesVars, adapt_quotation=adapt_quotation);
+flagVerbose && println("Splitting summary file contents into separate jobs.");
+summaryArrDicts = map((x) -> split_summary(x[1]; tagSplit=tagsExpand["tagSplit"]), summaryFilesData);
 
-  dictListArr = Dict(); dictCmdLineIdxs = Dict();
-  if parsed_args["list"] != nothing
-    # Read "list" files and return their contents in a dictionary (key: file path) (value: arrays of arrays) as well as corresponding command line indicies
-    dictListArr, dictCmdLineIdxs = parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, delimiterFvars; verbose=false, adapt_quotation=adapt_quotation, tagsExpand=tagsExpand);
-    if length(keys(dictListArr)) != length(keys(dictCmdLineIdxs))
-      error("Numbers of command rows (", length(keys(dictListArr)), ") and command row indices (", length(keys(dictCmdLineIdxs)), ") in list file (", filePathsFvars, ") do not match.")
-    end
-  end
+flagVerbose && println("Getting job file names from summary file basenames.");
+arrJobIDs = map((x) -> basename(remove_suffix(x, ".summary")) , summaryPaths)
 
-  # Use variable values from "list" files to create multiple summary file arrays from the single .protocol file array
-  println("# Use variable values from \"list\" files to create multiple summary file arrays from the single .protocol file array")
-  arrArrExpFvars = [];
-  if length(keys(dictListArr)) != 0 && length(keys(dictCmdLineIdxs)) != 0
-    arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs; verbose=verbose, adapt_quotation=adapt_quotation);
-  else
-    push!(arrArrExpFvars, arrProtExpVars) # If there is no data from list files, simply proceed using the protocol with expanded varibles (if applicable)
-  end
-
-  ## Create summary files
-  # Generate list of summary file paths.
-  println("# Generate list of summary file paths.")
-  summaryPaths = get_summary_names(arrArrExpFvars; tag="#JSUB<summary-name>", # if an entry with this tag is found in the protocol (arrArrExpFvars), the string following the tag will be used as the name
-    longName=longName, # Otherwise the string passed to longName will be used as the basis of the summary file name
-    prefix=parsed_args["summary-prefix"], suffix=".summary", timestamp="YYYYMMDD_HHMMSS"
-  );
-  # Take an expanded protocol in the form of an array of arrays and produce a summary file for each entry
-  println("# Take an expanded protocol in the form of an array of arrays and produce a summary file for each entry")
-  println(summaryPaths)
-  create_summary_files_(arrArrExpFvars, summaryPaths; verbose=verbose);
-
-  ## Read summary files and use them to create LSF job files
-  println("## Read summary files and use them to create LSF job files")
-  # Note: file2arrayofarrays_ returns a tuple of file contents (in an array) and line number indices (in an array)
-  summaryFilesData = map((x) -> file2arrayofarrays_(x, "#", cols=1, tagsExpand=tagsExpand), summaryPaths );
-
-  ## this can be done inside the create_job_file function
-  # # Use summary file path and contents to generate job file names
-  # arrJobFileNames = map((x, y) -> get_jobfile_name(x, y[1]), summaryPaths, summaryFilesData);
-
-  # Get bash functions from files
-  arrDictCheckpoints = map((x) -> identify_checkpoints(x[1], checkpointsDict; tagCheckpoint="jcheck_"), summaryFilesData );
-  arrBashFunctions = map((x) -> get_bash_functions(commonFunctions, x), arrDictCheckpoints);
-
-  # Split summary file contents into job arrays stored in dictionaries
-  summaryArrDicts = map((x) -> split_summary(x[1]; tagSplit=tagsExpand["tagSplit"]), summaryFilesData);
-
-  ## Get job IDs from summary basenames
-  arrJobIDs = map((x) -> basename(remove_suffix(x, ".summary")) , summaryPaths)
-
-  # ## Check and warn if there are conflicting options in the job arrays
-  # map((x) -> detect_option_conflicts(jobArray, tag="#BSUB", option="-J"), 
-
-  ## Write job files
-  jobFilePaths = map((summaryFilePath, dictSummaries, jobID) -> create_jobs_from_summary_(summaryFilePath, dictSummaries, commonFunctions, checkpointsDict; 
-    directoryForJobFiles=jobFilePrefix, jobID=jobID, jobDate=get_timestamp_(nothing), headerSuffix=commonHeaderSuffix),
-    summaryPaths, summaryArrDicts, arrJobIDs
-  )
-
+## Write job files
+jobFilePaths = map((summaryFilePath, dictSummaries, jobID) -> create_jobs_from_summary_(summaryFilePath, dictSummaries, commonFunctions, checkpointsDict; 
+  directoryForJobFiles=jobFilePrefix, jobID=jobID, jobDate=get_timestamp_(nothing), headerSuffix=commonHeaderSuffix, verbose=flagVerbose),
+  summaryPaths, summaryArrDicts, arrJobIDs
+)
 # end
-
 # main(ARGS)
 
 # Report if there were any suppressed warnings
