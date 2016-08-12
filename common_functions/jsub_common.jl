@@ -731,7 +731,7 @@ end
 # end
 
 # Write summary files
-function create_summary_files_(arrArrExpFvars, summaryPaths; verbose=verbose)
+function create_summary_files_(arrArrExpFvars, summaryPaths; verbose=false)
   outputPaths = []; # list of paths of the summary files created
   ## Check that number of elements in array matches number of file paths
   if length(arrArrExpFvars) != length(summaryPaths)
@@ -1001,7 +1001,31 @@ function detect_option_conflicts(jobArray; tag="#BSUB", option="-J")
   length(unique(matchValues)) > 1 ? (return true) : (return false);
 end
 
-##
+## Map the states of the -s -j -b (summaries, jobs and submit) flags to the required steps
+function map_flags_sjb(flagSummaries, flagJobs, flagSubmit)
+  flags = string(1*flagSummaries, 1*flagJobs, 1*flagSubmit);
+  mapping = Dict(
+    "000" => "111",
+    "100" => "100",
+    "010" => "010",
+    "001" => "001",
+    "101" => "111",
+    "111" => "111",
+    "011" => "011",
+    "110" => "110",
+  );
+  return mapping[flags]
+end
+
+## Extract file path from arguments
+function get_path_from_args(arg)
+  if parsed_args[arg] == false
+    error("Please supply an argument to the \"--", arg, "\" option.");
+  else
+    return parsed_args["protocol"]
+  end
+end
+
 
 
 # EOF
