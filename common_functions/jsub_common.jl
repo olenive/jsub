@@ -665,10 +665,10 @@ function protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars,
 end
 
 # Use input protocol, vars and fvars file names to generate a long name string to be used as part of the output summary and job file names.
-function get_longname(pathProtocol, pathVars, pathFvars)
-  baseProtocol = remove_suffix(basename(pathProtocol), ".protocol");
-  baseVars = remove_suffix(basename(pathVars), ".vars");
-  baseFvars = remove_suffix(basename(pathFvars), ".fvars");
+function get_longname(pathProtocol, pathVars, pathFvars; keepSuffix=false)
+  keepSuffix ? baseProtocol = basename(pathProtocol) : baseProtocol = remove_suffix(basename(pathProtocol), ".protocol");
+  keepSuffix ? baseVars = basename(pathVars) : baseVars = remove_suffix(basename(pathVars), ".vars");
+  keepSuffix ? baseFvars = basename(pathFvars) : baseFvars = remove_suffix(basename(pathFvars), ".fvars");
   (length(baseProtocol) > 0 && length(baseVars * baseFvars) > 0) ? dlm1 = "_" : dlm1 = "";
   (length(baseProtocol * baseVars) > 0 && length(baseFvars) > 0) ? dlm2 = "_" : dlm2 = "";
   out = string(
@@ -731,7 +731,7 @@ end
 # end
 
 # Write summary files
-function create_summary_files_(arrArrExpFvars, summaryPaths; verbose=false)
+function create_summary_files_(arrArrExpFvars, summaryPaths; verbose=false, createDirectory=true)
   outputPaths = []; # list of paths of the summary files created
   ## Check that number of elements in array matches number of file paths
   if length(arrArrExpFvars) != length(summaryPaths)
@@ -748,6 +748,7 @@ function create_summary_files_(arrArrExpFvars, summaryPaths; verbose=false)
     if verbose
       println("Writing to summary file: ", file);
     end
+    createDirectory && mkpath(dirname(file));
     stream = open(file, "w");
     arrExpFvars = arrArrExpFvars[ipath];
     for subarr in arrExpFvars
@@ -1018,13 +1019,19 @@ function map_flags_sjb(flagSummaries, flagJobs, flagSubmit)
 end
 
 ## Extract file path from arguments
-function get_path_from_args(arg)
-  if parsed_args[arg] == false
-    error("Please supply an argument to the \"--", arg, "\" option.");
+function get_argument(dictArguments::Dict, option; verbose=false, optional=false, path=false)
+  if !optional && (dictArguments[option] == false || dictArguments[option] == nothing)
+    error("Please supply an argument to the \"--", option, "\" option.");
   else
-    return parsed_args["protocol"]
+    verbose && println(string("Parsed argument to --", option, ": ", dictArguments[option]));
+    if path && (dictArguments[option] == false || dictArguments[option] == nothing)
+      return ""
+    else
+      return dictArguments[option]
+    end
   end
 end
+
 
 
 

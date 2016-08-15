@@ -2184,6 +2184,24 @@ Test.with_handler(ut_handler) do
   # compare_arrays(split(readall(expectedFilePath02), '\n'), split(expectedFileContents02, '\n'))
   @test expectedFileContents03 == readall(expectedFilePath03)
 
+  ## map_flags_sjb(flagSummaries, flagJobs, flagSubmit)
+  @test map_flags_sjb(false, false, false) == "111"
+
+  ## get_argument(dictArguments::Dict, option; verbose=false)
+  suppliedArguments = Dict(
+    "suppress-warnings"  =>  false,
+    "protocol"  =>  "basic.protocol",
+    "fvars"  =>  nothing,
+    "submit-jobs"  =>  false,
+  );
+  @test get_argument(suppliedArguments, "protocol", verbose=false) == "basic.protocol"
+  @test_throws ErrorException get_argument(suppliedArguments, "fvars", verbose=false)
+  @test_throws ErrorException get_argument(suppliedArguments, "submit-jobs", verbose=false)
+  @test get_argument(suppliedArguments, "fvars", verbose=false, optional=true) == nothing
+  @test get_argument(suppliedArguments, "submit-jobs", verbose=false, optional=true) == false
+  @test get_argument(suppliedArguments, "fvars", verbose=false, optional=true, path=true) == ""
+  @test get_argument(suppliedArguments, "submit-jobs", verbose=false, optional=true, path=true) == ""
+
   # # 
   # jobHeader = string(
   # "#!/bin/bash\n

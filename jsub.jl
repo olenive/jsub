@@ -117,16 +117,6 @@ checkpointsDict = Dict()
 
 #### FUNCTIONS ####
 include("./common_functions/jsub_common.jl")
-
-## Extract file path from arguments
-function get_path_from_args(parsed_args, arg; verbose=false)
-  if parsed_args[arg] == false
-    error("Please supply an argument to the \"--", arg, "\" option.");
-  else
-    verbose && println("Parsed argument to --" * arg * ": " * parsed_args["protocol"])
-    return parsed_args["protocol"]
-  end
-end
 ###################
 
 ######### MAIN #########
@@ -171,6 +161,9 @@ end
   "-m", "--summary-prefix"
     help = "Prefix to summary files."
 
+  "-t", "--timestamp"
+    action = :store_true
+    help = "Add timestamps to summary files."
 end
 
 parsed_args = parse_args(argSettings) # the result is a Dict{String,Any}
@@ -185,32 +178,28 @@ flagVerbose = parsed_args["verbose"];
 requiredStages = map_flags_sjb(parsed_args["generate-summaries"], parsed_args["generate-jobs"], parsed_args["submit-jobs"])
 println(requiredStages);
 
-# Extract file path from arguments
-fileProtocol = "";
-if parsed_args["protocol"] == nothing
-  error("Please supply a path to a protocol file as the first argument.");
-  return 1
-else
-  fileProtocol = parsed_args["protocol"];
-end
-
 ### TODO: INPUT CHECKS ###
 # Check that fileFvars contains 3 delmiterFvars separated columns
 
 ## STAGE 1
 if requiredStages[1] == '1'
   ###############
-  flagVerbose && println("\nSTAGE 1:");
+  flagVerbose && println("\nSTAGE 1: Generating summary files using data from files supplied to the --protocol, --vars and --fvars options.");
   ###############
 
+  ## Get file paths from arguments
+  fileProtocol = get_argument(parsed_args, "protocol"; verbose=flagVerbose);
+  fileVars = get_argument(parsed_args, "vars"; verbose=flagVerbose, optional=true, path=true);
+  fileFvars = get_argument(parsed_args, "fvars"; verbose=flagVerbose, optional=true, path=true);
+  
   ## Determine string used in file names
-  fileProtocol = get_path_from_args(parsed_args, "protocol"; verbose=flagVerbose);
-  longName = "longName" #get_longname(fileProtocol, fileVars, fileFvars)
+  longName = get_longname(fileProtocol, fileVars, fileFvars, keepSuffix=false);
+  flagVerbose && println(string("Prefix for output file base-names: ", longName));
 
   ## Read protocol, vars and fvars files and expand variables
-  flagVerbose && println("## Read protocol, vars and fvars files and expand variables");
   namesVars = []; valuesVars = [];
   if parsed_args["vars"] != nothing
+    flagVerbose && println(string("Expand variables line by line in data from (--vars) file: ", fileVars));
     # Read .vars file # Extract arrays of variable names and variable values
     namesVarsRaw, valuesVarsRaw = parse_varsfile_(parsed_args["vars"], tagsExpand=tagsExpand);
     # Expand variables in each row from .vars if they were assigned in a higher row (as though they are being assigned at the command line).
@@ -218,50 +207,54 @@ if requiredStages[1] == '1'
   end
   namesFvars = []; infileColumnsFvars = []; filePathsFvars = [];
   if parsed_args["fvars"] != nothing
+    flagVerbose && println(string("Expand variables in data from (--fvars) file: ", fileFvars));
     # Read .fvar file (of 3 columns) and expand variables from .vars
     namesFvars, infileColumnsFvars, filePathsFvars = parse_expandvars_fvarsfile_(fileFvars, namesVars, valuesVars; dlmFvars=delimiterFvars, adapt_quotation=adapt_quotation, tagsExpand=tagsExpand);
   end
 
   # Read .protocol file (of 1 column ) and expand variables from .vars
-  (flagVerbose && length(namesVars) > 0) && println("Expanding variables in :" * fileProtocol);
+  (flagVerbose && length(namesVars) > 0) && println("Expanding variables in protocol file using values from the --vars file.");
   arrProtExpVars, cmdRowsProt = parse_expandvars_protocol_(fileProtocol, namesVars, valuesVars, adapt_quotation=adapt_quotation);
 
   dictListArr = Dict(); dictCmdLineIdxs = Dict();
   if parsed_args["fvars"] != nothing
-    # Read "list" files and return their contents in a dictionary (key: file path) (value: arrays of arrays) as well as corresponding command line indicies
+    println(string("Expanding variables from the --fvars file using values from the files listed in each row..."));
     dictListArr, dictCmdLineIdxs = parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, delimiterFvars; verbose=false, adapt_quotation=adapt_quotation, tagsExpand=tagsExpand);
     if length(keys(dictListArr)) != length(keys(dictCmdLineIdxs))
       error("Numbers of command rows (", length(keys(dictListArr)), ") and command row indices (", length(keys(dictCmdLineIdxs)), ") in list file (", filePathsFvars, ") do not match.")
     end
   end
 
+  ## Create summary files
   # Use variable values from "list" files to create multiple summary file arrays from the single .protocol file array
-  flagVerbose && println("# Use variable values from \"list\" files to create multiple summary file arrays from the single .protocol file array");
+  flagVerbose && println("Creating summary files...");
   arrArrExpFvars = [];
   if length(keys(dictListArr)) != 0 && length(keys(dictCmdLineIdxs)) != 0
     arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs; verbose=verbose, adapt_quotation=adapt_quotation);
   else
     push!(arrArrExpFvars, arrProtExpVars); # If there is no data from list files, simply proceed using the protocol with expanded varibles (if applicable)
   end
-
-  ## Create summary files
-  # Generate list of summary file paths.
-  println("# Generate list of summary file paths.")
+  # Generate list of summary file paths. 
   summaryPaths = get_summary_names(arrArrExpFvars; tag="#JSUB<summary-name>", # if an entry with this tag is found in the protocol (arrArrExpFvars), the string following the tag will be used as the name
     longName=longName, # Otherwise the string passed to longName will be used as the basis of the summary file name
-    prefix=parsed_args["summary-prefix"], suffix=".summary", timestamp="YYYYMMDD_HHMMSS"
+    prefix=get_argument(parsed_args, "summary-prefix"; verbose=flagVerbose, optional=true, path=true),
+    suffix=".summary",
+    timestamp=(
+      parsed_args["timestamp"] ? get_timestamp_(nothing) : "";
+    )
   );
   # Take an expanded protocol in the form of an array of arrays and produce a summary file for each entry
-  flagVerbose && println("Generating summary files...");
-  create_summary_files_(arrArrExpFvars, summaryPaths; verbose=flagVerbose);
-
+  outputSummaryPaths = create_summary_files_(arrArrExpFvars, summaryPaths; verbose=flagVerbose);
+  pathSummaryList = string(get_argument(parsed_args, "summary-prefix"; verbose=flagVerbose, optional=true, path=true), longName, ".summary-list");
+  println(string("Writing list of summary files to: ", pathSummaryList));
+  writedlm(pathSummaryList, outputSummaryPaths); #, delim="\n");
   flagVerbose && println("");
 end
 
 ## STAGE 2
 if requiredStages[2] == '1'
   ###############
-  flagVerbose && println("STAGE 2");
+  flagVerbose && println("STAGE 2: Using summary files to generate LSF job files.");
   ###############
   flagVerbose && println("Reading summary files to be used for job files");
   # Note: file2arrayofarrays_ returns a tuple of file contents (in an array) and line number indices (in an array)
@@ -289,7 +282,7 @@ end
 ## STAGE 3
 if requiredStages[3] == '1'
   ###############
-  flagVerbose && println("STAGE 3");
+  flagVerbose && println("STAGE 3: Submitting LSF jobs.");
   ###############
 
   flagVerbose && println("");
