@@ -55,14 +55,14 @@ sourcePath = dirname(Base.source_path()) * "/"; # Get the path to the jsub.jl fi
 ####### INPUTS #######
 
 # Variables file
-fileVars="/Users/olenive/work/jsub_pipeliner/unit_tests/protocols/sample_variables/call_bash_scripts_pathVar_sampleVars.vars";
+# fileVars="/Users/olenive/work/jsub_pipeliner/unit_tests/protocols/sample_variables/call_bash_scripts_pathVar_sampleVars.vars";
 
 # Variables from list
 #fileFvars="/Users/olenive/work/jsub_pipeliner/unit_tests/protocols/sample_variables/call_bash_scripts_pathVar_sampleVars.fvars"
-fileFvars="/Users/olenive/work/jsub_pipeliner/unit_tests/protocols/split/refs_samples.fvars";
+# fileFvars="/Users/olenive/work/jsub_pipeliner/unit_tests/protocols/split/refs_samples.fvars";
 
 # summaryFilePrefix="TEST/summaries/";
-jobFilePrefix = sourcePath * "TEST/jobfiles";
+jobFilePrefix = sourcePath * "TEST/jobfiles/";
 
 ## Default job header values
 # jobID="LSFjob";
@@ -161,9 +161,20 @@ include("./common_functions/jsub_common.jl")
   "-m", "--summary-prefix"
     help = "Prefix to summary files."
 
+  "-q", "--job-prefix"
+    help = "Prefix to job files."
+
   "-t", "--timestamp"
     action = :store_true
     help = "Add timestamps to summary files."
+
+  "-a", "--portable"
+    action = :store_true
+    help = "Write a copy of the submission script and relevant functions to the directory containing the job files so that it may be copied over to and run on a system that does not have a working copy of jsub.jl."
+
+  "-z", "--zip-jobs"
+    action = :store_true
+    help = "Create a zip file containing the jobs directory for ease of copying."
 end
 
 parsed_args = parse_args(argSettings) # the result is a Dict{String,Any}
@@ -178,23 +189,42 @@ flagVerbose = parsed_args["verbose"];
 requiredStages = map_flags_sjb(parsed_args["generate-summaries"], parsed_args["generate-jobs"], parsed_args["submit-jobs"])
 println(requiredStages);
 
+## Check for conflicting arguments
+if requiredStages[1] == '1' && requiredStages[2] == '1' && parsed_args["list-summaries"] != nothing
+  error("Abiguous combination of options (-u): Stages 1 and 2 are being run together but an argument has been passed to the \"--list-summaries\" (-u) option.  This is disallowed to prevent the confusing situation in which job files produced during Stage 2 are unrelated to the summary files produced at Stage 1.  \nTo resolve this, ommit the \"--list-summaries\" (-u) option or run Stages 1 and 2 separately.");
+end
+if requiredStages[2] == '1' && requiredStages[3] == '1' && parsed_args["list-jobs"] != nothing
+  error("Abiguous combination of options (-o): Stages 2 and 3 are being run together but an argument has been passed to the \"--list-jobs\" (-o) option.  This is disallowed to prevent the confusing situation in which job files produced during Stage 2 are not the files being submitted to the queuing system in Stage 3.  \nTo resolve this, ommit the \"--list-jobs\" (-o) option or run Stages 2 and 3 separately.");
+end
+
 ### TODO: INPUT CHECKS ###
 # Check that fileFvars contains 3 delmiterFvars separated columns
 
+## Initialise shared variables
+
+## Get file paths from arguments
+fileProtocol = get_argument(parsed_args, "protocol"; verbose=flagVerbose);
+fileVars = get_argument(parsed_args, "vars"; verbose=flagVerbose, optional=true, path=true);
+fileFvars = get_argument(parsed_args, "fvars"; verbose=flagVerbose, optional=true, path=true);
+
+## Determine string used in file names
+longName = get_longname(fileProtocol, fileVars, fileFvars, keepSuffix=false);
+flagVerbose && println(string("Prefix for output file base-names: ", longName));
+
+summaryPaths = [];
+jobFilePaths = [];
+pathJobsList = string(jobFilePrefix, longName, ".jobs-list");
+dirJobs = dirname(pathJobsList);
+pathSubmissionScript = string(sourcePath, "/common_functions/submit_lsf_jobs.sh");
+pathSubmissionFunctions = string(sourcePath, "/common_functions/jobs_submission_functions.sh");
+jobFilePrefix = string(sourcePath, parsed_args["job-prefix"]);
+
+# String added to the header of every job file
+commonHeaderSuffix = "\n#BSUB -P prepay-houlston";
+
 ## STAGE 1
 if requiredStages[1] == '1'
-  ###############
-  flagVerbose && println("\nSTAGE 1: Generating summary files using data from files supplied to the --protocol, --vars and --fvars options.");
-  ###############
-
-  ## Get file paths from arguments
-  fileProtocol = get_argument(parsed_args, "protocol"; verbose=flagVerbose);
-  fileVars = get_argument(parsed_args, "vars"; verbose=flagVerbose, optional=true, path=true);
-  fileFvars = get_argument(parsed_args, "fvars"; verbose=flagVerbose, optional=true, path=true);
-  
-  ## Determine string used in file names
-  longName = get_longname(fileProtocol, fileVars, fileFvars, keepSuffix=false);
-  flagVerbose && println(string("Prefix for output file base-names: ", longName));
+  flagVerbose && println("\n - STAGE 1: Generating summary files using data from files supplied to the --protocol, --vars and --fvars options.");
 
   ## Read protocol, vars and fvars files and expand variables
   namesVars = []; valuesVars = [];
@@ -235,9 +265,12 @@ if requiredStages[1] == '1'
     push!(arrArrExpFvars, arrProtExpVars); # If there is no data from list files, simply proceed using the protocol with expanded varibles (if applicable)
   end
   # Generate list of summary file paths. 
+
+  summaryPrefix = get_argument(parsed_args, "summary-prefix"; verbose=flagVerbose, optional=true, path=true);
+
   summaryPaths = get_summary_names(arrArrExpFvars; tag="#JSUB<summary-name>", # if an entry with this tag is found in the protocol (arrArrExpFvars), the string following the tag will be used as the name
     longName=longName, # Otherwise the string passed to longName will be used as the basis of the summary file name
-    prefix=get_argument(parsed_args, "summary-prefix"; verbose=flagVerbose, optional=true, path=true),
+    prefix=summaryPrefix,
     suffix=".summary",
     timestamp=(
       parsed_args["timestamp"] ? get_timestamp_(nothing) : "";
@@ -245,45 +278,93 @@ if requiredStages[1] == '1'
   );
   # Take an expanded protocol in the form of an array of arrays and produce a summary file for each entry
   outputSummaryPaths = create_summary_files_(arrArrExpFvars, summaryPaths; verbose=flagVerbose);
-  pathSummaryList = string(get_argument(parsed_args, "summary-prefix"; verbose=flagVerbose, optional=true, path=true), longName, ".summary-list");
+  pathSummaryList = string(summaryPrefix, longName, ".summaries-list");
   println(string("Writing list of summary files to: ", pathSummaryList));
-  writedlm(pathSummaryList, outputSummaryPaths); #, delim="\n");
+  writedlm(pathSummaryList, outputSummaryPaths);
   flagVerbose && println("");
 end
 
 ## STAGE 2
 if requiredStages[2] == '1'
-  ###############
-  flagVerbose && println("STAGE 2: Using summary files to generate LSF job files.");
-  ###############
-  flagVerbose && println("Reading summary files to be used for job files");
-  # Note: file2arrayofarrays_ returns a tuple of file contents (in an array) and line number indices (in an array)
-  summaryFilesData = map((x) -> file2arrayofarrays_(x, "#", cols=1, tagsExpand=tagsExpand), summaryPaths );
+  flagVerbose && println(" - STAGE 2: Using summary files to generate LSF job files.");
+  
+  ## If stage 1 was run use the list of summary files from it.  Otherwise, read paths to summary files from a file given in command line arguments.
+  summaryPaths2 = [];
+  if requiredStages[1] == '1'
+    summaryPaths2 = summaryPaths;
+    flagVerbose && println(string("Using summary files generated during \"STAGE 1\"."));
+    if parsed_args["list-summaries"] != nothing
+      error("Abiguous options: Stages 1 and 2 are being run together but an argument has been passed to the \"--list-summaries\" (-u) option.  This is disallowed to prevent the confusing situation in which summary files produced during Stage 2 are unrelated to the input data passed in at Stage 1.  \nTo resolve this, ommit the \"--list-summaries\" (-u) option or run Stages 1 and 2 separately.");
+    end
+  else
+    fileSummaryPaths = get_argument(parsed_args, "list-summaries"; verbose=flagVerbose, optional=false, path=true);
+    flagVerbose && println(string("Reading list of summary file paths from: ", fileSummaryPaths));
+    summaryPaths2 = readdlm(fileSummaryPaths);
+  end
 
-  flagVerbose && println("Importing bash functions from files");
+  # Note: file2arrayofarrays_ returns a tuple of file contents (in an array) and line number indices (in an array)
+  summaryFilesData = map((x) -> file2arrayofarrays_(x, "#", cols=1, tagsExpand=tagsExpand), summaryPaths2 );
+
+  flagVerbose && println("Importing bash functions from files...");
   arrDictCheckpoints = map((x) -> identify_checkpoints(x[1], checkpointsDict; tagCheckpoint="jcheck_"), summaryFilesData );
   arrBashFunctions = map((x) -> get_bash_functions(commonFunctions, x), arrDictCheckpoints);
 
-  flagVerbose && println("Splitting summary file contents into separate jobs.");
+  flagVerbose && println("Splitting summary file contents into separate jobs...");
   summaryArrDicts = map((x) -> split_summary(x[1]; tagSplit=tagsExpand["tagSplit"]), summaryFilesData);
 
-  flagVerbose && println("Getting job file names from summary file basenames.");
-  arrJobIDs = map((x) -> basename(remove_suffix(x, ".summary")) , summaryPaths);
+  flagVerbose && println("Getting job file names from summary file basenames...");
+  arrJobIDs = map((x) -> basename(remove_suffix(x, ".summary")) , summaryPaths2);
 
   ## Write job files
   jobFilePaths = map((summaryFilePath, dictSummaries, jobID) -> create_jobs_from_summary_(summaryFilePath, dictSummaries, commonFunctions, checkpointsDict; 
-    directoryForJobFiles=jobFilePrefix, jobID=jobID, jobDate=get_timestamp_(nothing), headerSuffix=commonHeaderSuffix, verbose=flagVerbose),
-    summaryPaths, summaryArrDicts, arrJobIDs
+    jobFilePrefix=jobFilePrefix, jobID=jobID, jobDate=get_timestamp_(nothing), headerSuffix=commonHeaderSuffix, verbose=flagVerbose),
+    summaryPaths2, summaryArrDicts, arrJobIDs
   );
+  
+  println(string("Writing list of job files to: ", pathJobsList));
+  writedlm(pathJobsList, jobFilePaths);
 
   flagVerbose && println("");
 end
 
 ## STAGE 3
 if requiredStages[3] == '1'
-  ###############
-  flagVerbose && println("STAGE 3: Submitting LSF jobs.");
-  ###############
+  flagVerbose && println(" - STAGE 3: Submitting LSF jobs.");
+
+  ## If Stage 2 was run, use the list of job files generated from it.  Otherwise, read paths to job files from a file given in the command line arguments.
+  jobFilePaths2 = [];
+  if requiredStages[2] == '1'
+    jobFilePaths2 = jobFilePaths;
+    flagVerbose && println(string("Using job files generated during \"STAGE 2\"."));
+    if parsed_args["list-jobs"] != nothing
+      error("Abiguous combination of options (-o): Stages 2 and 3 are being run together but an argument has been passed to the \"--list-jobs\" (-o) option.  This is disallowed to prevent the confusing situation in which job files produced during Stage 2 are not the files being submitted to the queuing system in Stage 3.  \nTo resolve this, ommit the \"--list-jobs\" (-o) option or run Stages 2 and 3 separately.");
+    end
+  else
+    fileJobPaths = get_argument(parsed_args, "list-jobs"; verbose=flagVerbose, optional=false, path=true);
+    flagVerbose && println(string("Reading list of summary file paths from: ", fileJobPaths));
+    jobFilePaths2 = readdlm(fileJobPaths);
+  end
+
+  ## Call the job submission script (or generate a portable script?)
+  if parsed_args["portable"] == false
+    SUPPRESS_WARNINGS ? arg2 = "suppress-warnings" : arg2 = "pass";
+    submitCommand = string("bash ", sourcePath, "/common_functions/submit_lsf_jobs.sh ", fileJobPaths, " ", arg2,);
+    flagVerbose && println("Submitting jobs to LSF queuing system using command:");
+    flagVerbose && println(submitCommand);
+    run(submitCommand);
+  else
+    flagVerbose && println(string("Writing a copy of the submission script and functions file to the job file directory: ", dirJobs));
+    cp()
+    flagVerbose && println(string("The jobs can be submitted to the queuing system by running the shell script, for example: ", ));
+  end
+
+  ## Zip jobs directory if requested
+  if parsed_args["zip-jobs"] == true
+    flagVerbose && println("Zipping jobs directory: ", dirJobs);
+    flagVerbose ? zipVerbose = " -v " : zipVerbose = ""
+    cmdZip = string("tar -z -c -f ", zipVerbose, " ", dirJobs, ".tar.gz ", dirJobs );
+    run(cmdZip)
+  end
 
   flagVerbose && println("");
 end

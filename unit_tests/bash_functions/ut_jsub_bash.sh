@@ -80,7 +80,24 @@ assert "diff ${FILE_COMPLETED} ${FILE_EXPECTED_COMPLETED}" ""
 assert "file_exists ${FILE_INCOMPLETE}" "yes" # assert $(diff ${FILE_INCOMPLETE} ${FILE_EXPECTED_INCOMPLETE}) "" # The incomplete file should not exist for this example
 ####################################################
 
-
+## Unit tests for functions from the submit_lsf_jobs.sh files
+# Include functions form the job submission script
+source "../../common_functions/job_submission_functions.sh"
+## isAbsolutePath
+assert "isAbsolutePath /hello/abs" "absolute"
+assert "isAbsolutePath hello/rel" "relative"
+## checkForDuplicateLines "path to file" "suppress warnings" "strict"
+assert "checkForDuplicateLines ../data/list_without_duplicate_lines.txt true false" ""
+assert "checkForDuplicateLines ../data/list_without_duplicate_lines.txt false false" "Checking for duplicates in  ../data/list_without_duplicate_lines.txt"
+assert "checkForDuplicateLines ../data/list_with_duplicate_lines.txt false false" "Checking for duplicates in  ../data/list_with_duplicate_lines.txt\nWARNING (./ut_jsub_bash.sh): Found duplicate entries in list of job files to be submitted:\n   4 \n   2 this is the second line\n   3 this is the third line"
+assert "checkForDuplicateLines ../data/list_with_duplicate_lines.txt true false" ""
+assert "checkForDuplicateLines ../data/list_with_duplicate_lines.txt true true" "TERMINATING (./ut_jsub_bash.sh) after finding duplicate entries in list of job files to be submitted:\n   4 \n   2 this is the second line\n   3 this is the third line"
+## linePresentInFile "path to file" "text string"
+assert "isLineInFile '../data/list_with_duplicate_lines.txt' ''" "yes"
+assert "isLineInFile '../data/list_with_duplicate_lines.txt' '    '" "no"
+assert "isLineInFile '../data/list_with_duplicate_lines.txt' 'asdf'" "no"
+assert "isLineInFile '../data/list_with_duplicate_lines.txt' 'asdf VS this is the first line'\n'asdf VS this is the second line'" "no"
+assert "isLineInFile '../data/list_with_duplicate_lines.txt' 'this is the second line'" "yes"
 
 # end of test suite
 assert_end examples

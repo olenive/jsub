@@ -943,8 +943,8 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summ
   end
 end
 
-## Create all the job files associated with a particular summary file (Note that using the option filePathOverride means input to the directoryForJobFiles and jobFileSuffix options will be ignored)
-function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonFunctions::Dict, checkpointsDict::Dict; directoryForJobFiles="", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
+## Create all the job files associated with a particular summary file (Note that using the option filePathOverride means input to the jobFilePrefix and jobFileSuffix options will be ignored)
+function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonFunctions::Dict, checkpointsDict::Dict; jobFilePrefix="", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
     tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n", headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true, rootSleepSeconds=nothing, verbose=false
   )
   arrJobFilePaths = [];
@@ -966,7 +966,7 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
       outFilePath = filePathOverride;
     else
       (length(group) > 0) ? (group = "_" * group) : (group = ""); # # (length(group) > 0 && group != root) ? (group = "_" * group) : (group = ""); # job file specific suffix
-      outFilePath = string(directoryForJobFiles, "/", basename(remove_suffix(summaryFilePath, ".summary")), group, jobFileSuffix); # get longName from file path
+      outFilePath = string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary")), group, jobFileSuffix); # get longName from file path
     end
     ## Check for conflicting -J options
     if detect_option_conflicts(jobArray; tag=remove_prefix(tagHeader, "\n"), option="-J")

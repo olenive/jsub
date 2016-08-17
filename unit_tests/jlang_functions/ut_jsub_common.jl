@@ -2112,7 +2112,7 @@ Test.with_handler(ut_handler) do
   @test create_job_header_string(group1, jobID="JOBDATE0_000000_jobID0000") == expectedFileHeader02
   @test create_job_header_string(group2, jobID="JOBDATE0_000000_jobID0000") == expectedFileHeader03
   create_jobs_from_summary_(summaryFilePath, suppliedSummaryDict, commonFunctions, checkpointsDict; 
-    directoryForJobFiles="jlang_function_test_files/job_files", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
+    jobFilePrefix="jlang_function_test_files/job_files/", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
     #tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true
     jobID="jobID0000", jobDate="JOBDATE0_000000"
   )
@@ -2129,7 +2129,7 @@ Test.with_handler(ut_handler) do
 
   # Test for the rootSleepSeconds option
   create_jobs_from_summary_(summaryFilePath, suppliedSummaryDict, commonFunctions, checkpointsDict; 
-    directoryForJobFiles="jlang_function_test_files/job_files", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
+    jobFilePrefix="jlang_function_test_files/job_files/", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
     #tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true
     jobID="jobID0000", jobDate="JOBDATE0_000000", rootSleepSeconds=nothing
   )
@@ -2170,7 +2170,7 @@ Test.with_handler(ut_handler) do
     "\n#JSUB<finish-job>\n"
   )
   create_jobs_from_summary_(summaryFilePath, suppliedSummaryDict, commonFunctions, checkpointsDict; 
-    directoryForJobFiles="jlang_function_test_files/job_files", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
+    jobFilePrefix="jlang_function_test_files/job_files/", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
     #tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true
     jobID="jobID0000", jobDate="JOBDATE0_000000", rootSleepSeconds="7.7"
   )
