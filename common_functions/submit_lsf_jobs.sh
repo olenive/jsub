@@ -3,10 +3,6 @@ set -e
 
 # Script for submitting a list of job files to an LSF queuing system
 
-#### FUNCTIONS ####
-source "$DIR_JSUB_FUNCTIONS"/"job_submission_functions.sh"
-###################
-
 ### INPUT ###
 DATETIME=`date +%Y%m%d_%H%M%S`
 
@@ -19,15 +15,32 @@ LISTSUBMITTED="$1".submitted
 # [[ "$3" == "strict" ]] && STRICT=true || STRICT=false
 # [[ "$4" == "verbose" ]] && VERBOSE=true || VERBOSE=false
 
-## Get current working directory and directory containing script
-CWD=$(pwd)
-DIR_JSUB_FUNCTIONS=$(absolutePathScript)
+CWD=$(pwd) # Get current working directory
+
 #############
+
+#### FUNCTIONS ####
+# Get directory containing the script
+function absolutePathScript {
+  local SRC=${BASH_SOURCE[0]}
+  local DIR=""
+  while [ -h "$SRC" ]; do
+    DIR=$( cd -P $( dirname "$SRC") && pwd )
+    SRC="\$(readlink "\$SRC")"
+    [[ $SRC != /* ]] && SRC="$DIR/$SRC"
+  done
+  DIR=$( cd -P $(dirname "$SRC") && pwd )
+  echo "$DIR"
+}
+DIR_JSUB_FUNCTIONS=$(absolutePathScript)
+ls "$DIR_JSUB_FUNCTIONS"/"job_submission_functions.sh"
+source "$DIR_JSUB_FUNCTIONS"/"job_submission_functions.sh"
+###################
 
 ######## SCRIPT ########
 if [ $# -eq 0 ]; then
     echo "$0"" requires an input file listing jobs to be submitted."
-else
+fi
 
 ## Log attempts to submit job
 echo "$DATETIME"" - ""submitting the following jobs:" >> "$LISTSUBMITTED"
@@ -40,7 +53,7 @@ while read -r line || [[ -n "$line" ]]; do
   if [[ $(isAbsolutePath "$line") == "absolute" ]]; then
     filepath="$line"
   else
-    filepath="$CWD""$line"
+    filepath="$CWD"/"$line"
   fi
 
   ## Check if a record of this job being submitted already exists
@@ -60,7 +73,7 @@ echo "" >> "$LISTSUBMITTED"
 
 ## Tell the user where the submitted jobs file is if it already contained records of these jobs
 if [[ flagPresent == true ]]; then
-  [[ ${SUPPRESS_WARNINGS} == false ]] && "See the following file for previous records of job submissions that matched these jobs: ""$LISTSUBMITTED"
+  [[ ${SUPPRESS_WARNINGS} == false ]] && "See the following file for previous records of job submissions that matched these jobs: ""$LISTSUBMITTED";
 fi
 ########################
 

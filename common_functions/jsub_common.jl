@@ -1019,21 +1019,36 @@ function map_flags_sjb(flagSummaries, flagJobs, flagSubmit)
 end
 
 ## Extract file path from arguments
-function get_argument(dictArguments::Dict, option; verbose=false, optional=false, path=false)
-  if !optional && (dictArguments[option] == false || dictArguments[option] == nothing)
+function get_argument(dictArguments::Dict, option; verbose=false, optional=false, default=nothing)
+  if !optional && dictArguments[option] == nothing
     error("Please supply an argument to the \"--", option, "\" option.");
   else
-    verbose && println(string("Parsed argument to --", option, ": ", dictArguments[option]));
-    if path && (dictArguments[option] == false || dictArguments[option] == nothing)
-      return ""
+    if dictArguments[option] == nothing && default != nothing
+      verbose && println(string("Using default value of argument to --", option, ": ", default));
+      return default
     else
+      verbose && println(string("Parsed argument to --", option, ": ", dictArguments[option]));
       return dictArguments[option]
     end
   end
 end
 
+# Convert array of arrays into a single string
+function arrArr2string(arrArr; delim="\n")
+  outString = ""
+  for i in arrArr
+    for j in i
+      outString = outString * delim * j;
+    end
+  end
+  return outString[length(delim)+1:end]
+end
 
-
+function string2file_(file, inString)
+  stream = open(file, "w");
+  write(stream, inString);
+  close(stream);
+end
 
 # EOF
 

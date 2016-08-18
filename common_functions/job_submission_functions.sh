@@ -15,12 +15,12 @@ function checkForDuplicateLines {
   DUPLICATES=$(sort "$file" | uniq -c | awk '$1>1')
   if [ ${#DUPLICATES} -ne 0 ]; then
     if [[ ${_strict} == true ]]; then
-      echo "TERMINATING ($0) after finding duplicate entries in list of job files to be submitted:"
+      echo "TERMINATING (in checkForDuplicateLines) after finding duplicate entries in list of job files to be submitted:"
       sort "$file" | uniq -c | awk '$1>1'
       exit 1
     fi
     if [[ ${_suppress_warnings} == false ]] && [[ ${_suppress_warnings} == false ]]; then
-      echo "WARNING ($0): Found duplicate entries in list of job files to be submitted:"
+      echo "WARNING (in checkForDuplicateLines): Found duplicate entries in list of job files to be submitted:"
       sort "$file" | uniq -c | awk '$1>1'
     fi
   fi
