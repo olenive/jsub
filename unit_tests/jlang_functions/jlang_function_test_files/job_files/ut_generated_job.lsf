@@ -1,0 +1,64 @@
+#!/bin/bash
+
+#BSUB -w 'done("ID002_root")&&done("ID002_first")&&done("ID002_third")&&done("ID002_fourth")&&done("ID002_fifth")'
+#BSUB -J ID002_second
+#BSUB -e ID002_second.error
+#BSUB -o ID002_second.output
+
+# Tag variables
+
+
+# Contents inserted from other files (this section is intended to be used only for functions):
+
+# --- From file: jlang_function_test_files/dummy_bash_functions/dummy1.sh
+function dummy1 {
+echo Running_dummy_function_1
+}
+
+# --- From file: jlang_function_test_files/dummy_bash_functions/dummy10.sh
+function dummy10 {
+echo Running_dummy_function_10
+}
+function dummy10_1 {
+echo Running_dummy_function_10_1
+}
+
+# --- From file: jlang_function_test_files/dummy_bash_functions/dummy11.sh
+function dummy11 {
+echo Running_dummy_function_11
+}
+
+# --- From file: jlang_function_test_files/dummy_bash_functions/dummy12.sh
+function dummy12 {
+echo Running_dummy_function_12
+}
+
+# --- From file: jlang_function_test_files/dummy_bash_functions/dummy2.sh
+function dummy2 {
+echo Running_dummy_function_2
+}
+function dummy2_1 {
+echo Running_dummy_function_2_1
+}
+function dummy2_2 {
+echo Running_dummy_function_2_2
+}
+
+# --- From file: jlang_function_test_files/dummy_bash_functions/dummy3.sh
+function dummy3 {
+echo Running_dummy_function_3
+}
+
+
+# Commands taken from summary file: 
+
+#JSUB<begin-job>
+#JGROUP second first third fourth fifth
+bash echo "cmd 21"
+#BSUB -J jobID
+bash echo "cmd 22"
+#BSUB -P grantcode
+#BSUB -w overriding
+bash echo "cmd 23"
+
+#JSUB<finish-job>

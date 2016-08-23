@@ -1,0 +1,9 @@
+dummy2_1
+fail_checkpoint
+#BSUB -o out.pj.output
+echo "cmd 23" >> ${JSUB_LOG_FILE}
+jcheck_resume
+dummy3
+#BSUB -e out.pj.error
+jcheck_resume
+echo "final executed command" >> ${JSUB_LOG_FILE}

@@ -6,4 +6,3 @@ SAMPLEID	1	"$DIR_BASE"/"unit_tests/lists/sampleIDs_1col.txt"
 
 # The value of DIR_BASE is declared in refs_samples.vars
 
-# Note: see protocol file

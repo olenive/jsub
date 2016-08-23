@@ -1,1 +1,9 @@
-./TEST
+*.DS_Store
+example_outputs
+example_jobs
+example_summaries
+generated_files
+TEST
+TRASH
+commit_notes.txt
+unit_tests/bash_functions/bash_function_test_files/test_outputs

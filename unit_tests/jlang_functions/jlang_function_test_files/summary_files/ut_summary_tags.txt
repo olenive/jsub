@@ -1,0 +1,9 @@
+# This data would come from reading summary files.
+#JSUB<summary-name>ProtocolName
+bash echo "cmd 1"
+#JGROUP first
+bash echo "cmd 12"
+bash echo "cmd 13"
+#JGROUP second first
+bash echo "cmd 21"
+bash echo "cmd 22"
