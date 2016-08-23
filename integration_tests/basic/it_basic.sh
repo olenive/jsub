@@ -4,6 +4,7 @@ set -e
 ### Integration test 1: basic test
 
 ####### INPUTS ########
+JOB_HEADER_PREFIX="$1"
 
 PROTOCOL_FILE="../basic.protocol"
 
@@ -11,13 +12,15 @@ EXPECTED_SUMMARY="../expected_files/basic_0001.summary"
 EXPECTED_SUMMARY_LIST="../expected_files/basic.list-summaries"
 EXPECTED_JOB_IN="../expected_files/basic_0001.lsf"
 EXPECTED_JOB_LIST="../expected/basic.list-jobs"
-EXPECTED_JOB_OUT="../expected_files/basic.txt"
+EXPECTED_JOB_DATA="../expected_files/it1_basic.txt"
 
 GENERATED_SUMMARY="basic_0001.summary"
 GENERATED_SUMMARY_LIST="basic.list-summaries"
 GENERATED_JOB_IN="basic_0001.lsf"
 GENERATED_JOB_LIST="basic.list-jobs"
-GENERATED_JOB_OUT="basic.txt"
+GENERATED_JOB_DATA="it1_basic.txt"
+GENERATED_JOB_OUTPUT="basic_0001.error"
+GENERATED_JOB_ERROR="basic_0001.output"
 
 CALL_JSUB="julia ../../../jsub.jl -v "
 
@@ -37,7 +40,9 @@ function clear_generated {
   rm -f ${GENERATED_SUMMARY_LIST}
   rm -f ${GENERATED_JOB_IN}
   rm -f ${GENERATED_JOB_LIST}
-  rm -f ${GENERATED_JOB_OUT}
+  rm -f ${GENERATED_JOB_DATA}
+  rm -f ${GENERATED_JOB_OUTPUT}
+  rm -f ${GENERATED_JOB_ERROR}
 }
 #################
 
@@ -54,6 +59,7 @@ function clear_generated {
 ##############
 
 # Change to generated_files directory
+mkdir -p generated_files
 cd generated_files
 
 # Run jsub - only create summary file
@@ -66,15 +72,20 @@ assert "file_exists ${GENERATED_SUMMARY_LIST}" "yes"
 assert "diff ${GENERATED_SUMMARY_LIST} ${EXPECTED_SUMMARY_LIST}" ""
 
 # Run jsub - create job file from previously generated summary
-${CALL_JSUB} -j -u ${GENERATED_SUMMARY_LIST}
+${CALL_JSUB} -j -u ${GENERATED_SUMMARY_LIST} -q "$JOB_HEADER_PREFIX"
 # Check that a job file is generated from the summary file
 assert "file_exists ${GENERATED_JOB_IN}" "yes"
-assert "diff ${GENERATED_JOB_IN} ${EXPECTED_JOB_IN}" ""
+assert "diff -I '^# --- From file:*' -I ""${JOB_HEADER_PREFIX}"" ${GENERATED_JOB_IN} ${EXPECTED_JOB_IN}" "" # Ignore the line that contain absolute paths or the job header prefix
 assert "file_exists ${GENERATED_JOB_LIST}" "yes"
 assert "diff ${GENERATED_JOB_LIST} ${EXPECTED_JOB_LIST}" ""
 
 # Run jsub - submit jobs from list to LSF queue
-# ${CALL_JSUB} -b -o ${GENERATED_JOB_LIST}
+${CALL_JSUB} -b -o ${GENERATED_JOB_LIST}
+assert "file_exists ${GENERATED_JOB_DATA}" "yes"
+assert "diff ${GENERATED_JOB_DATA} ${EXPECTED_JOB_DATA}" ""
+assert "file_exists ${GENERATED_JOB_OUTPUT}" "yes"
+assert "file_exists ${GENERATED_JOB_ERROR}" "yes"
+
 # Check that a job file is generated from the protocol
 
 
