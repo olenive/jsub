@@ -171,10 +171,10 @@ include("./common_functions/jsub_common.jl")
 end
 
 parsed_args = parse_args(argSettings) # the result is a Dict{String,Any}
-println("Parsed args:")
-for (key,val) in parsed_args
-    println("  $key  =>  $(repr(val))")
-end
+# println("Parsed args:")
+# for (key,val) in parsed_args
+#     println("  $key  =>  $(repr(val))")
+# end
 
 ## Process flag states
 SUPPRESS_WARNINGS = parsed_args["suppress-warnings"];
@@ -189,31 +189,37 @@ pathSubmissionScript = string(sourcePath, "/common_functions/submit_lsf_jobs.sh"
 pathSubmissionFunctions = string(sourcePath, "/common_functions/jobs_submission_functions.sh");
 
 ## Get file paths and prefixes from arguments
-fileProtocol = get_argument(parsed_args, "protocol"; verbose=flagVerbose);
+fileProtocol = get_argument(parsed_args, "protocol"; verbose=flagVerbose, optional=(requiredStages[1]=='0'),
+  default=""
+);
 fileVars = get_argument(parsed_args, "vars"; verbose=flagVerbose, optional=true, default="");
 fileFvars = get_argument(parsed_args, "fvars"; verbose=flagVerbose, optional=true, default="");
 summaryFilePrefix = get_argument(parsed_args, "summary-prefix", verbose=flagVerbose, optional=true, default="");
 jobFilePrefix = get_argument(parsed_args, "job-prefix", verbose=flagVerbose, optional=true, default="");
 
 ## Determine string used in file names
-longName = get_argument(parsed_args, "fvars"; verbose=flagVerbose, optional=true, 
-  default=get_longname(fileProtocol, fileVars, fileFvars, keepSuffix=false)
+longName = get_argument(parsed_args, "name"; verbose=flagVerbose, optional=true, 
+  default=get_longname(fileProtocol, fileVars, fileFvars,
+    get_argument(parsed_args, "list-summaries"; optional=true, default=""),
+    get_argument(parsed_args, "list-jobs"; optional=true, default=""),
+    keepSuffix=false
+  )
 );
-flagVerbose && println(string("Prefix for output file names: ", longName));
 
 ## Get path to summaries list file
-pathSummariesList = get_argument(parsed_args, "list-summaries"; verbose=flagVerbose, optional=(requiredStages[1]=='1'),
+pathSummariesList = get_argument(parsed_args, "list-summaries"; verbose=flagVerbose, optional=true,
  default=string(summaryFilePrefix, longName, ".list-summaries")
 );
 
 ## Get path to jobs list file
-pathJobsList = get_argument(parsed_args, "list-jobs"; verbose=flagVerbose, optional=(requiredStages[2]=='1'),
+pathJobsList = get_argument(parsed_args, "list-jobs"; verbose=flagVerbose, optional=true,
  default=string(jobFilePrefix, longName, ".list-jobs")
 );
-dirJobs = dirname(pathJobsList);
 
 # String added to the header of every job file
 commonHeaderSuffix = get_argument(parsed_args, "common-header"; verbose=flagVerbose, optional=true, default="");
+
+flagVerbose && println(string("Prefix for output file names: ", longName));
 
 ## TODO: Check input file format
 # Check that fileFvars contains 3 delmiterFvars separated columns
@@ -273,12 +279,11 @@ if requiredStages[1] == '1'
   outputSummaryPaths = create_summary_files_(arrArrExpFvars, summaryPaths; verbose=flagVerbose);
   println(string("Writing list of summary files to: ", pathSummariesList));
   writedlm(pathSummariesList, outputSummaryPaths);
-  flagVerbose && println("");
 end
 
 ## STAGE 2
 if requiredStages[2] == '1'
-  flagVerbose && println(" - STAGE 2: Using summary files to generate LSF job files.");
+  flagVerbose && println("\n - STAGE 2: Using summary files to generate LSF job files.");
 
   ## Read paths to summary files from list file
   summaryPaths2 = readdlm(pathSummariesList);
@@ -298,23 +303,18 @@ if requiredStages[2] == '1'
 
   ## Write job files
   jobFilePathsArrays2 = map((summaryFilePath, dictSummaries, jobID) -> create_jobs_from_summary_(summaryFilePath, dictSummaries, commonFunctions, checkpointsDict; 
-    jobFilePrefix=jobFilePrefix, jobID=jobID, jobDate=get_timestamp_(nothing), headerSuffix=commonHeaderSuffix, verbose=flagVerbose),
+    jobFilePrefix=jobFilePrefix, jobID=jobID, jobDate=(
+      parsed_args["timestamp"] ? get_timestamp_(nothing) : "";
+    ),
+    headerSuffix=commonHeaderSuffix, verbose=flagVerbose),
     summaryPaths2, summaryArrDicts, arrJobIDs
   );
   string2file_(pathJobsList, arrArr2string(jobFilePathsArrays2)) # Convert array of arrays into a single string
-
-  # println(string("Writing list of job files to: ", pathJobsList));
-  # println("jobFilePaths")
-  # println(jobFilePaths)
-  # writedlm(pathJobsList, jobFilePaths, delim='\n');
-  
-
-  flagVerbose && println("");
 end
 
 ## STAGE 3
 if requiredStages[3] == '1'
-  flagVerbose && println(" - STAGE 3: Submitting LSF jobs.");
+  flagVerbose && println("\n - STAGE 3: Submitting LSF jobs.");
 
   ## Call the job submission script or copy it to the jobs directory
   if parsed_args["portable"] == false

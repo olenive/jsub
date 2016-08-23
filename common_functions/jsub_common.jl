@@ -665,23 +665,36 @@ function protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars,
 end
 
 # Use input protocol, vars and fvars file names to generate a long name string to be used as part of the output summary and job file names.
-function get_longname(pathProtocol, pathVars, pathFvars; keepSuffix=false)
+function get_longname(pathProtocol, pathVars, pathFvars, pathSummaryList, pathJobList; keepSuffix=false)
   keepSuffix ? baseProtocol = basename(pathProtocol) : baseProtocol = remove_suffix(basename(pathProtocol), ".protocol");
   keepSuffix ? baseVars = basename(pathVars) : baseVars = remove_suffix(basename(pathVars), ".vars");
   keepSuffix ? baseFvars = basename(pathFvars) : baseFvars = remove_suffix(basename(pathFvars), ".fvars");
-  (length(baseProtocol) > 0 && length(baseVars * baseFvars) > 0) ? dlm1 = "_" : dlm1 = "";
-  (length(baseProtocol * baseVars) > 0 && length(baseFvars) > 0) ? dlm2 = "_" : dlm2 = "";
-  out = string(
-    baseProtocol,
-    dlm1,
-    baseVars,
-    dlm2,
-    baseFvars
-  )
+  keepSuffix ? baseSummary = basename(pathSummaryList) : baseSummary = remove_suffix(basename(pathSummaryList), ".list-summaries")
+  keepSuffix ? baseJobs = basename(pathJobList) : baseJobs = remove_suffix(basename(pathJobList), ".list-jobs")
+  # If no protocol, vars or fvars file names are supplied, use a combination of pathSummaryList and pathJobList
+  out = "";
+  if (length(baseProtocol) + length(baseVars) + length(baseFvars)) == 0
+    if baseSummary == baseJobs # Avoid repeating the same string twice
+      out = baseSummary
+    else
+      (length(baseSummary) > 0 && length(baseJobs) >0) ? dlm = "_" : dlm = "";
+      out = string(baseSummary, dlm, baseJobs);
+    end
+  else
+    (length(baseProtocol) > 0 && length(baseVars * baseFvars) > 0) ? dlm1 = "_" : dlm1 = "";
+    (length(baseProtocol * baseVars) > 0 && length(baseFvars) > 0) ? dlm2 = "_" : dlm2 = "";
+    out = string(
+      baseProtocol,
+      dlm1,
+      baseVars,
+      dlm2,
+      baseFvars
+    );
+  end
   if out == ""
     out = string(hash(pathProtocol*pathVars*pathFvars));
     if out == ""
-      error(string("Unable to generate name string from the following variables:\n", pathProtocol, "\n", pathVars, "\n", pathFvars))
+      error(string("Unable to generate name string from the following variables:\n", pathProtocol, "\n", pathVars, "\n", pathFvars, "\n", pathSummaryList, "\n", pathJobList))
     end
   end
   return out
@@ -812,7 +825,7 @@ function jobID_or_hash(jobArray; jobID=nothing, jobDate="")
 end
 
 # Determine parent jobs which must be completed first
-function cmd_await_jobs(jobArray; root="root", tagHeader="\n#BSUB", option="-w", condition="done", tagSplit="#JGROUP", jobID=nothing, jobDate=nothing)
+function cmd_await_jobs(jobArray; root="root", tagHeader="\n#BSUB", option="-w", condition="done", tagSplit="#JGROUP", jobID=nothing, jobDate="")
   jobDate = get_timestamp_(jobDate);
   jobID = jobID_or_hash(jobArray; jobID=jobID); # Generate unique-ish job ID if one is not provided
   # Check if the first entry in the job array begins with a group tag (tagSplit) and use this tag to identify parent jobs
@@ -860,7 +873,7 @@ function generate_jobfilepath(summaryName, jobArray; tagSplit="#JGROUP", prefix=
 end
 
 # Read job dictionary and return job header
-function create_job_header_string(jobArray; root="root", tagHeader="\n#BSUB", prefix="#!/bin/bash\n", suffix="", tagSplit="#JGROUP", jobID=nothing, jobDate=nothing, appendOptions=true, rootSleepSeconds=nothing)
+function create_job_header_string(jobArray; root="root", tagHeader="\n#BSUB", prefix="#!/bin/bash\n", suffix="", tagSplit="#JGROUP", jobID=nothing, jobDate="", appendOptions=true, rootSleepSeconds=nothing)
   # arrHeaderRows = jobArray[find((x)->iscomment(join(x), tagHeader), jobArray)] # Extract header rows from among command rows
   jobID = jobID_or_hash(jobArray; jobID=jobID, jobDate=jobDate);
   groupName = get_groupname(jobArray, tagSplit=tagSplit);
@@ -915,7 +928,7 @@ end
 
 ## Create job file from array of instructions and a dictionary of functions
 # Use file2arrayofarrays_(x, "#", cols=1) to read summary file
-function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summaryFileOfOrigin="", root="root", tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true, rootSleepSeconds=nothing, verbose=false)
+function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summaryFileOfOrigin="", root="root", tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate="", appendOptions=true, rootSleepSeconds=nothing, verbose=false)
   # Check if jobArray is empty
   if jobArray == []
     SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_job_file_) Array of job contents is empty, no job file created.");
@@ -939,13 +952,13 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summ
     write(stream, string("\n", tagBegin, "\n"));
     map((x) -> write(stream, join(x), '\n'), jobArray);
     write(stream, string("\n", tagFinish, "\n"));
-    close(stream)
+    close(stream);
   end
 end
 
 ## Create all the job files associated with a particular summary file (Note that using the option filePathOverride means input to the jobFilePrefix and jobFileSuffix options will be ignored)
 function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonFunctions::Dict, checkpointsDict::Dict; jobFilePrefix="", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
-    tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n", headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true, rootSleepSeconds=nothing, verbose=false
+    tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n", headerSuffix="", summaryFile="", jobID=nothing, jobDate="", appendOptions=true, rootSleepSeconds=nothing, verbose=false
   )
   arrJobFilePaths = [];
   ## For each group in the summary file create a job file

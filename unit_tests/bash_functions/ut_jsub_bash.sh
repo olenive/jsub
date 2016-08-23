@@ -100,6 +100,7 @@ assert "isLineInFile '../data/list_with_duplicate_lines.txt' 'asdf VS this is th
 assert "isLineInFile '../data/list_with_duplicate_lines.txt' 'this is the second line'" "yes"
 
 # end of test suite
-assert_end examples
+assert_end
 
+echo ""
 # EOF

@@ -1,11 +1,10 @@
-# Functions used by the submit_lsf_jobs.sh script
-
+########## Submission script functions ##########
+## Functions used by the submit_lsf_jobs.sh script
 # Determine if a path starts with a forward slash
 function isAbsolutePath {
   local DIR="$1"
   [[ ${DIR:0:1} == '/' ]] && echo "absolute" || echo "relative"
 }
-
 # Check for duplicate lines in a text file
 function checkForDuplicateLines {
   local file="$1"
@@ -25,7 +24,6 @@ function checkForDuplicateLines {
     fi
   fi
 }
-
 # Check if an exact match for the input string is a line in a text file
 function isLineInFile {
   local file="$1"
@@ -38,18 +36,4 @@ function isLineInFile {
   done < "$file"
   [[ ${flagMatch} == true ]] && echo "yes" || echo "no"
 }
-
-# Get directory containing the script
-function absolutePathScript {
-  local SOURCE=${BASH_SOURCE[0]}
-  local DIR=""
-  while [ -h "$SOURCE" ]; do
-    DIR=$( cd -P $( dirname "$SOURCE") && pwd )
-    SOURCE="\$(readlink "\$SOURCE")"
-    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
-  done
-  DIR=$( cd -P $( dirname "$SOURCE" ) && pwd )
-  echo "$DIR"
-}
-
-# EOF
+##################################################

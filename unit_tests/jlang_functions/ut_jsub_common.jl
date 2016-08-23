@@ -1933,19 +1933,39 @@ Test.with_handler(ut_handler) do
   pathProtocol = "path/to/protocol_file.protocol";
   pathVars = "path/to/vars_file.vars";
   pathFvars = "another/way/to/fvars_file.fvars";
-  @test get_longname(pathProtocol, pathVars, pathFvars) == "protocol_file_vars_file_fvars_file"
+  pathSummaryList = "not/used/here";
+  pathJobList = "not/used/either";
+  @test get_longname(pathProtocol, pathVars, pathFvars, pathSummaryList, pathJobList) == "protocol_file_vars_file_fvars_file"
   pathProtocol = "path/to/.protocol";
   pathVars = "path/to/vars_file.vars";
   pathFvars = "another/way/to/fvars_file.fvars";
-  @test get_longname(pathProtocol, pathVars, pathFvars) == "vars_file_fvars_file"
+  pathSummaryList = "not/used/here";
+  pathJobList = "not/used/either";
+  @test get_longname(pathProtocol, pathVars, pathFvars, pathSummaryList, pathJobList) == "vars_file_fvars_file"
   pathProtocol = "path/to/.protocol";
   pathVars = "path/to/.vars";
   pathFvars = "another/way/to/.fvars";
-  @test get_longname(pathProtocol, pathVars, pathFvars) == string(hash(pathProtocol * pathVars * pathFvars))
+  pathSummaryList = "use/summarylist";
+  pathJobList = "use/joblist";
+  @test get_longname(pathProtocol, pathVars, pathFvars, pathSummaryList, pathJobList) == "summarylist_joblist"
   pathProtocol = "";
   pathVars = "";
   pathFvars = "";
-  @test get_longname(pathProtocol, pathVars, pathFvars) == string(hash(pathProtocol * pathVars * pathFvars))
+  pathSummaryList = "use/summarylist.list-summaries";
+  pathJobList = "use/joblist.list-jobs";
+  @test get_longname(pathProtocol, pathVars, pathFvars, pathSummaryList, pathJobList) == "summarylist_joblist"
+  pathProtocol = "";
+  pathVars = "";
+  pathFvars = "";
+  pathSummaryList = "useA/sameString.list-summaries";
+  pathJobList = "useB/sameString.list-jobs";
+  @test get_longname(pathProtocol, pathVars, pathFvars, pathSummaryList, pathJobList) == "sameString"
+  pathProtocol = "";
+  pathVars = "";
+  pathFvars = "";
+  pathSummaryList = "use/.list-summaries";
+  pathJobList = "use/.list-jobs";
+  @test get_longname(pathProtocol, pathVars, pathFvars, pathSummaryList, pathJobList) == string(hash(pathProtocol * pathVars * pathFvars))
 
   # ## get_jobfile_name(summaryName, group; summaryFileExtension=".summary")
 
