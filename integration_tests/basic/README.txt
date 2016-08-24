@@ -1,7 +1,6 @@
-A very basic example involving a single protocol file (without a vars or fvars file) containing a call to the trivial.sh bash script.
-The expected job output is a file containing the line:
-"One line of text produced by trivial.sh"
+To run this integration test:
 
-integration_test_basic.sh
+bash it_basic.sh <path to a text file containing header>
 
+The argument to the script is optional but may be required by your queuing system.  It consists of a path to a file containing text that will be included in every job file via jsub's --common-header (-c) option.
 

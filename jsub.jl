@@ -171,10 +171,10 @@ include("./common_functions/jsub_common.jl")
 end
 
 parsed_args = parse_args(argSettings) # the result is a Dict{String,Any}
-# println("Parsed args:")
-# for (key,val) in parsed_args
-#     println("  $key  =>  $(repr(val))")
-# end
+println("Parsed args:")
+for (key,val) in parsed_args
+    println("  $key  =>  $(repr(val))")
+end
 
 ## Process flag states
 SUPPRESS_WARNINGS = parsed_args["suppress-warnings"];
@@ -217,7 +217,8 @@ pathJobsList = get_argument(parsed_args, "list-jobs"; verbose=flagVerbose, optio
 );
 
 # String added to the header of every job file
-commonHeaderSuffix = get_argument(parsed_args, "common-header"; verbose=flagVerbose, optional=true, default="");
+pathCommonHeader = get_argument(parsed_args, "common-header"; verbose=flagVerbose, optional=true, default=nothing);
+pathCommonHeader != nothing ? commonHeaderSuffix = readall(pathCommonHeader) : commonHeaderSuffix="";
 
 flagVerbose && println(string("Prefix for output file names: ", longName));
 
