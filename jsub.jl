@@ -171,16 +171,19 @@ include("./common_functions/jsub_common.jl")
 end
 
 parsed_args = parse_args(argSettings) # the result is a Dict{String,Any}
-println("Parsed args:")
-for (key,val) in parsed_args
-    println("  $key  =>  $(repr(val))")
-end
+# for (key,val) in parsed_args
+#     println("  $key  =>  $(repr(val))")
+# end
 
 ## Process flag states
 SUPPRESS_WARNINGS = parsed_args["suppress-warnings"];
 flagVerbose = parsed_args["verbose"];
 requiredStages = map_flags_sjb(parsed_args["generate-summaries"], parsed_args["generate-jobs"], parsed_args["submit-jobs"])
-println(requiredStages);
+flagVerbose && print("Interpreted jsub arguments as requesting the following stages: ")
+(flagVerbose && requiredStages[1]=='1') && print("1 ")
+(flagVerbose && requiredStages[2]=='1') && print("2 ")
+(flagVerbose && requiredStages[3]=='1') && print("3 ")
+flagVerbose && print("\n\n")
 
 ## Initialise shared variables
 summaryPaths = [];
