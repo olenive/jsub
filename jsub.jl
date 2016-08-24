@@ -320,12 +320,10 @@ if requiredStages[3] == '1'
   ## Call the job submission script or copy it to the jobs directory
   if parsed_args["portable"] == false
     SUPPRESS_WARNINGS ? arg2 = "suppress-warnings" : arg2 = "";
-    flagVerbose && println("Submitting jobs to LSF queuing system using command:");
+    flagVerbose && println("Submitting jobs to LSF queuing system using...");
     flagVerbose && println("bash $pathSubmissionScript $pathJobsList $arg2");
     subRun = "";
     try
-      println("pathJobsList = "*pathJobsList);
-      # subRun = readall(`bash $pathSubmissionScript $pathJobsList $arg2`);
       run(`bash $pathSubmissionScript $pathJobsList $arg2`);
     catch
       println(subRun);

@@ -1,3 +1,4 @@
+local_common_header.txt
 *.DS_Store
 example_outputs
 example_jobs

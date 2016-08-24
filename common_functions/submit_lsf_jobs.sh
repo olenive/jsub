@@ -32,6 +32,10 @@ function absolutePathScript {
   DIR=$( cd -P $(dirname "$SRC") && pwd )
   echo "$DIR"
 }
+# function subJobID {
+#     output=$($*)
+#     echo $output | head -n1 | cut -d'<' -f2 | cut -d'>' -f1
+# } # jobid=$(subJobID bsub < jobfile)
 DIR_JSUB_FUNCTIONS=$(absolutePathScript)
 ls "$DIR_JSUB_FUNCTIONS"/"job_submission_functions.sh"
 source "$DIR_JSUB_FUNCTIONS"/"job_submission_functions.sh"
@@ -43,7 +47,7 @@ if [ $# -eq 0 ]; then
 fi
 
 ## Log attempts to submit job
-echo "$DATETIME"" - ""submitting the following jobs:" >> "$LISTSUBMITTED"
+echo "$DATETIME"" - ""Submitting the following jobs:" >> "$LISTSUBMITTED"
 
 ## Read lines from list of job file paths
 while read -r line || [[ -n "$line" ]]; do
@@ -59,12 +63,14 @@ while read -r line || [[ -n "$line" ]]; do
   ## Check if a record of this job being submitted already exists
   flagPresent=false
   if [[ $(isLineInFile ${LISTSUBMITTED} ${filepath}) == "yes" ]]; then
-    [[ ${SUPPRESS_WARNINGS} == false ]] && "WARNING (""$0"") There already exists a record of the following job being submitted: ""$filepath"
+    [[ ${SUPPRESS_WARNINGS} == false ]] && echo "WARNING (""$0"") There already exists a record of the following job being submitted: ""$filepath";
     flagPresent=true
   fi
 
   ## bsub < file-path for each file and write to log file
   echo "Submitting job: ""$filepath" # [[ ${VERBOSE} == true ]] && "Submitting job file: ""$filepath"
+  # jobID=$(subJobID bsub < ${filepath}) #
+  # echo "LSF job ID: "${jobID}
   bsub < "$filepath"
   echo "$filepath" >> "$LISTSUBMITTED" # Generate a record of submitted files
 
@@ -73,7 +79,7 @@ echo "" >> "$LISTSUBMITTED"
 
 ## Tell the user where the submitted jobs file is if it already contained records of these jobs
 if [[ flagPresent == true ]]; then
-  [[ ${SUPPRESS_WARNINGS} == false ]] && "See the following file for previous records of job submissions that matched these jobs: ""$LISTSUBMITTED";
+  [[ ${SUPPRESS_WARNINGS} == false ]] && echo "See the following file for previous records of job submissions that matched these jobs: ""$LISTSUBMITTED";
 fi
 ########################
 

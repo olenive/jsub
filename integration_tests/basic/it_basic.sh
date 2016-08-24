@@ -7,6 +7,7 @@ set -e
 JOB_HEADER="$1"
 
 PROTOCOL_FILE="../basic.protocol"
+LSF_JOB_NAME="basic_0001"
 
 EXPECTED_SUMMARY="../expected_files/basic_0001.summary"
 EXPECTED_SUMMARY_LIST="../expected_files/basic.list-summaries"
@@ -21,6 +22,7 @@ GENERATED_JOB_LIST="basic.list-jobs"
 GENERATED_JOB_DATA="it1_basic.txt"
 GENERATED_JOB_OUTPUT="basic_0001.error"
 GENERATED_JOB_ERROR="basic_0001.output"
+GENERATED_SUBMITTED_JOBS_LIST="basic.list-jobs.submitted"
 
 CALL_JSUB="julia ../../../jsub.jl -v "
 
@@ -43,10 +45,25 @@ function clear_generated {
   rm -f ${GENERATED_JOB_DATA}
   rm -f ${GENERATED_JOB_OUTPUT}
   rm -f ${GENERATED_JOB_ERROR}
+  rm -f ${GENERATED_SUBMITTED_JOBS_LIST}
 }
 function isAbsolutePath {
   local DIR="$1"
   [[ ${DIR:0:1} == '/' ]] && echo "absolute" || echo "relative"
+}
+function isJobNameInQueue {
+  local jobName="$1"
+  local res=$(bjobs | grep -w ${jobName})
+  if [ "$res" = "" ]; then
+    echo "no"
+  else
+    echo "yes"
+  fi
+}
+function awaitJobNameCompletion {
+  while [ $(isJobNameInQueue "$1") == "yes" ]; do
+    sleep 1
+  done
 }
 #################
 
@@ -80,11 +97,12 @@ assert "diff ${GENERATED_JOB_LIST} ${EXPECTED_JOB_LIST}" ""
 
 # Run jsub - submit jobs from list to LSF queue
 ${CALL_JSUB} -b -o ${GENERATED_JOB_LIST}
+awaitJobNameCompletion "$LSF_JOB_NAME"
 assert "file_exists ${GENERATED_JOB_DATA}" "yes"
 assert "diff ${GENERATED_JOB_DATA} ${EXPECTED_JOB_DATA}" ""
 assert "file_exists ${GENERATED_JOB_OUTPUT}" "yes"
 assert "file_exists ${GENERATED_JOB_ERROR}" "yes"
-
+assert "file_exists ${GENERATED_SUBMITTED_JOBS_LIST}" "yes"
 
 
 ## end of test suite
