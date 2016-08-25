@@ -21,7 +21,7 @@ CWD=$(pwd) # Get current working directory
 
 #### FUNCTIONS ####
 # Get directory containing the script
-function absolutePathScript {
+function absoluteDirScript {
   local SRC=${BASH_SOURCE[0]}
   local DIR=""
   while [ -h "$SRC" ]; do
@@ -36,7 +36,15 @@ function absolutePathScript {
 #     output=$($*)
 #     echo $output | head -n1 | cut -d'<' -f2 | cut -d'>' -f1
 # } # jobid=$(subJobID bsub < jobfile)
-DIR_JSUB_FUNCTIONS=$(absolutePathScript)
+# This function inserts the path to the script as a variable in the script.  This is require because a shell script running on the cluster cannot get its own location using the $0 variable.
+function insertPathToSelf {
+  local marker="#<The next line will be deleted and replaced by the submit_lsf_jobs.sh script.>"
+  sed -e '/$marker/ { N; d; }' # Delete line after marker
+  # local match='JSUB_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>'
+  local insert="JSUB_THIS_JOB=""$1"
+  sed -i "s/$marker/$marker\n$insert/" "$1" # Insert line after marker
+}
+DIR_JSUB_FUNCTIONS=$(absoluteDirScript)
 ls "$DIR_JSUB_FUNCTIONS"/"job_submission_functions.sh"
 source "$DIR_JSUB_FUNCTIONS"/"job_submission_functions.sh"
 ###################

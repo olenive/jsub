@@ -16,7 +16,7 @@ JSUB_FLAG_FAIL=false
 # Writes to log and summray (completed and incomplete) files
 function process_job {
   local dateTime=""
-  [ ${JSUB_FLAG_TIMESTAMP} = true ] && dateTime=`date +%Y%m%d_%H%M%S`
+  [[ ${JSUB_JOB_TIMESTAMP} = true ]] && dateTime=`date +%Y%m%d_%H%M%S`
   rm -f ${JSUB_SUMMARY_INCOMPLETE} # Clean out the summary.incomplete file so that it is ready to accept a new text from the start
   ## Loop over this job file and process lines
   local jline=0 # Line number within the job commands section
@@ -46,12 +46,13 @@ function process_job {
           fi
           ## Write to log and summary files
           if [ ${JSUB_FLAG_FAIL} = false ]; then
-            echo "$dateTime completed - "${line} >> ${JSUB_LOG_FILE}
+            echo "$dateTime ""$JSUB_JOB_ID"" completed - "${line} >> ${JSUB_LOG_FILE}
             echo ${line} >> ${JSUB_SUMMARY_COMPLETED}
           else
-            echo "$dateTime incomplete - "${line} >> ${JSUB_LOG_FILE}
+            echo "$dateTime ""$JSUB_JOB_ID"" incomplete - "${line} >> ${JSUB_LOG_FILE}
             echo ${line} >> ${JSUB_SUMMARY_INCOMPLETE}
           fi
+          [[ ${JSUB_VERSION_CONTROL} = true ]] && version_control # Do version control
         fi
       else # A line after the block of code that has just been executed
         echo ${line} >> ${JSUB_SUMMARY_INCOMPLETE}
