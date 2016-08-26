@@ -7,9 +7,9 @@ function kill_this_job {
   kill -s TERM $TOP_PID
 }
 # Tag variables
-JSUB_BEGIN_JOB_TAG="#JSUB<begin_job>"
+JSUB_BEGIN_JOB_TAG="#JSUB<begin-job>"
 JSUB_CHECKPOINT_TAG="jcheck_"
-JSUB_FINISH_JOB_TAG="#JSUB<finish_job>"
+JSUB_FINISH_JOB_TAG="#JSUB<finish-job>"
 # Job processing variables
 JSUB_PREVIOUS_END=0
 JSUB_FLAG_FAIL=false
@@ -58,7 +58,7 @@ function process_job {
         echo ${line} >> ${JSUB_SUMMARY_INCOMPLETE}
       fi
     fi
-  done < ${JSUB_THIS_JOB}
-  [ ${JSUB_FLAG_FAIL} = true ] && kill_this_job ${JSUB_THIS_JOB} # Kill the job if a checkpoint fail occured (but let this function do logging etc first)
+  done < ${JSUB_PATH_TO_THIS_JOB}
+  [ ${JSUB_FLAG_FAIL} = true ] && kill_this_job ${JSUB_PATH_TO_THIS_JOB} # Kill the job if a checkpoint fail occured (but let this function do logging etc first)
   return 0
 }

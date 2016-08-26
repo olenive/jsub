@@ -36,8 +36,18 @@ function absoluteDirScript {
 function insertPathToSelf {
   local varName="JSUB_PATH_TO_THIS_JOB"
   local jobPath="$1"
-  local tmpPath="$jobPath".tmp
-  sed -i.tmp "s|$varName=.*|$varName=\"$jobPath\"|" "$jobPath"
+  local export topPID=$$
+  local tmpPath=${jobPath}.tmp.${topPID} # Create temporary file
+  ## Try to make sure the temporary file does nota already exist
+  if [ -f "$tmpPath" ]; then
+    sleep 3
+    if [ -f "$tmpPath" ]; then
+      echo "ERROR (in $0 insertPathToSelf): Trying to create temporary file that already exists: ""$tmpPath"
+      exit 1
+    fi
+  else
+    sed -i.tmp.${topPID} "s|$varName=.*|$varName=\"$jobPath\"|" "$jobPath"  
+  fi
   rm "$tmpPath"
 }
 
