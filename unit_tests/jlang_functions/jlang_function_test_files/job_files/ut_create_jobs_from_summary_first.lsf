@@ -5,8 +5,15 @@
 #BSUB -e JOBDATE0_000000_jobID0000_first.error
 #BSUB -o JOBDATE0_000000_jobID0000_first.output
 
-# Tag variables
 
+# Job file variables:
+JSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>
+JSUB_JOB_ID="jobID0000"
+JSUB_LOG_FILE="dir/name/is/ignored/ut_create_jobs_from_summary.log"
+JSUB_SUMMARY_COMPLETED="dir/name/is/ignored/ut_create_jobs_from_summary.summary.completed"
+JSUB_SUMMARY_INCOMPLETE="dir/name/is/ignored/ut_create_jobs_from_summary.summary.incomplete"
+JSUB_VERSION_CONTROL=true
+JSUB_JOB_TIMESTAMP=true
 
 # Contents inserted from other files (this section is intended to be used only for functions):
 
@@ -45,3 +52,4 @@ dummy10_1 arg1_1 arg2_1
 bash echo "cmd 13"
 
 #JSUB<finish-job>
+process_job

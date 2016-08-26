@@ -1,16 +1,16 @@
 cmd 21
 Running_dummy_function_1
 Running jcheck_resume 
- completed - #JGROUP second first third fourth fifth
- completed - echo "cmd 21" >> ${JSUB_LOG_FILE}
- completed - dummy1
- completed - jcheck_resume
+ unit_test_job completed - #JGROUP second first third fourth fifth
+ unit_test_job completed - echo "cmd 21" >> ${JSUB_LOG_FILE}
+ unit_test_job completed - dummy1
+ unit_test_job completed - jcheck_resume
 cmd 22
 Running_dummy_function_2
 Running jcheck_resume 
- completed - #BSUB -J jobID
- completed - echo "cmd 22" >> ${JSUB_LOG_FILE}
- completed - dummy2
- completed - jcheck_resume
+ unit_test_job completed - #BSUB -J jobID
+ unit_test_job completed - echo "cmd 22" >> ${JSUB_LOG_FILE}
+ unit_test_job completed - dummy2
+ unit_test_job completed - jcheck_resume
 Running_dummy_function_2_1
 Calling fail_checkpoint to intentionally stop the job before all commands have been exectued.

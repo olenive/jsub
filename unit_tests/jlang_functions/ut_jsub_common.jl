@@ -1791,9 +1791,9 @@ Test.with_handler(ut_handler) do
     "\n#JSUB<finish-job>\n"
   )
   @test expected_file_contents == readall(filePath)
-  # arr1 = split(readall(filePath), '\n')
-  # arr2 = split(expected_file_contents, '\n')
-  # compare_arrays(arr1, arr2)
+  arr1 = split(readall(filePath), '\n')
+  arr2 = split(expected_file_contents, '\n')
+  compare_arrays(arr1, arr2)
   # stream = open("/jlang_function_test_files/job_files/compare.txt", "w");
   # write(stream, expected_file_contents)
   # close(stream)

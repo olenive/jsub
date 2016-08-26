@@ -102,6 +102,76 @@ commonFunctions = Dict(
 )
 checkpointsDict = Dict()
 
+bsubOptions = [
+"-ar",
+"-B",
+"-H",
+"-I", "-Ip", "-Is", # [-tty]
+"-IS", "-ISp", "-ISs", "-IX", #[-tty]
+"-K",
+"-N",
+"-r", "-rn",
+"-ul",
+"-a", "esub_application", # [([argument[,argument...]])]..."
+"-app", # application_profile_name
+"-b", # [[year:][month:]day:]hour:minute
+"-C", # core_limit
+"-c", # [hour:]minute[/host_name | /host_model]
+"-clusters", # "all [~cluster_name] ... | cluster_name[+[pref_level]] ... [others[+[pref_level]]]"
+"-cwd", # "current_working_directory"
+"-D", # data_limit
+"-E", # "pre_exec_command [arguments ...]"
+"-Ep", # "post_exec_command [arguments ...]"
+"-e", # error_file
+"-eo", #error_file
+"-ext", #[sched] "external_scheduler_options"
+"-F", # file_limit
+"-f", # local_file operator [remote_file]" ...
+"-freq", # numberUnit
+"-G", # user_group
+"-g", # job_group_name
+"-i", # input_file | -is input_file
+"-J", # job_name | -J "job_name[index_list]%job_slot_limit"
+"-Jd", # "job_description"
+"-jsdl", # file_name | -jsdl_strict file_name
+"-k", # "checkpoint_dir [init=initial_checkpoint_period][checkpoint_period] [method=method_name]"
+"-L", # login_shell
+"-Lp", # ls_project_name
+"-M", # mem_limit
+"-m", # "host_name[@cluster_name][[!] | +[pref_level]] | host_group[[!] | +[pref_level | compute_unit[[!] | +[pref_level]] ..."
+"-mig", # migration_threshold
+"-n", # min_proc[,max_proc]
+"-network", # " network_res_req"
+"-o", # output_file
+"-oo", # output_file
+"-outdir", # output_directory
+"-P", # project_name
+"-p", # process_limit
+"-pack", # job_submission_file
+"-Q", # "[exit_code ...] [EXCLUDE(exit_code ...)]"
+"-q", # "queue_name ..."
+"-R", # "res_req" [-R "res_req" ...]
+"-rnc", # resize_notification_cmd
+"-S", # stack_limit
+"-s", # signal
+"-sla", # service_class_name
+"-sp", # priority
+"-T", # thread_limit
+"-t", # [[[year:]month:]day:]hour:minute
+"-U", # reservation_ID
+"-u", # mail_user
+"-v", # swap_limit
+"-W", # [hour:]minute[/host_name | /host_model]
+"-We", # [hour:]minute[/host_name | /host_model]
+"-w", # 'dependency_expression'
+"-wa", # 'signal'
+"-wt", # '[hour:]minute'
+"-XF",
+"-Zs",
+"-h",
+"-V",
+];
+
 #### FUNCTIONS ####
 include("./common_functions/jsub_common.jl")
 ###################
@@ -168,6 +238,14 @@ include("./common_functions/jsub_common.jl")
 
   "-c", "--common-header"
     help = "String to be included in every job file header."
+
+  "-y", "--no-version-control"
+    action = :store_false
+    help = "Do not call the bash function which does version control inside these jobs."
+
+  "-d", "--no-process-timestamp"
+    action = :store_false
+    help = "When this flag is not present, timestamps of the format \"YYYYMMDD_HHMMSS\" are added to the log file by job files running the process_job function."
 end
 
 parsed_args = parse_args(argSettings) # the result is a Dict{String,Any}
@@ -179,7 +257,7 @@ parsed_args = parse_args(argSettings) # the result is a Dict{String,Any}
 SUPPRESS_WARNINGS = parsed_args["suppress-warnings"];
 flagVerbose = parsed_args["verbose"];
 requiredStages = map_flags_sjb(parsed_args["generate-summaries"], parsed_args["generate-jobs"], parsed_args["submit-jobs"])
-flagVerbose && print("Interpreted jsub arguments as requesting the following stages: ")
+flagVerbose && print("\nInterpreted jsub arguments as requesting the following stages: ")
 (flagVerbose && requiredStages[1]=='1') && print("1 ")
 (flagVerbose && requiredStages[2]=='1') && print("2 ")
 (flagVerbose && requiredStages[3]=='1') && print("3 ")
@@ -305,13 +383,20 @@ if requiredStages[2] == '1'
   flagVerbose && println("Getting job file names from summary file basenames...");
   arrJobIDs = map((x) -> basename(remove_suffix(x, ".summary")) , summaryPaths2);
 
+  # Get arguments for passing to create_jobs_from_summary_
+  doJsubVersionControl=(get_argument(parsed_args, "no-version-control"; verbose=flagVerbose, optional=true, default=true));
+  processTimestamp=(get_argument(parsed_args, "no-process-timestamp"; verbose=flagVerbose, optional=true, default=true));
+  # (processTimestamp == false) && processTimestamp = "false"; # Convert to string as this will be written directly to the job file
   ## Write job files
   jobFilePathsArrays2 = map((summaryFilePath, dictSummaries, jobID) -> create_jobs_from_summary_(summaryFilePath, dictSummaries, commonFunctions, checkpointsDict; 
-    jobFilePrefix=jobFilePrefix, jobID=jobID, jobDate=(
-      parsed_args["timestamp"] ? get_timestamp_(nothing) : "";
+      jobFilePrefix=jobFilePrefix, jobID=jobID, jobDate=(
+        parsed_args["timestamp"] ? get_timestamp_(nothing) : "";
+      ),
+      doJsubVersionControl=doJsubVersionControl,
+      processTimestamp=processTimestamp,
+      headerSuffix=commonHeaderSuffix, verbose=flagVerbose, bsubOptions=bsubOptions
     ),
-    headerSuffix=commonHeaderSuffix, verbose=flagVerbose),
-    summaryPaths2, summaryArrDicts, arrJobIDs
+    summaryPaths2, summaryArrDicts, arrJobIDs,
   );
   string2file_(pathJobsList, arrArr2string(jobFilePathsArrays2)) # Convert array of arrays into a single string
 end

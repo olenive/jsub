@@ -21,7 +21,7 @@ CWD=$(pwd) # Get current working directory
 
 #### FUNCTIONS ####
 # Get directory containing the script
-function absolutePathScript {
+function absoluteDirScript {
   local SRC=${BASH_SOURCE[0]}
   local DIR=""
   while [ -h "$SRC" ]; do
@@ -32,18 +32,24 @@ function absolutePathScript {
   DIR=$( cd -P $(dirname "$SRC") && pwd )
   echo "$DIR"
 }
-# function subJobID {
-#     output=$($*)
-#     echo $output | head -n1 | cut -d'<' -f2 | cut -d'>' -f1
-# } # jobid=$(subJobID bsub < jobfile)
-DIR_JSUB_FUNCTIONS=$(absolutePathScript)
+# This function inserts the path to the script as a variable in the script.  This is require because a shell script running on the cluster cannot get its own location using the $0 variable.
+function insertPathToSelf {
+  local varName="JSUB_PATH_TO_THIS_JOB"
+  local jobPath="$1"
+  local tmpPath="$jobPath".tmp
+  sed -i.tmp "s|$varName=.*|$varName=\"$jobPath\"|" "$jobPath"
+  rm "$tmpPath"
+}
+
+## Include job submission functions
+DIR_JSUB_FUNCTIONS=$(absoluteDirScript)
 ls "$DIR_JSUB_FUNCTIONS"/"job_submission_functions.sh"
 source "$DIR_JSUB_FUNCTIONS"/"job_submission_functions.sh"
 ###################
 
 ######## SCRIPT ########
 if [ $# -eq 0 ]; then
-    echo "$0"" requires an input file listing jobs to be submitted."
+  echo "$0"" requires an input file listing jobs to be submitted."
 fi
 
 ## Log attempts to submit job
@@ -69,8 +75,7 @@ while read -r line || [[ -n "$line" ]]; do
 
   ## bsub < file-path for each file and write to log file
   echo "Submitting job: ""$filepath" # [[ ${VERBOSE} == true ]] && "Submitting job file: ""$filepath"
-  # jobID=$(subJobID bsub < ${filepath}) #
-  # echo "LSF job ID: "${jobID}
+  insertPathToSelf "$filepath"
   bsub < "$filepath"
   echo "$filepath" >> "$LISTSUBMITTED" # Generate a record of submitted files
 

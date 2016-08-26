@@ -23,8 +23,10 @@ GENERATED_JOB_DATA="it1_basic.txt"
 GENERATED_JOB_OUTPUT="basic_0001.error"
 GENERATED_JOB_ERROR="basic_0001.output"
 GENERATED_SUBMITTED_JOBS_LIST="basic.list-jobs.submitted"
+GENERATED_COMPLETED="basic_0001.summary.completed"
+GENERATED_INCOMPLETE="basic_0001.summary.incomplete"
 
-CALL_JSUB="julia ../../../jsub.jl "
+CALL_JSUB="julia ../../../jsub.jl -d -v "
 
 #######################
 
@@ -46,6 +48,8 @@ function clear_generated {
   rm -f ${GENERATED_JOB_OUTPUT}
   rm -f ${GENERATED_JOB_ERROR}
   rm -f ${GENERATED_SUBMITTED_JOBS_LIST}
+  rm -f ${GENERATED_COMPLETED}
+  rm -f ${GENERATED_INCOMPLETE}
 }
 function isAbsolutePath {
   local DIR="$1"

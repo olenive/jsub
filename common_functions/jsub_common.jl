@@ -928,19 +928,32 @@ end
 
 ## Create job file from array of instructions and a dictionary of functions
 # Use file2arrayofarrays_(x, "#", cols=1) to read summary file
-function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summaryFileOfOrigin="", root="root", tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate="", appendOptions=true, rootSleepSeconds=nothing, verbose=false)
+function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summaryFileOfOrigin="", root="root", tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", 
+    headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=(remove_suffix(basename(outFilePath), ".lsf")), jobDate="", appendOptions=true, rootSleepSeconds=nothing, verbose=false, doJsubVersionControl=true, 
+    processTimestamp="true",
+    pathLogFile=(remove_suffix(outFilePath, ".lsf") * ".log"),
+    pathSummaryCompleted=(remove_suffix(outFilePath, ".lsf") * ".summary.completed"),
+    pathSummaryIncomplete=(remove_suffix(outFilePath, ".lsf") * ".summary.incomplete"),
+  )
   # Check if jobArray is empty
   if jobArray == []
     SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_job_file_) Array of job contents is empty, no job file created.");
   else
     # Overwrite with header
-    if (verbose) 
-      println("Writing to job file: ", outFilePath);
-    end
+    verbose && println("Writing to job file: ", outFilePath);
     stream = open(outFilePath, "w");
     write(stream, create_job_header_string(jobArray; root=root, tagHeader=tagHeader, prefix=headerPrefix, suffix=headerSuffix, jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds));
-    # Append tag variables
-    write(stream, "\n# Tag variables\n");
+    # Append log file variable declarations (Note that the variable names used here need to match those expected by the process_job function in job_processing.sh)
+    write(stream, "\n\n# Job file variables:");
+    # write(stream, string("\n#<The next line will be deleted and replaced by the submit_lsf_jobs.sh script.>"));
+    write(stream, string("\nJSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>"));
+    # write(stream, string("\n"));
+    write(stream, string("\nJSUB_JOB_ID=\"", jobID, "\""));
+    write(stream, string("\nJSUB_LOG_FILE=\"", pathLogFile, "\""));
+    write(stream, string("\nJSUB_SUMMARY_COMPLETED=\"", pathSummaryCompleted, "\""));
+    write(stream, string("\nJSUB_SUMMARY_INCOMPLETE=\"", pathSummaryIncomplete, "\""));
+    write(stream, string("\nJSUB_VERSION_CONTROL=", doJsubVersionControl));
+    write(stream, string("\nJSUB_JOB_TIMESTAMP=", processTimestamp));
     # Append common functions
     write(stream, "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n");
     for key in sort(collect(keys(functionsDictionary)))
@@ -951,14 +964,19 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summ
     write(stream, "\n\n# Commands taken from summary file: $summaryFileOfOrigin\n");
     write(stream, string("\n", tagBegin, "\n"));
     map((x) -> write(stream, join(x), '\n'), jobArray);
-    write(stream, string("\n", tagFinish, "\n"));
+    write(stream, string("\n", tagFinish));
+    write(stream, string("\nprocess_job\n")); # Append call to process_job from job_processing.sh
     close(stream);
   end
 end
 
 ## Create all the job files associated with a particular summary file (Note that using the option filePathOverride means input to the jobFilePrefix and jobFileSuffix options will be ignored)
 function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonFunctions::Dict, checkpointsDict::Dict; jobFilePrefix="", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
-    tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n", headerSuffix="", summaryFile="", jobID=nothing, jobDate="", appendOptions=true, rootSleepSeconds=nothing, verbose=false
+    tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n", headerSuffix="", summaryFile="", 
+    jobID=nothing, jobDate="", appendOptions=true, rootSleepSeconds=nothing, verbose=false, bsubOptions=["-J"], doJsubVersionControl=true, processTimestamp="true",
+    pathLogFile=(remove_suffix(summaryFilePath, ".summary") * ".log"),
+    pathSummaryCompleted=(remove_suffix(summaryFilePath, ".summary") * ".summary.completed"),
+    pathSummaryIncomplete=(remove_suffix(summaryFilePath, ".summary") * ".summary.incomplete"),
   )
   arrJobFilePaths = [];
   ## For each group in the summary file create a job file
@@ -981,14 +999,18 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
       (length(group) > 0) ? (group = "_" * group) : (group = ""); # # (length(group) > 0 && group != root) ? (group = "_" * group) : (group = ""); # job file specific suffix
       outFilePath = string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary")), group, jobFileSuffix); # get longName from file path
     end
-    ## Check for conflicting -J options
-    if detect_option_conflicts(jobArray; tag=remove_prefix(tagHeader, "\n"), option="-J")
-      SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_jobs_from_summary_) found conflicting instances of #BSUB -J in the following array of commands:\n", jobArray);
+    ## Check for conflicting #BSUB options
+    for option in bsubOptions
+      if detect_option_conflicts(jobArray; tag=remove_prefix(tagHeader, "\n"), option=option)
+        SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_jobs_from_summary_) found conflicting instances of ", tagHeader, " ", option, " in the following array of commands:\n", jobArray);
+      end
     end
     ## Create job file
     push!(arrJobFilePaths, outFilePath)
     create_job_file_(outFilePath, jobArray, dictCheckpoints; summaryFileOfOrigin=summaryFilePath, root=root,
-      tagBegin=tagBegin, tagFinish=tagFinish, tagHeader=tagHeader, tagCheckpoint=tagCheckpoint, headerPrefix=headerPrefix, headerSuffix=headerSuffix, summaryFile=summaryFile, jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds, verbose=verbose
+      tagBegin=tagBegin, tagFinish=tagFinish, tagHeader=tagHeader, tagCheckpoint=tagCheckpoint, headerPrefix=headerPrefix, headerSuffix=headerSuffix, summaryFile=summaryFile, 
+      jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds, verbose=verbose, doJsubVersionControl=doJsubVersionControl, processTimestamp=processTimestamp,
+      pathLogFile=pathLogFile, pathSummaryCompleted=pathSummaryCompleted, pathSummaryIncomplete=pathSummaryIncomplete,
     );
   end
   ## Check that summary file names are unique
