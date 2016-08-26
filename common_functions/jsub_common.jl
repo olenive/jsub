@@ -944,14 +944,14 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summ
     stream = open(outFilePath, "w");
     write(stream, create_job_header_string(jobArray; root=root, tagHeader=tagHeader, prefix=headerPrefix, suffix=headerSuffix, jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds));
     # Append log file variable declarations (Note that the variable names used here need to match those expected by the process_job function in job_processing.sh)
-    write(stream, "\n\n# Log file variables:");
-    write(stream, string("\n#<The next line will be deleted and replaced by the submit_lsf_jobs.sh script.>"));
-    write(stream, string("\nJSUB_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>"));
-    write(stream, string("\n"));
-    write(stream, string("\nJSUB_JOB_ID=", jobID));
-    write(stream, string("\nJSUB_LOG_FILE=", pathLogFile));
-    write(stream, string("\nJSUB_SUMMARY_COMPLETED=", pathSummaryCompleted));
-    write(stream, string("\nJSUB_SUMMARY_INCOMPLETE=", pathSummaryIncomplete));
+    write(stream, "\n\n# Job file variables:");
+    # write(stream, string("\n#<The next line will be deleted and replaced by the submit_lsf_jobs.sh script.>"));
+    write(stream, string("\nJSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>"));
+    # write(stream, string("\n"));
+    write(stream, string("\nJSUB_JOB_ID=\"", jobID, "\""));
+    write(stream, string("\nJSUB_LOG_FILE=\"", pathLogFile, "\""));
+    write(stream, string("\nJSUB_SUMMARY_COMPLETED=\"", pathSummaryCompleted, "\""));
+    write(stream, string("\nJSUB_SUMMARY_INCOMPLETE=\"", pathSummaryIncomplete, "\""));
     write(stream, string("\nJSUB_VERSION_CONTROL=", doJsubVersionControl));
     write(stream, string("\nJSUB_JOB_TIMESTAMP=", processTimestamp));
     # Append common functions
