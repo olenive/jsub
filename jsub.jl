@@ -99,6 +99,7 @@ tagsExpand = Dict(
 commonFunctions = Dict(
   "kill_this_job" => sourcePath * "common_functions/job_processing.sh",
   "process_job" => sourcePath * "common_functions/job_processing.sh",
+  "version_control" => sourcePath * "common_functions/version_control.sh",
 )
 checkpointsDict = Dict()
 
