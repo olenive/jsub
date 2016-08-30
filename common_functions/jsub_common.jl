@@ -974,9 +974,12 @@ end
 function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonFunctions::Dict, checkpointsDict::Dict; jobFilePrefix="", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
     tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n", headerSuffix="", summaryFile="", 
     jobID=nothing, jobDate="", appendOptions=true, rootSleepSeconds=nothing, verbose=false, bsubOptions=["-J"], doJsubVersionControl=true, processTimestamp="true",
-    pathLogFile=(remove_suffix(summaryFilePath, ".summary") * ".log"),
-    pathSummaryCompleted=(remove_suffix(summaryFilePath, ".summary") * ".summary.completed"),
-    pathSummaryIncomplete=(remove_suffix(summaryFilePath, ".summary") * ".summary.incomplete"),
+    prefixLogFile=jobFilePrefix,
+    prefixSummaryCompleted=jobFilePrefix,
+    prefixSummaryIncomplete=jobFilePrefix,
+    pathLogFile=string(prefixLogFile, basename(remove_suffix(summaryFilePath, ".summary") * ".log")),
+    pathSummaryCompleted=string(prefixSummaryCompleted, basename(remove_suffix(summaryFilePath, ".summary") * ".summary.completed")),
+    pathSummaryIncomplete=string(prefixSummaryIncomplete, basename(remove_suffix(summaryFilePath, ".summary") * ".summary.incomplete")),
   )
   arrJobFilePaths = [];
   ## For each group in the summary file create a job file
