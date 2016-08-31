@@ -2263,6 +2263,7 @@ Test.with_handler(ut_handler) do
   @test get_argument(suppliedArguments, "fvars", verbose=false, optional=true, default="default.fvars") == "default.fvars"
   @test get_argument(suppliedArguments, "submit-jobs", verbose=false, optional=true, default=true) == false # optional but non-nothign so default value is not used
 
+  ## arrArr2string
   arrArr = []
   push!(arrArr, ["a1", "a2", "a3"])
   push!(arrArr, ["b1", "b2", "b3"])
@@ -2270,6 +2271,15 @@ Test.with_handler(ut_handler) do
   push!(arrArr, ["d1", "d2", "d3"])
   @test arrArr2string(arrArr) == "a1\na2\na3\nb1\nb2\nb3\nc1\nc2\nc3\nd1\nd2\nd3"
   @test arrArr2string(arrArr, delim="___") == "a1___a2___a3___b1___b2___b3___c1___c2___c3___d1___d2___d3"
+
+  ## get_zip_dir_path(dirJobs; suffix=".tar.gz")
+  @test get_zip_dir_path("/") == "portable_jobs.tar.gz" # Test case when things are being done in the root directory (you never know)
+  @test get_zip_dir_path("/absolute/dirA") == "/absolute/dirA.tar.gz" # Test case in a non-root directory
+  @test get_zip_dir_path("relative/dirR") == "relative/dirR.tar.gz"
+
+  @test get_portable_dir_path("/") == "portable_jobs" # Test case when things are being done in the root directory (you never know)
+  @test get_portable_dir_path("/absolute/dirA") == "/absolute/dirA" # Test case in a non-root directory
+  @test get_portable_dir_path("relative/dirR") == "relative/dirR"
 
   # # 
   # jobHeader = string(

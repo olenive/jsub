@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 #BSUB -J basic_0001
 #BSUB -e basic_0001.error

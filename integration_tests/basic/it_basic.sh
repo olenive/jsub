@@ -16,6 +16,7 @@ EXPECTED_JOB_LIST="../expected/basic.list-jobs"
 EXPECTED_JOB_DATA="../expected_files/it1_basic.txt"
 EXPECTED_COMPLETED="../expected_files/basic_0001.summary.completed"
 
+GENERATED_DIR="generated_files"
 GENERATED_SUMMARY="basic_0001.summary"
 GENERATED_SUMMARY_LIST="basic.list-summaries"
 GENERATED_JOB_IN="basic_0001.lsf"
@@ -83,11 +84,12 @@ function getCommonHeaderOptionString {
 #################
 
 # Change to generated_files directory
-mkdir -p generated_files
-cd generated_files
+mkdir -p ${GENERATED_DIR}
+cd ${GENERATED_DIR}
+
+clear_generated # Remove existing output from previous tests
 
 # Run jsub - only create summary file
-clear_generated # Remove existing output from previous tests
 ${CALL_JSUB} -s -p ${PROTOCOL_FILE}
 # Check that a summary file and a summary listing file are generated from the protocol
 assert "file_exists ${GENERATED_SUMMARY}" "yes"

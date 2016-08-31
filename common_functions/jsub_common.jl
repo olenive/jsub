@@ -1088,6 +1088,29 @@ function string2file_(file, inString)
   close(stream);
 end
 
+function get_zip_dir_path(dir; suffix=".tar.gz")
+  (dir == "/") && (dir = "portable_jobs")
+  return string(dir, suffix)
+end
+
+function get_portable_dir_path(dir)
+  (dir == "/") && (dir = "portable_jobs")
+  return string(dir)
+end
+
+# Function that tries to determine if the lsf queuing system can be accessed from the shell
+function checkforlsf_()
+  try
+    lsid = readall(`lsid`);
+    if (lsid[1:16] != "IBM Platform LSF")
+      SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in checkforlsf_) unexpected output from lsid command:\n", lsid);
+    end
+    return true
+  catch
+    return false
+  end
+end
+
 # EOF
 
 
