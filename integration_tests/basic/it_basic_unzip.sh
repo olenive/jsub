@@ -7,7 +7,7 @@ set -e
 JOB_HEADER="$1"
 
 PROTOCOL_FILE="../basic.protocol"
-LSF_JOB_NAME="basic_zip_0001"
+LSF_JOB_NAME="basic_0001"
 
 EXPECTED_SUMMARY="../expected_files/basic_0001.summary"
 EXPECTED_SUMMARY_LIST="../expected_files/basic.list-summaries"
@@ -29,7 +29,7 @@ GENERATED_JOB_ERROR="basic_0001.output"
 GENERATED_SUBMITTED_JOBS_LIST="basic.list-jobs.submitted"
 GENERATED_COMPLETED="basic_0001.summary.completed"
 GENERATED_INCOMPLETE="basic_0001.summary.incomplete"
-GENERATED_PROTABLE_DIR=../"$GENERATED_DIR"/"portable"
+GENERATED_PROTABLE_DIR="portable"
 GENERATED_PORTABLE_ZIP="$GENERATED_PROTABLE_DIR".tar.gz
 
 CALL_JSUB="julia ../../../jsub.jl -d -v "
@@ -72,6 +72,7 @@ function isJobNameInQueue {
   fi
 }
 function awaitJobNameCompletion {
+  echo "Waiting for completion of job named ""$1"
   while [ $(isJobNameInQueue "$1") == "yes" ]; do
     sleep 1
   done
@@ -86,7 +87,19 @@ function getCommonHeaderOptionString {
     echo " -c ""$1"
   fi
 }
+function forcePathAbsolute {
+  if [ "$1" == "" ]; then
+    echo ""
+  elif [ $(isAbsolutePath "$1") == "relative" ]; then
+    echo "$PWD"/"$1"
+  else
+    echo "$1"
+  fi
+}
 #################
+
+# Determien header location from where the script is being run
+ABSOLUTE_HEADER_PATH=$(forcePathAbsolute "$JOB_HEADER") 
 
 # Change to generated_files directory
 mkdir -p ${GENERATED_DIR}
@@ -125,8 +138,12 @@ cd ${GENERATED_DIR}
 clear_generated # Remove existing output from previous tests
 
 # Extract zipped jobs and submit them
-tar -zxvf ${GENERATED_PROTABLE_DIR}
-cd ${GENERATED_PROTABLE_DIR}
+tar -zxvf ${GENERATED_PORTABLE_ZIP}
+rm -rf ../${GENERATED_PROTABLE_DIR}
+mv ${GENERATED_PROTABLE_DIR} .. # Too lazy to change the relative path in the protocol for this test alone
+cd ../${GENERATED_PROTABLE_DIR}
+# Manually combine the generated job and the rquired local system header information
+cat ${ABSOLUTE_HEADER_PATH} >> ${GENERATED_JOB_IN}
 bash submit_lsf_jobs.sh ${GENERATED_JOB_LIST}
 awaitJobNameCompletion "$LSF_JOB_NAME"
 assert "file_exists ${GENERATED_JOB_DATA}" "yes"
