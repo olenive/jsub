@@ -26,7 +26,7 @@ function jcheck_resume {
   process_job "YYYYMMDD_HHMMSS"
 }
 
-#JSUB<begin_job>
+#JSUB<begin-job>
 #JGROUP second first third fourth fifth
 echo "cmd 21" >> ${JSUB_LOG_FILE}
 dummy1
@@ -43,7 +43,7 @@ dummy3
 #BSUB -e out.pj.error
 jcheck_resume
 echo "final executed command" >> ${JSUB_LOG_FILE}
-#JSUB<finish_job>
+#JSUB<finish-job>
 
 # Finalise job
 process_job

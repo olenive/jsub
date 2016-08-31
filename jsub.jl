@@ -223,22 +223,24 @@ include("./common_functions/jsub_common.jl")
     help = "Name string to be used in all files."
 
   "-q", "--job-prefix"
-    help = "Prefix to job files."
+    help = "Prefix to job file paths."
 
   "-t", "--timestamp"
     action = :store_true
     help = "Add timestamps to summary files."
 
   "-a", "--portable"
-    action = :store_true
-    help = "Write a copy of the submission script and relevant functions to the directory containing the job files so that it may be copied over to and run on a system that does not have a working copy of jsub.jl."
+    help = "A directory to which copies of the job files as well as the submission script and relevant functions will be written.  This is do so that the jobs can be easily copied over to and run on a system where jsub.jl can not be run directly."
 
   "-z", "--zip-jobs"
     action = :store_true
-    help = "Create a zip file containing the jobs directory for ease of copying."
+    help = "Create a zip file containing the jobs directory supplied to the \"--portable\" (-a) option for ease of copying."
 
-  "-c", "--common-header"
-    help = "String to be included in every job file header."
+  "-l", "--common-header"
+    help = "String to be included at the start of every job file."
+
+  "-c", "--common-lsf-options"
+    help = "Path to a file containing text to be included in every job file header.  This is intended to be used for common lsf options"
 
   "-y", "--no-version-control"
     action = :store_false
@@ -268,7 +270,7 @@ flagVerbose && print("\n\n")
 summaryPaths = [];
 jobFilePaths = [];
 pathSubmissionScript = string(sourcePath, "/common_functions/submit_lsf_jobs.sh");
-pathSubmissionFunctions = string(sourcePath, "/common_functions/jobs_submission_functions.sh");
+pathSubmissionFunctions = string(sourcePath, "/common_functions/job_submission_functions.sh");
 
 ## Get file paths and prefixes from arguments
 fileProtocol = get_argument(parsed_args, "protocol"; verbose=flagVerbose, optional=(requiredStages[1]=='0'),
@@ -294,13 +296,21 @@ pathSummariesList = get_argument(parsed_args, "list-summaries"; verbose=flagVerb
 );
 
 ## Get path to jobs list file
-pathJobsList = get_argument(parsed_args, "list-jobs"; verbose=flagVerbose, optional=true,
+pathJobsList = get_argument(parsed_args, "list-jobs"; verbose=flagVerbose, 
+  optional=(requiredStages[2]=='1' || requiredStages[3]=='0'), # Only optional if stage 2 is being run or stage 3 is not being run (the jobs have to come from)
  default=string(jobFilePrefix, longName, ".list-jobs")
 );
 
+# String used at the start of every job file
+jobFileHeader = get_argument(parsed_args, "common-header"; verbose=flagVerbose, optional=true, default="#!/bin/bash\nset -e\n");
+
 # String added to the header of every job file
-pathCommonHeader = get_argument(parsed_args, "common-header"; verbose=flagVerbose, optional=true, default=nothing);
+pathCommonHeader = get_argument(parsed_args, "common-lsf-options"; verbose=flagVerbose, optional=true, default=nothing);
 pathCommonHeader != nothing ? commonHeaderSuffix = readall(pathCommonHeader) : commonHeaderSuffix="";
+
+# # Check if an argument has been supplied to the portable option
+# portableDir = get_argument(parsed_args, "portable"; verbose=flagVerbose, default=nothing, optional=true);
+# flagZip = get_argument(parsed_args, "zip-jobs"; verbose=flagVerbose, default=nothing, optional=true);
 
 flagVerbose && println(string("Prefix for output file names: ", longName));
 
@@ -393,9 +403,7 @@ if requiredStages[2] == '1'
       jobFilePrefix=jobFilePrefix, jobID=jobID, jobDate=(
         parsed_args["timestamp"] ? get_timestamp_(nothing) : "";
       ),
-      doJsubVersionControl=doJsubVersionControl,
-      processTimestamp=processTimestamp,
-      headerSuffix=commonHeaderSuffix, verbose=flagVerbose, bsubOptions=bsubOptions
+      doJsubVersionControl=doJsubVersionControl, processTimestamp=processTimestamp, headerSuffix=commonHeaderSuffix, verbose=flagVerbose, bsubOptions=bsubOptions, headerPrefix=jobFileHeader
     ),
     summaryPaths2, summaryArrDicts, arrJobIDs,
   );
@@ -407,35 +415,66 @@ if requiredStages[3] == '1'
   flagVerbose && println("\n - STAGE 3: Submitting LSF jobs.");
 
   ## Call the job submission script or copy it to the jobs directory
-  if parsed_args["portable"] == false
+  if (parsed_args["portable"] == nothing)
     SUPPRESS_WARNINGS ? arg2 = "suppress-warnings" : arg2 = "";
     flagVerbose && println("Submitting jobs to LSF queuing system using...");
     flagVerbose && println("bash $pathSubmissionScript $pathJobsList $arg2");
     subRun = "";
-    try
-      run(`bash $pathSubmissionScript $pathJobsList $arg2`);
-    catch
-      println(subRun);
+    if checkforlsf_()
+      try
+        run(`bash $pathSubmissionScript $pathJobsList $arg2`);
+      catch
+        println(subRun);
+      end
+    else
+      println("The LSF queuing system does not appear to be available on this system.")
+      println("If this is incorrect consider amending line 423 of jsub.jl or submitting manually using:")
+      println("bash $pathSubmissionScript $pathJobsList $arg2");
+      println("Finished running jsub stage 3 without submitting any jobs.")
+    end
+    ## Point out that the zip option currently only works in combination with the portable option
+    if parsed_args["zip-jobs"] == true
+      (!SUPPRESS_WARNINGS) && println("WARNING (in jsub.jl): The --zip-jobs (-z) flag was supplied but an argument to the --portable (-a) option was not supplied.  Currently the -z option only works together with -a so it will have no effect here.");
     end
   else
-    flagVerbose && println(string("Writing a copy of the submission script and functions file to the job file directory: ", dirJobs));
-    cp(pathSubmissionScript, string(dirJobs, "/", basename(pathSubmissionScript)));
-    cp(pathSubmissionFunctions, string(dirJobs, "/", basename(pathSubmissionFunctions)));
-    flagVerbose && println(string("The jobs can be submitted to the queuing system by running the shell script, for example: ", ));
-  end
+    # Get the target directory from the the portable option or use default
+    dirJobs = get_portable_dir_path(get_argument(parsed_args, "portable"; verbose=flagVerbose, optional=false));
+    dirJobsZip = get_zip_dir_path(dirJobs);
+    mkpath(dirJobs); # Create the portable directory if needed
 
-  ## Zip jobs directory if requested
-  if parsed_args["zip-jobs"] == true
-    flagVerbose && println("Zipping jobs directory: ", dirJobs);
-    dirJobsZip = string(dirJobs, ".tar.gz");
-    flagVerbose && println("             into file: ", dirJobsZip);
-    flagVerbose ? zipVerbose = " -v " : zipVerbose = ""
-    subZip = "";
-    try
-      subZip = run(`tar -z -c -f $zipVerbose $dirJobsZip $dirJobs`);
-    catch
-      println(subZip);
+    # Parse list of job paths and copy them to the portable directory (if it's not the same directory)
+    flagVerbose && println(string("Copying file listing jobs (", basename(pathJobsList), ") to the directory: ", dirJobs));
+    cp(pathJobsList, string(dirJobs, "/", basename(pathJobsList)), remove_destination=true); # Copy list of jobs
+    arrJobPaths = split(readall(pathJobsList), '\n')
+    for jobFile in arrJobPaths
+      if !ispath(jobFile)
+        (!SUPPRESS_WARNINGS) && println("WARNING (in jsub.jl): The list file $pathJobsList contains a non-valid path: $jobFile");
+      elseif (dirname(jobFile) != dirJobs)
+        flagVerbose && println(string("Copying job file \"$jobFile\" to directory specificed by the --portable (-a) option: ", dirJobs));
+        cp(jobFile, string(dirJobs, "/", basename(jobFile)), remove_destination=true);
+      end
     end
+
+    flagVerbose && println(string("Writing a copy of the submission script and functions file to the job file directory: ", dirJobs));
+    # println("pathSubmissionScript = ", pathSubmissionScript);
+    cp(pathSubmissionScript, string(dirJobs, "/", basename(pathSubmissionScript)), remove_destination=true);
+    # println("pathSubmissionFunctions = ", pathSubmissionFunctions);
+    cp(pathSubmissionFunctions, string(dirJobs, "/", basename(pathSubmissionFunctions)), remove_destination=true);
+    flagVerbose && println(string("The jobs can be submitted to the queuing system by running the shell script: ", basename(pathSubmissionScript)));
+    
+    ## Zip jobs directory if requested
+    if parsed_args["zip-jobs"] == true
+      flagVerbose && println("Zipping jobs directory: ", dirJobs);
+      flagVerbose && println("             into file: ", dirJobsZip);
+      flagVerbose ? zipVerbose = "v" : zipVerbose = ""
+      subZip = "";
+      try
+        subZip = run(`tar -zc$[zipVerbose]f $dirJobsZip $dirJobs`);
+      catch
+        println(subZip);
+      end
+    end
+
   end
 
   flagVerbose && println("");

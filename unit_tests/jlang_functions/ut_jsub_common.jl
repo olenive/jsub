@@ -1765,8 +1765,17 @@ Test.with_handler(ut_handler) do
       "#BSUB -w \'done(\"root\")&&done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
       ""
     ),
-    "\n# Tag variables\n",
-    "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n",
+    "\n",
+    "\n# Job file variables:",
+    "\nJSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>",
+    "\nJSUB_JOB_ID=\"\"",                                   
+    "\nJSUB_LOG_FILE=\"jlang_function_test_files/job_files/ut_generated_job.log\"",
+    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_generated_job.summary.completed\"",
+    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_generated_job.summary.incomplete\"",
+    "\nJSUB_VERSION_CONTROL=true",
+    "\nJSUB_JOB_TIMESTAMP=true",                                                                         
+    "\n",
+    "\n# Contents inserted from other files (this section is intended to be used only for functions):\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy1.sh", "\n",
     "function dummy1 {\necho Running_dummy_function_1\n}\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy10.sh", "\n",
@@ -1788,15 +1797,19 @@ Test.with_handler(ut_handler) do
     "#BSUB -P grantcode", "\n",
     "#BSUB -w overriding", "\n",
     "bash echo \"cmd 23\"", "\n",
-    "\n#JSUB<finish-job>\n"
+    "\n#JSUB<finish-job>",
+    "\nprocess_job",
+    "\n"
   )
   @test expected_file_contents == readall(filePath)
-  arr1 = split(readall(filePath), '\n')
-  arr2 = split(expected_file_contents, '\n')
-  compare_arrays(arr1, arr2)
+  # arr1 = split(readall(filePath), '\n')
+  # arr2 = split(expected_file_contents, '\n')
+  # compare_arrays(arr1, arr2)
+  
   # stream = open("/jlang_function_test_files/job_files/compare.txt", "w");
   # write(stream, expected_file_contents)
   # close(stream)
+
   filePath = "jlang_function_test_files/job_files/ut_generated_job.lsf";
   run(`rm $filePath`);
   headerString = string( 
@@ -1822,8 +1835,17 @@ Test.with_handler(ut_handler) do
       string("\n", "#BSUB", " -J ID002_second\n", "#BSUB", " -e ID002_second.error\n", "#BSUB", " -o ID002_second.output\n"),
       ""
     ),
-    "\n# Tag variables\n",
-    "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n",
+    "\n",
+    "\n# Job file variables:",
+    "\nJSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>",
+    "\nJSUB_JOB_ID=\"ID002\"",                                   
+    "\nJSUB_LOG_FILE=\"jlang_function_test_files/job_files/ut_generated_job.log\"",
+    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_generated_job.summary.completed\"",
+    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_generated_job.summary.incomplete\"",
+    "\nJSUB_VERSION_CONTROL=true",
+    "\nJSUB_JOB_TIMESTAMP=true",                                                                         
+    "\n",
+    "\n# Contents inserted from other files (this section is intended to be used only for functions):\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy1.sh", "\n",
     "function dummy1 {\necho Running_dummy_function_1\n}\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy10.sh", "\n",
@@ -1845,7 +1867,9 @@ Test.with_handler(ut_handler) do
     "#BSUB -P grantcode", "\n",
     "#BSUB -w overriding", "\n",
     "bash echo \"cmd 23\"", "\n",
-    "\n#JSUB<finish-job>\n"
+    "\n#JSUB<finish-job>",
+    "\nprocess_job",
+    "\n"
   )
   @test expected_file_contents == readall(filePath)
   # arr1 = split(readall(filePath), '\n')
@@ -2037,15 +2061,26 @@ Test.with_handler(ut_handler) do
   expectedFilePath01 = "jlang_function_test_files/job_files/ut_create_jobs_from_summary_root.lsf"
   try run(`rm $expectedFilePath01`) end
   expectedFileHeader01 = string( 
-      "#!/bin/bash\n",
-      "\n#BSUB -J JOBDATE0_000000_jobID0000",
-      "\n#BSUB -e JOBDATE0_000000_jobID0000.error",
-      "\n#BSUB -o JOBDATE0_000000_jobID0000.output",
-      "\n"
-    )
+    "#!/bin/bash\n",
+    "\n#BSUB -J JOBDATE0_000000_jobID0000",
+    "\n#BSUB -e JOBDATE0_000000_jobID0000.error",
+    "\n#BSUB -o JOBDATE0_000000_jobID0000.output",
+    "\n"
+  );
+  expectedJobFileVariables = string(
+    "\n",
+    "\n# Job file variables:",
+    "\nJSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>",
+    "\nJSUB_JOB_ID=\"jobID0000\"",                                   
+    "\nJSUB_LOG_FILE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary.log\"",
+    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary.summary.completed\"",
+    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary.summary.incomplete\"",
+    "\nJSUB_VERSION_CONTROL=true",
+    "\nJSUB_JOB_TIMESTAMP=true",
+  );
   expectedFileContents01 = string( 
     expectedFileHeader01,
-    "\n# Tag variables\n",
+    expectedJobFileVariables,
     "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy1.sh", "\n",
     "function dummy1 {\necho Running_dummy_function_1\n}\n",
@@ -2064,7 +2099,8 @@ Test.with_handler(ut_handler) do
     "bash echo \"cmd 02\"", "\n",
     "dummy10 arg1 arg2", "\n",
     "bash echo \"cmd 03\"", "\n",
-    "\n#JSUB<finish-job>\n"
+    "\n#JSUB<finish-job>",
+    "\nprocess_job\n"
   )
   expectedFilePath02 = "jlang_function_test_files/job_files/ut_create_jobs_from_summary_first.lsf"
   try run(`rm $expectedFilePath02`) end
@@ -2078,7 +2114,7 @@ Test.with_handler(ut_handler) do
     )
   expectedFileContents02 = string( 
     expectedFileHeader02,
-    "\n# Tag variables\n",
+    expectedJobFileVariables,
     "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy1.sh", "\n",
     "function dummy1 {\necho Running_dummy_function_1\n}\n",
@@ -2095,7 +2131,8 @@ Test.with_handler(ut_handler) do
     "jcheck_resume", "\n",
     "dummy10_1 arg1_1 arg2_1", "\n",
     "bash echo \"cmd 13\"", "\n",
-    "\n#JSUB<finish-job>\n"
+    "\n#JSUB<finish-job>",
+    "\nprocess_job\n"
   )
   expectedFilePath03 = "jlang_function_test_files/job_files/ut_create_jobs_from_summary_second.lsf"
   try run(`rm $expectedFilePath03`) end
@@ -2109,7 +2146,7 @@ Test.with_handler(ut_handler) do
     )
   expectedFileContents03 = string( 
     expectedFileHeader03,
-    "\n# Tag variables\n",
+    expectedJobFileVariables,
     "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy1.sh", "\n",
     "function dummy1 {\necho Running_dummy_function_1\n}\n",
@@ -2126,7 +2163,8 @@ Test.with_handler(ut_handler) do
     "jcheck_resume", "\n",
     "dummy12 arg1 arg2", "\n",
     "bash echo \"cmd 22\"", "\n",
-    "\n#JSUB<finish-job>\n"
+    "\n#JSUB<finish-job>",
+    "\nprocess_job\n"
   )
   @test create_job_header_string(root, jobID="JOBDATE0_000000_jobID0000") == expectedFileHeader01
   @test create_job_header_string(group1, jobID="JOBDATE0_000000_jobID0000") == expectedFileHeader02
@@ -2145,7 +2183,9 @@ Test.with_handler(ut_handler) do
   # E=split(expectedFileContents02, '\n')
   # compare_arrays(split(readall(expectedFilePath02), '\n'), split(expectedFileContents02, '\n'))
   @test expectedFileContents03 == readall(expectedFilePath03)
-  # compare_arrays(expectedFileContents03, readall(expectedFilePath03))
+  # Observed03=split(readall(expectedFilePath03), '\n');
+  # Expected03=split(expectedFileContents03, '\n');
+  # compare_arrays(Expected03, Observed03);
 
   # Test for the rootSleepSeconds option
   create_jobs_from_summary_(summaryFilePath, suppliedSummaryDict, commonFunctions, checkpointsDict; 
@@ -2168,7 +2208,7 @@ Test.with_handler(ut_handler) do
     )
   expectedFileContents01 = string( 
     expectedFileHeader01,
-    "\n# Tag variables\n",
+    expectedJobFileVariables,
     "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy1.sh", "\n",
     "function dummy1 {\necho Running_dummy_function_1\n}\n",
@@ -2187,7 +2227,8 @@ Test.with_handler(ut_handler) do
     "bash echo \"cmd 02\"", "\n",
     "dummy10 arg1 arg2", "\n",
     "bash echo \"cmd 03\"", "\n",
-    "\n#JSUB<finish-job>\n"
+    "\n#JSUB<finish-job>",
+    "\nprocess_job\n"
   )
   create_jobs_from_summary_(summaryFilePath, suppliedSummaryDict, commonFunctions, checkpointsDict; 
     jobFilePrefix="jlang_function_test_files/job_files/", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
@@ -2222,6 +2263,7 @@ Test.with_handler(ut_handler) do
   @test get_argument(suppliedArguments, "fvars", verbose=false, optional=true, default="default.fvars") == "default.fvars"
   @test get_argument(suppliedArguments, "submit-jobs", verbose=false, optional=true, default=true) == false # optional but non-nothign so default value is not used
 
+  ## arrArr2string
   arrArr = []
   push!(arrArr, ["a1", "a2", "a3"])
   push!(arrArr, ["b1", "b2", "b3"])
@@ -2229,6 +2271,15 @@ Test.with_handler(ut_handler) do
   push!(arrArr, ["d1", "d2", "d3"])
   @test arrArr2string(arrArr) == "a1\na2\na3\nb1\nb2\nb3\nc1\nc2\nc3\nd1\nd2\nd3"
   @test arrArr2string(arrArr, delim="___") == "a1___a2___a3___b1___b2___b3___c1___c2___c3___d1___d2___d3"
+
+  ## get_zip_dir_path(dirJobs; suffix=".tar.gz")
+  @test get_zip_dir_path("/") == "portable_jobs.tar.gz" # Test case when things are being done in the root directory (you never know)
+  @test get_zip_dir_path("/absolute/dirA") == "/absolute/dirA.tar.gz" # Test case in a non-root directory
+  @test get_zip_dir_path("relative/dirR") == "relative/dirR.tar.gz"
+
+  @test get_portable_dir_path("/") == "portable_jobs" # Test case when things are being done in the root directory (you never know)
+  @test get_portable_dir_path("/absolute/dirA") == "/absolute/dirA" # Test case in a non-root directory
+  @test get_portable_dir_path("relative/dirR") == "relative/dirR"
 
   # # 
   # jobHeader = string(
