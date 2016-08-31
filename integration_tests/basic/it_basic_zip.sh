@@ -7,7 +7,7 @@ set -e
 JOB_HEADER="$1"
 
 PROTOCOL_FILE="../basic.protocol"
-LSF_JOB_NAME="basic_zip_0001"
+LSF_JOB_NAME="basic_0001"
 
 EXPECTED_SUMMARY="../expected_files/basic_0001.summary"
 EXPECTED_SUMMARY_LIST="../expected_files/basic.list-summaries"
@@ -29,7 +29,7 @@ GENERATED_JOB_ERROR="basic_0001.output"
 GENERATED_SUBMITTED_JOBS_LIST="basic.list-jobs.submitted"
 GENERATED_COMPLETED="basic_0001.summary.completed"
 GENERATED_INCOMPLETE="basic_0001.summary.incomplete"
-GENERATED_PROTABLE_DIR=../"$GENERATED_DIR"/"portable"
+GENERATED_PROTABLE_DIR="portable"
 GENERATED_PORTABLE_ZIP="$GENERATED_PROTABLE_DIR".tar.gz
 
 CALL_JSUB="julia ../../../jsub.jl -d -v "
