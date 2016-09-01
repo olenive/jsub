@@ -33,7 +33,7 @@ CALL_JSUB="julia ../../../jsub.jl -d -v "
 #######################
 
 # Unit tests for bash functions using the lehmannro/assert.sh framework
-. assert.sh
+. ../assert.sh
 echo ""
 echo "Running integration test: basic..."
 
@@ -59,7 +59,7 @@ function isAbsolutePath {
 }
 function isJobNameInQueue {
   local jobName="$1"
-  local res=$(bjobs | grep -w ${jobName})
+  local res=$(bjobs -J ${jobName})
   if [ "$res" = "" ]; then
     echo "no"
   else
