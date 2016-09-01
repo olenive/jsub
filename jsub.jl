@@ -298,7 +298,7 @@ pathSummariesList = get_argument(parsed_args, "list-summaries"; verbose=flagVerb
 ## Get path to jobs list file
 pathJobsList = get_argument(parsed_args, "list-jobs"; verbose=flagVerbose, 
   optional=(requiredStages[2]=='1' || requiredStages[3]=='0'), # Only optional if stage 2 is being run or stage 3 is not being run (the jobs have to come from)
- default=string(jobFilePrefix, longName, ".list-jobs")
+  default=string(jobFilePrefix, longName, ".list-jobs")
 );
 
 # String used at the start of every job file
@@ -339,7 +339,7 @@ if requiredStages[1] == '1'
 
   # Read .protocol file (of 1 column ) and expand variables from .vars
   (flagVerbose && length(namesVars) > 0) && println("Expanding variables in protocol file using values from the --vars file.");
-  arrProtExpVars, cmdRowsProt = parse_expandvars_protocol_(fileProtocol, namesVars, valuesVars, adapt_quotation=adapt_quotation);
+  arrProtExpVars, cmdRowsProt = parse_expandvars_protocol_(fileProtocol, namesVars, valuesVars, adapt_quotation=adapt_quotation, tagsExpand=tagsExpand);
 
   dictListArr = Dict(); dictCmdLineIdxs = Dict();
   if parsed_args["fvars"] != nothing
@@ -428,8 +428,7 @@ if requiredStages[3] == '1'
       end
     else
       println("The LSF queuing system does not appear to be available on this system.")
-      println("If this is incorrect consider amending line 423 of jsub.jl or submitting manually using:")
-      println("bash $pathSubmissionScript $pathJobsList $arg2");
+      # println("If this is incorrect consider amending line 423 of jsub.jl or submitting manually using:")
       println("Finished running jsub stage 3 without submitting any jobs.")
     end
     ## Point out that the zip option currently only works in combination with the portable option
