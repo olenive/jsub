@@ -63,7 +63,7 @@ if [ $# -eq 0 ]; then
 fi
 
 ## Log attempts to submit job
-echo "$DATETIME"" - ""Submitting the following jobs:" >> "$LISTSUBMITTED"
+echo "$DATETIME"" - ""Submitting the following jobs from directory: ""$(pwd)" >> "$LISTSUBMITTED"
 
 ## Read lines from list of job file paths
 while read -r line || [[ -n "$line" ]]; do
