@@ -281,6 +281,9 @@ fileFvars = get_argument(parsed_args, "fvars"; verbose=flagVerbose, optional=tru
 summaryFilePrefix = get_argument(parsed_args, "summary-prefix", verbose=flagVerbose, optional=true, default="");
 jobFilePrefix = get_argument(parsed_args, "job-prefix", verbose=flagVerbose, optional=true, default="");
 
+## Create directory for job files if it does not already exist
+mkpath(dirname(jobFilePrefix));
+
 ## Determine string used in file names
 longName = get_argument(parsed_args, "name"; verbose=flagVerbose, optional=true, 
   default=get_longname(fileProtocol, fileVars, fileFvars,
