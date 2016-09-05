@@ -3,25 +3,40 @@
 # Script for running all integration tests.  The first argument is a path to a file containing LSF options specific to the system that the test is being run on
 DATETIME=`date +%Y%m%d_%H%M%S`
 FILE_LSF_COMMON=$(readlink -e "$1")
-TEST_OUTPUT_LOG=integration_test_run.log
+TEST_OUTPUT_LOG=$(pwd)/integration_test_run.log
+DIR_ORIGIN=$(pwd)
+
+# Check if the last line of the log corresponds to all tests passing
+function check_success {
+  local last=$(tail -n1 "$1")
+  local start="all "  
+  local middle=" tests passed in "
+  if [[ "$last" == "$start"*"$middle"* ]]; then
+    echo "All tests passed in: ""$2"
+    echo "$last"
+  else
+    echo " - FAILED tests in: ""$2"
+    echo "$last"
+  fi
+}
+
+function run_test {
+  echo "Running: ""$1" "$FILE_LSF_COMMON"
+  cd $(dirname "$1")
+  bash $(basename "$1") "$FILE_LSF_COMMON" >>"$TEST_OUTPUT_LOG" 2>&1
+  check_success "$TEST_OUTPUT_LOG" "$1"
+  cd "$DIR_ORIGIN"
+}
 
 # Clear log file
+echo "Running all integration tests and writing output and errors to log file: ""$TEST_OUTPUT_LOG"
+echo "Using local LSF options from: ""$FILE_LSF_COMMON"
 echo "Runnign integration tests on ""$DATETIME" > "$TEST_OUTPUT_LOG"
 
-## Tests in the basic directory
-cd basic
-echo "In directory: "$(pwd)
-echo "Running: "bash it_basic.sh "$FILE_LSF_COMMON"
-bash it_basic.sh "$FILE_LSF_COMMON" >> "$TEST_OUTPUT_LOG"
-bash it_basic_zip.sh "$FILE_LSF_COMMON" >> "$TEST_OUTPUT_LOG"
-bash it_basic_unzip.sh "$FILE_LSF_COMMON" >> "$TEST_OUTPUT_LOG"
-cd ..
+run_test basic/it_basic.sh
+run_test basic/it_basic_zip.sh
+run_test basic/it_basic_unzip.sh
 
-## Run tests in fvars directory
-cd fvars
-echo "In directory: "$(pwd)
-bash it_fvars.sh >> "$TEST_OUTPUT_LOG"
-bash it_fvars_prefixes.sh >> "$TEST_OUTPUT_LOG"
-cd ..
+run_test fvars/it_fvars.sh
+run_test fvars/it_fvars_prefixes.sh
 
-## Read log and check for failures

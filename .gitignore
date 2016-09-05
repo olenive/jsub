@@ -1,5 +1,6 @@
 local_common_header.txt
 *.DS_Store
+integration_test_run.log
 example_outputs
 example_jobs
 example_summaries

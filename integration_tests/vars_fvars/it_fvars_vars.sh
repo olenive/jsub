@@ -6,11 +6,11 @@ set -e
 ####### INPUTS ########
 JOB_HEADER="$1"
 
-PROTOCOL_DIR="../../"
-PROTOCOL_FILE="$PROTOCOL_DIR"/"fvars_prefixes.protocol"
-VARS_FILE=""
-FVARS_FILE="$PROTOCOL_DIR"/"fvars_prefixes.fvars"
-LONG_NAME="fvars_prefixes__fvars_prefixes"
+PROTOCOL_DIR="../"
+PROTOCOL_FILE="$PROTOCOL_DIR"/"protocolFV.protocol"
+VARS_FILE="$PROTOCOL_DIR"/"varsFV.vars"
+FVARS_FILE="$PROTOCOL_DIR"/"fvarsFV.fvars"
+LONG_NAME="protocolFV_varsFV_fvarsFV"
 
 EXPECTED_SUMMARY_01="../expected_files/sample0001A.summary"
 EXPECTED_SUMMARY_02="../expected_files/sample0002A.summary"
@@ -25,10 +25,11 @@ EXPECTED_COMPLETED_01="../expected_files/sample001A.summary.completed"
 EXPECTED_COMPLETED_02="../expected_files/sample002A.summary.completed"
 EXPECTED_COMPLETED_03="../expected_files/sample003A.summary.completed"
 
-GENERATED_DIR="generated_files/prefixes/"
+GENERATED_DIR="generated_files/"
 SUMMARY_PREFIX="summaries/summaryPrefix_"
 SUMMARY_BASE_PREFIX=$(basename $SUMMARY_PREFIX)
 JOB_PREFIX="jobs/jobPrefix_"
+OUT_PREFIX="outPrefix_"
 GENERATED_SUMMARY_01="$SUMMARY_PREFIX""sample0001A.summary"
 GENERATED_SUMMARY_02="$SUMMARY_PREFIX""sample0002A.summary"
 GENERATED_SUMMARY_03="$SUMMARY_PREFIX""sample0003A.summary"
@@ -37,9 +38,9 @@ GENERATED_JOB_IN_01="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""sample0001A.lsf"
 GENERATED_JOB_IN_02="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""sample0002A.lsf"
 GENERATED_JOB_IN_03="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""sample0003A.lsf"
 GENERATED_JOB_LIST="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""$LONG_NAME"".list-jobs"
-GENERATED_JOB_DATA_01="sample0001A.txt"
-GENERATED_JOB_DATA_02="sample0002A.txt"
-GENERATED_JOB_DATA_03="sample0003A.txt"
+GENERATED_JOB_DATA_01="$OUT_PREFIX""sample0001A.txt"
+GENERATED_JOB_DATA_02="$OUT_PREFIX""sample0002A.txt"
+GENERATED_JOB_DATA_03="$OUT_PREFIX""sample0003A.txt"
 GENERATED_JOB_OUTPUT_01="$SUMMARY_BASE_PREFIX""sample0001A.error"
 GENERATED_JOB_OUTPUT_02="$SUMMARY_BASE_PREFIX""sample0002A.error"
 GENERATED_JOB_OUTPUT_03="$SUMMARY_BASE_PREFIX""sample0003A.error"
@@ -166,7 +167,7 @@ assert "file_exists ${GENERATED_JOB_ERROR_01}" "yes"
 assert "file_exists ${GENERATED_JOB_ERROR_02}" "yes"
 assert "file_exists ${GENERATED_JOB_ERROR_03}" "yes"
 assert "file_exists ${GENERATED_SUBMITTED_JOBS_LIST}" "yes"
-# 29
+
 clear_generated # Remove existing output from previous tests
 
 ## Create summary and job file(s) from protocol
@@ -189,7 +190,7 @@ assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_02} ${
 assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_03} ${EXPECTED_JOB_IN_03}" "" # Ignore the line that contain absolute paths or the job header prefix
 assert "file_exists ${GENERATED_JOB_LIST}" "yes"
 assert "diff ${GENERATED_JOB_LIST} ${EXPECTED_JOB_LIST}" ""
-# 45
+
 clear_generated # Remove existing output from previous tests
 ${CALL_JSUB} -s -p ${PROTOCOL_FILE} --fvars ${FVARS_FILE} --summary-prefix ${SUMMARY_PREFIX} # Create summary files
 
@@ -210,7 +211,7 @@ awaitJobNameCompletion "$LSF_JOB_NAME_01"
 awaitJobNameCompletion "$LSF_JOB_NAME_02"
 awaitJobNameCompletion "$LSF_JOB_NAME_03"
 assert "file_exists ${GENERATED_JOB_DATA_01}" "yes"
-assert "file_exists ${GENERATED_JOB_DATA_02}" "yes"
+assert "file_exists ${GENERATED_JOB_DATA_02}" "yes"]
 assert "file_exists ${GENERATED_JOB_DATA_03}" "yes"
 assert "diff ${GENERATED_JOB_DATA_01} ${EXPECTED_JOB_DATA_01}" ""
 assert "diff ${GENERATED_JOB_DATA_02} ${EXPECTED_JOB_DATA_02}" ""
