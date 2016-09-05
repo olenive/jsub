@@ -333,7 +333,7 @@ function run_stage1_(pathProtocol, pathVars, pathFvars; flagVerbose=false, adapt
   ## Read protocol, vars and fvars files and expand variables
   namesVars = []; valuesVars = [];
   if pathVars != ""
-    flagVerbose && println(string("Expand variables line by line in data from (--vars) file: ", pathVars));
+    flagVerbose && println(string("Expanding variables line by line in data from (--vars) file: ", pathVars));
     # Read .vars file # Extract arrays of variable names and variable values
     namesVarsRaw, valuesVarsRaw = parse_varsfile_(pathVars, tagsExpand=tagsExpand);
     # Expand variables in each row from .vars if they were assigned in a higher row (as though they are being assigned at the command line).
@@ -341,7 +341,7 @@ function run_stage1_(pathProtocol, pathVars, pathFvars; flagVerbose=false, adapt
   end
   namesFvars = []; infileColumnsFvars = []; filePathsFvars = [];
   if pathFvars != ""
-    flagVerbose && println(string("Expand variables in data from (--fvars) file: ", pathFvars));
+    flagVerbose && println(string("Expanding variables in data from (--fvars) file: ", pathFvars));
     # Read .fvar file (of 3 columns) and expand variables from .vars
     namesFvars, infileColumnsFvars, filePathsFvars = parse_expandvars_fvarsfile_(pathFvars, namesVars, valuesVars; dlmFvars=delimiterFvars, adapt_quotation=adapt_quotation, tagsExpand=tagsExpand);
   end
@@ -496,7 +496,6 @@ if requiredStages[3] == '1'
     pathSubmissionScript, pathSubmissionFunctions; flagVerbose=flagVerbose, flagZip=parsed_args["zip-jobs"]
   )
 end
-
 #########
 
 # Report if there were any suppressed warnings

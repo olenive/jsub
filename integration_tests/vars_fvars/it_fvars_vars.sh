@@ -62,7 +62,7 @@ LSF_JOB_NAME_01="summaryPrefix_sample0001A"
 LSF_JOB_NAME_02="summaryPrefix_sample0002A"
 LSF_JOB_NAME_03="summaryPrefix_sample0003A"
 
-CALL_JSUB="julia ../../../../jsub.jl -d -v "
+CALL_JSUB="julia ../../../jsub.jl -d -v "
 
 #######################
 
@@ -126,7 +126,7 @@ cd ${GENERATED_DIR}
 clear_generated # Remove existing output from previous tests
 
 # Run jsub - only create summary file
-${CALL_JSUB} -s -p ${PROTOCOL_FILE} --fvars ${FVARS_FILE} --summary-prefix ${SUMMARY_PREFIX}
+${CALL_JSUB} -s -p ${PROTOCOL_FILE} --vars ${VARS_FILE} --fvars ${FVARS_FILE} --summary-prefix ${SUMMARY_PREFIX}
 # Check that a summary file and a summary listing file are generated from the protocol
 assert "file_exists ${GENERATED_SUMMARY_01}" "yes"
 assert "file_exists ${GENERATED_SUMMARY_02}" "yes"
@@ -171,7 +171,7 @@ assert "file_exists ${GENERATED_SUBMITTED_JOBS_LIST}" "yes"
 clear_generated # Remove existing output from previous tests
 
 ## Create summary and job file(s) from protocol
-${CALL_JSUB} -sj -p ${PROTOCOL_FILE} --fvars ${FVARS_FILE} $(getCommonHeaderOptionString "$JOB_HEADER") --summary-prefix ${SUMMARY_PREFIX} --job-prefix ${JOB_PREFIX}
+${CALL_JSUB} -sj -p ${PROTOCOL_FILE} --vars ${VARS_FILE} --fvars ${FVARS_FILE} $(getCommonHeaderOptionString "$JOB_HEADER") --summary-prefix ${SUMMARY_PREFIX} --job-prefix ${JOB_PREFIX}
 # Check that a summary file and a summary listing file are generated from the protocol
 assert "file_exists ${GENERATED_SUMMARY_01}" "yes"
 assert "file_exists ${GENERATED_SUMMARY_02}" "yes"
@@ -192,7 +192,7 @@ assert "file_exists ${GENERATED_JOB_LIST}" "yes"
 assert "diff ${GENERATED_JOB_LIST} ${EXPECTED_JOB_LIST}" ""
 
 clear_generated # Remove existing output from previous tests
-${CALL_JSUB} -s -p ${PROTOCOL_FILE} --fvars ${FVARS_FILE} --summary-prefix ${SUMMARY_PREFIX} # Create summary files
+${CALL_JSUB} -s -p ${PROTOCOL_FILE} --vars ${VARS_FILE} --fvars ${FVARS_FILE} --summary-prefix ${SUMMARY_PREFIX} # Create summary files
 
 ## Create job file(s) from summary and submit
 # Run jsub - create job file from previously generated summary
@@ -227,7 +227,7 @@ assert "file_exists ${GENERATED_SUBMITTED_JOBS_LIST}" "yes"
 clear_generated # Remove existing output from previous tests
 
 ## Start with a protocol and end by submitting job(s)
-${CALL_JSUB} -p ${PROTOCOL_FILE} $(getCommonHeaderOptionString "$JOB_HEADER") --fvars ${FVARS_FILE} --summary-prefix ${SUMMARY_PREFIX} --job-prefix ${JOB_PREFIX}
+${CALL_JSUB} -p ${PROTOCOL_FILE} $(getCommonHeaderOptionString "$JOB_HEADER") --vars ${VARS_FILE} --fvars ${FVARS_FILE} --summary-prefix ${SUMMARY_PREFIX} --job-prefix ${JOB_PREFIX}
 # Check that a summary file and a summary listing file are generated from the protocol
 assert "file_exists ${GENERATED_SUMMARY_01}" "yes"
 assert "file_exists ${GENERATED_SUMMARY_02}" "yes"
