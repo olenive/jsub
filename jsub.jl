@@ -249,6 +249,11 @@ include("./common_functions/jsub_common.jl")
   "-d", "--no-process-timestamp"
     action = :store_false
     help = "When this flag is not present, timestamps of the format \"YYYYMMDD_HHMMSS\" are added to the log file by job files running the process_job function."
+
+  "-k", "--keep-superfluous-quotes"
+    action = :store_false
+    help = "Do not remove superfluous quotes.  For example, the string \"abc\"\"def\" will not be converted to \"abcdef\"."
+
 end
 
 parsed_args = parse_args(argSettings) # the result is a Dict{String,Any}
@@ -258,6 +263,7 @@ parsed_args = parse_args(argSettings) # the result is a Dict{String,Any}
 
 ## Process flag states
 SUPPRESS_WARNINGS = parsed_args["suppress-warnings"];
+flagKeepQuotes = get_argument(parsed_args, "keep-superfluous-quotes", verbose=flagVerbose, optional=true, default=false);
 flagVerbose = parsed_args["verbose"];
 requiredStages = map_flags_sjb(parsed_args["generate-summaries"], parsed_args["generate-jobs"], parsed_args["submit-jobs"])
 flagVerbose && print("\nInterpreted jsub arguments as requesting the following stages: ")

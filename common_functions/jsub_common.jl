@@ -20,14 +20,14 @@ end
 function iscomment(wline, comStr) # Check if input string starts with the comment sub-string after any leading whitespace
   line = lstrip(wline);
   if length(line) >= length(comStr)
-    line[1:length(comStr)] == comStr ? (return true) : (return false)
+    return (line[1:length(comStr)] == comStr)
   else
     return false
   end
 end
 
 function isblank(wline) # Check if line is blank
-  lstrip(wline) == "" ? true : false
+  return (lstrip(wline) == "")
 end
 
 # Remove the begining of a string if it matches another string
@@ -40,10 +40,14 @@ function remove_suffix(long, suffix)
   endswith(long, suffix) ? (return long[1:end - length(suffix)]) : (return long);
 end
 
-# # Identify rows that begin with a tag indicating instructions for jsub.  The values in these rows should be expanded even if they begin with a comment.
-# function get_tag_rowindices(tagsExpand)
-#   return []
-# end
+# Get the value from array at the index-1 location or return nothing
+function previous_entry(arr, index)
+  (index - 1 == 0) ? (return nothing) : (return arr[index - 1])
+end
+# Get the value from array at the index+1 location or return nothing
+function next_entry(arr, index)
+  (index + 1 == length(arr) + 1) ? (return nothing) : (return arr[index + 1])
+end
 
 function file2arrayofarrays_(fpath, comStr; cols=0::Integer, delimiter=nothing, verbose=false, tagsExpand=nothing)
   if verbose
@@ -324,11 +328,11 @@ function expandnameafterdollar(inString, name, value; adapt_quotation=false, ret
   return outString
 end
 
-function assign_quote_state(inString, charQuote::Char) # For each character in the input and output string assign a 0 if it is outside quotes or a 1 if it is inside quotes or a 2 if it is a quote character
+function assign_quote_state(inString, charQuote::Char; charEscape='\\') # For each character in the input and output string assign a 0 if it is outside quotes or a 1 if it is inside quotes or a 2 if it is a quote character
   out = [];
   inside_quotes = false;
   for idx in 1:length(inString)
-    if inString[idx] == charQuote
+    if (inString[idx] == charQuote) && (previous_entry(inString, idx) != charEscape)
       push!(out, 2);
       inside_quotes = !inside_quotes;
     else
@@ -343,7 +347,7 @@ function substitute_string(inString, subString, inclusive_start, inclusive_finis
 end
 
 ## Get the index of the first and last non-quote character in a section of the input string indicated by inclusive_start and inclusive_finish
-function get_index_of_first_and_last_nonquote_characters(inString, charQuote::Char; iStart=1, iFinish=0)
+function get_index_of_first_and_last_nonquote_characters(inString, charQuote::Char; iStart=1, iFinish=0, charEscape='\\')
   # Determine end of sub-string
   if iFinish == 0
     iFinish=length(inString)
@@ -351,7 +355,7 @@ function get_index_of_first_and_last_nonquote_characters(inString, charQuote::Ch
   idx_first = 0; idx_last = 0; # Zero indicates that no non-quote characters were found in the input string
   # Loop forwards over the string to find the first non-quote character
   for fwd in iStart:iFinish
-    if inString[fwd] != charQuote
+    if (inString[fwd] != charQuote) && (previous_entry(inString, fwd) != charEscape)
       idx_first = fwd;
       break
     end
@@ -359,7 +363,7 @@ function get_index_of_first_and_last_nonquote_characters(inString, charQuote::Ch
   # Loop backwards over the string to find the last non-quote character
   for fwd in 1:iFinish+1-iStart
     rev = iFinish+1-fwd
-    if inString[rev] != charQuote
+    if (inString[rev] != charQuote) || (inString[rev] == charQuote && previous_entry(inString, rev) == charEscape)
       idx_last = rev;
       break
     end
@@ -736,12 +740,75 @@ function get_summary_names(arrProt; prefix=nothing, suffix=".summary", timestamp
   end
 end
 
-# # Get job file names
-# function get_jobfile_name(summaryName, group; summaryFileExtension=".summary")
-#   baseName = remove_suffix(basename(summaryName), summaryFileExtension); # Remove the .summary file extension
-#   length(group) > 0 ? dlm = "_" : dlm = "";
-#   return string(baseName, dlm, group)
-# end
+# Function that compares the quotation state of two strings (returns ture if sub-strings between quote characters s)
+function is_quotestateunchanged(strA, strB, quoteChar::Char)
+  stateA = assign_quote_state(strA, quoteChar);
+  stateB = assign_quote_state(strB, quoteChar);
+  # Remove all the quote character markers (integer 2) from the states and check that they still match
+  filter!(x -> x != 2, stateA);
+  filter!(x -> x != 2, stateB);
+  return (stateA == stateB)
+end
+
+# This is used to determine how the quotation state (represented by a vector) of a string has changed.
+# It returns a tuple.  Firstly an array of arrays of the start and end positions of each pair.  Second, the number of quote characters separating the pair
+# The start and end of the vector is considered it's own sub-string for pairing and classification purposes.
+function index_statechanges(states, switch)
+  (length(states) == 0) && return ([], [])
+  ## Catch error where state starts quoted but without a quote character
+  (states[1] == 1) && error(string(" (in index_statechanges) The first entry is 1, expecting either 0 or 2 (uqouted or quote character) in state vector: ", states));
+  ## Catch error where quote state changes without a quote character
+  previous = -1; idx = 0;
+  for state in states
+    idx += 1;
+    if (state != previous) && (state != switch) && (previous != -1) && (previous != switch)
+      error(string(" (in index_statechanges) States changed without a quote character at position (", idx, ") in state vector: ", states));
+    end
+    previous = state;
+  end
+  ## Initialize states and counts
+  pair_indices = []; quote_counts = []; count = 0;
+  current_pair = [0,0] # first pair includes the start
+  previous = -1;
+  idx = 0;
+  inPair = true;
+  for state in states  
+    idx += 1;
+    if state == switch ## Count number of quote charaters
+      count += 1
+    end
+    if inPair && (next_entry(states, idx) != state || next_entry(states, idx) == nothing) ## Determine if this is the right side of this pair
+      push!(quote_counts, count);
+      count = 0; # reset count
+      current_pair[switch] = idx + 1 # idx + 1 because the index being returned is non-inclusive of the quote characters (and can be outside the length of the vector)
+      push!(pair_indices, current_pair);
+      current_pair = [-1, -1]; # reset array for holding indices
+      inPair = false;
+    elseif !inPair && (next_entry(states, idx) == switch || next_entry(states, idx) == nothing)  ## Determine if this is the left side of the next pair
+      inPair = true;
+      current_pair[1] = idx;
+    end
+    previous = state;
+  end
+  return pair_indices, quote_counts
+end
+
+# Read a line and remove quotes where they are not changing anything
+function remove_superfluous_quotes(line, quoteChar::Char)
+
+  ## Cases where quote state does not change after an even number of quotes > 2
+
+  ## Cases where quote state changes after an odd number of quotes > 1
+
+  ## Leading multiple quotes? odd/even?
+
+  ## Trailing multiple quotes? odd/even?
+
+  ## Check that quote state has not changed
+
+  return false
+end
+
 
 # Write summary files
 function create_summary_files_(arrArrExpFvars, summaryPaths; verbose=false, createDirectory=true)
@@ -1037,7 +1104,7 @@ function detect_option_conflicts(jobArray; tag="#BSUB", option="-J")
       push!(matchValues, words[3])
     end
   end
-  length(unique(matchValues)) > 1 ? (return true) : (return false);
+  return length(unique(matchValues)) > 1
 end
 
 ## Map the states of the -s -j -b (summaries, jobs and submit) flags to the required steps
