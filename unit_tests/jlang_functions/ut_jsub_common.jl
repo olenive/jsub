@@ -1452,19 +1452,29 @@ Test.with_handler(ut_handler) do
   @test next_entry("abcd", 2) == 'c'
   @test next_entry("abcd", 4) == nothing
 
-  ## is_quotestateunchanged(strA, strB, quoteChar::Char)
-  @test is_quotestateunchanged("000\"\"000", "000000", '\"') == true
-  @test is_quotestateunchanged("00\"111\"\"111\"", "00\"111111\"", '\"') == true
-  @test is_quotestateunchanged("00\"111\"\"\"\"111\"", "00\"111111\"", '\"') == true
-  @test is_quotestateunchanged("00\"111\"\"\"000\"", "00\"111111\"", '\"') == false
-  @test is_quotestateunchanged("00\"111\"\"\"000\"", "00\"111\"000", '\"') == true
-  @test is_quotestateunchanged("00\"111\"\"\"\"\"000\"", "00\"111\"000", '\"') == true
+  ## function at_entry(arr, index)
+  @test_throws BoundsError at_entry("abcd", -1)
+  @test at_entry("abcd", 0) == nothing
+  @test at_entry("abcd", 1) == 'a'
+  @test at_entry("abcd", 2) == 'b'
+  @test at_entry("abcd", 3) == 'c'
+  @test at_entry("abcd", 4) == 'd'
+  @test at_entry("abcd", 5) == nothing
+  @test_throws BoundsError at_entry("abcd", 6)
 
-  ## index_statechanges(states, switch)
+  ## is_quotestate_conserved(strA, strB, quoteChar::Char)
+  @test is_quotestate_conserved("000\"\"000", "000000", '\"') == true
+  @test is_quotestate_conserved("00\"111\"\"111\"", "00\"111111\"", '\"') == true
+  @test is_quotestate_conserved("00\"111\"\"\"\"111\"", "00\"111111\"", '\"') == true
+  @test is_quotestate_conserved("00\"111\"\"\"000\"", "00\"111111\"", '\"') == false
+  @test is_quotestate_conserved("00\"111\"\"\"000\"", "00\"111\"000", '\"') == true
+  @test is_quotestate_conserved("00\"111\"\"\"\"\"000\"", "00\"111\"000", '\"') == true
+
+  ## index_statechanges(states, intQuoteChar)
   @test_throws ErrorException index_statechanges([1,1,2,0,0,0], 2) # Quote state should start with either a quote (2) or on-quote character (0)
   @test_throws ErrorException index_statechanges([2,1,1,0,0,0,2], 2) # At least one quote is required to change the quote state
   expectedPairIndeces = [];
-  push!(expectedPairIndeces, [0,4]);
+  push!(expectedPairIndeces, [0,1]);
   @test index_statechanges([0,0,0], 2) == (expectedPairIndeces, [0])
   expectedPairIndeces = [];
   push!(expectedPairIndeces, [0,2]);
@@ -1503,22 +1513,45 @@ Test.with_handler(ut_handler) do
   push!(expectedPairIndeces, [14,17]);
                           # 1 2 3 4 5 6 7 8 9 0 1 2 3 4
   @test index_statechanges([2,1,1,2,2,1,1,2,0,0,0,2,1,1,2,2], 2) == (expectedPairIndeces, [1, 2, 1, 1, 2])
+  # Test castes where there is some text before a quote is encountered
+  expectedPairIndeces = [];
+  push!(expectedPairIndeces, [0,1]);
+  push!(expectedPairIndeces, [5,8]);
+  push!(expectedPairIndeces, [10,13]);
+                          # 1 2 3 4 5 6 7 8 9 0 1 2 3 4 
+  @test index_statechanges([0,0,0,0,0,2,2,0,0,0,2,2,0,0], 2) == (expectedPairIndeces, [0, 2, 2])
+  expectedPairIndeces = [];
+  push!(expectedPairIndeces, [0,1]);
+  push!(expectedPairIndeces, [5,8]);
+  push!(expectedPairIndeces, [10,13]);
+  push!(expectedPairIndeces, [14,16]);
+                          # 1 2 3 4 5 6 7 8 9 0 1 2 3 4 
+  @test index_statechanges([0,0,0,0,0,2,2,0,0,0,2,2,0,0,2], 2) == (expectedPairIndeces, [0, 2, 2, 1])
+  expectedPairIndeces = [];
+  push!(expectedPairIndeces, [0,1]);
+  push!(expectedPairIndeces, [3,5]);
+  push!(expectedPairIndeces, [7,11]);
+  push!(expectedPairIndeces, [14,16]);
+                          # 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+  @test index_statechanges([0,0,0,2,1,1,1,2,2,2,0,0,0,0,2], 2) == (expectedPairIndeces, [0, 1, 3, 1])
 
   ## remove_superfluous_quotes(line, quoteChar::Char)
-  @test remove_superfluous_quotes("summaryPrefix_\"\"sample0001A\"\".output", '\"') == "summaryPrefix_sample0001A.output"
-  @test remove_superfluous_quotes("abc\"efg\"\"asdf\"", '\"') ==  "abc\"efg\"\"asdf\""
+  @test remove_superfluous_quotes("summaryPrefix_\"\"sample0001A\"\".output", '\"', 2, 1) == "summaryPrefix_sample0001A.output"
+  @test remove_superfluous_quotes("abc\"efg\"\"asdf\"", '\"', 2, 1) ==  "abc\"efgasdf\""
                                   #123 4567 8 9 01234 5
-  @test remove_superfluous_quotes("abc\"efg\"\"\"asdf\"", '\"') ==  "abc\"efg\"asdf"
-  @test remove_superfluous_quotes("abc\"efg\"\"\"\"asdf\"", '\"') ==  "abc\"efg\"\"asdf\""
-  @test remove_superfluous_quotes("abc\"efg\"\"\"asdf\"", '\"') ==  "abc\"efg\"asdf"
-  @test remove_superfluous_quotes("abc\"efg\"\"\"\"\"asdf\"", '\"') ==  "abc\"efg\"asdf"
-  @test remove_superfluous_quotes("000\"\"000", '\"') ==  "000000"
-  @test remove_superfluous_quotes("00\"111\"\"111\"", '\"') ==  "00\"111111\""
-  @test remove_superfluous_quotes("00\"111\"\"\"\"111\"", '\"') ==  "00\"111111\""
-  @test remove_superfluous_quotes("00\"111\"\"\"000\"", '\"') ==  "00\"111\"000"
-  @test remove_superfluous_quotes("00\"111\"\"\"\"\"000\"", '\"') ==  "00\"111\"000"
+  @test remove_superfluous_quotes("abc\"efg\"\"\"asdf\"", '\"', 2, 1) ==  "abc\"efg\"asdf" #"abc\"efg\"asdf\""
+                                  #ooo  iii      oooo                      ooo  iii  oooo  # ooo  iii  oooo
+  @test remove_superfluous_quotes("abc\"efg\"\"\"\"asdf\"", '\"', 2, 1) ==  "abc\"efgasdf\""
+                                #  ooo  iii        iiii                      ooo  iiiiiii
+  @test remove_superfluous_quotes("abc\"efg\"\"\"asdf\"", '\"', 2, 1) ==  "abc\"efg\"asdf"
+  @test remove_superfluous_quotes("abc\"efg\"\"\"\"\"asdf\"", '\"', 2, 1) ==  "abc\"efg\"asdf"
+  @test remove_superfluous_quotes("000\"\"000", '\"', 2, 1) ==  "000000"
+  @test remove_superfluous_quotes("00\"111\"\"111\"", '\"', 2, 1) ==  "00\"111111\""
+  @test remove_superfluous_quotes("00\"111\"\"\"\"111\"", '\"', 2, 1) ==  "00\"111111\""
+  @test remove_superfluous_quotes("00\"111\"\"\"000\"", '\"', 2, 1) ==  "00\"111\"000"
+  @test remove_superfluous_quotes("00\"111\"\"\"\"\"000\"", '\"', 2, 1) ==  "00\"111\"000"
   # Tests for cases with escaped quotes
-  @test remove_superfluous_quotes("000\"\"000\\\"", '\"') ==  "000000\\\""
+  @test remove_superfluous_quotes("000\"\"000\\\"", '\"', 2, 1) ==  "000000\\\""
 
   ## create_summary_files_(arrArrExpFvars, summaryPaths; verbose=verbose)
   # Supplied input

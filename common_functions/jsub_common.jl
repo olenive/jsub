@@ -48,6 +48,12 @@ end
 function next_entry(arr, index)
   (index + 1 == length(arr) + 1) ? (return nothing) : (return arr[index + 1])
 end
+# Get value from array at given index, retrun nothing if index is zero or one longer than vector length
+function at_entry(arr, index)
+  (index == 0) && (return nothing)
+  (index == length(arr) + 1) && (return nothing)
+  return arr[index]
+end
 
 function file2arrayofarrays_(fpath, comStr; cols=0::Integer, delimiter=nothing, verbose=false, tagsExpand=nothing)
   if verbose
@@ -741,7 +747,7 @@ function get_summary_names(arrProt; prefix=nothing, suffix=".summary", timestamp
 end
 
 # Function that compares the quotation state of two strings (returns ture if sub-strings between quote characters s)
-function is_quotestateunchanged(strA, strB, quoteChar::Char)
+function is_quotestate_conserved(strA, strB, quoteChar::Char)
   stateA = assign_quote_state(strA, quoteChar);
   stateB = assign_quote_state(strB, quoteChar);
   # Remove all the quote character markers (integer 2) from the states and check that they still match
@@ -753,7 +759,7 @@ end
 # This is used to determine how the quotation state (represented by a vector) of a string has changed.
 # It returns a tuple.  Firstly an array of arrays of the start and end positions of each pair.  Second, the number of quote characters separating the pair
 # The start and end of the vector is considered it's own sub-string for pairing and classification purposes.
-function index_statechanges(states, switch)
+function index_statechanges(states, intQuoteChar)
   (length(states) == 0) && return ([], [])
   ## Catch error where state starts quoted but without a quote character
   (states[1] == 1) && error(string(" (in index_statechanges) The first entry is 1, expecting either 0 or 2 (uqouted or quote character) in state vector: ", states));
@@ -761,54 +767,90 @@ function index_statechanges(states, switch)
   previous = -1; idx = 0;
   for state in states
     idx += 1;
-    if (state != previous) && (state != switch) && (previous != -1) && (previous != switch)
+    if (state != previous) && (state != intQuoteChar) && (previous != -1) && (previous != intQuoteChar)
       error(string(" (in index_statechanges) States changed without a quote character at position (", idx, ") in state vector: ", states));
     end
     previous = state;
   end
   ## Initialize states and counts
-  pair_indices = []; quote_counts = []; count = 0;
+  pairIndices = []; quoteCounts = []; count = 0;
   current_pair = [0,0] # first pair includes the start
   previous = -1;
   idx = 0;
   inPair = true;
   for state in states  
     idx += 1;
-    if state == switch ## Count number of quote charaters
+    if state == intQuoteChar ## Count number of quote charaters
       count += 1
     end
-    if inPair && (next_entry(states, idx) != state || next_entry(states, idx) == nothing) ## Determine if this is the right side of this pair
-      push!(quote_counts, count);
-      count = 0; # reset count
-      current_pair[switch] = idx + 1 # idx + 1 because the index being returned is non-inclusive of the quote characters (and can be outside the length of the vector)
-      push!(pair_indices, current_pair);
+    if inPair && previous_entry(states, idx) == nothing && state != intQuoteChar
+      push!(quoteCounts, count);
+      count = 0; # reset count  
+      current_pair[intQuoteChar] = idx # In fact this should aways be idx == 1
+      push!(pairIndices, current_pair);
       current_pair = [-1, -1]; # reset array for holding indices
       inPair = false;
-    elseif !inPair && (next_entry(states, idx) == switch || next_entry(states, idx) == nothing)  ## Determine if this is the left side of the next pair
+    elseif inPair && (next_entry(states, idx) != state || next_entry(states, idx) == nothing) ## Determine if this is the right side of this pair
+      push!(quoteCounts, count);
+      count = 0; # reset count
+      current_pair[intQuoteChar] = idx + 1 # idx + 1 because the index being returned is non-inclusive of the quote characters (and can be outside the length of the vector)
+      push!(pairIndices, current_pair);
+      current_pair = [-1, -1]; # reset array for holding indices
+      inPair = false;
+    elseif !inPair && (next_entry(states, idx) == intQuoteChar || next_entry(states, idx) == nothing)  ## Determine if this is the left side of the next pair
       inPair = true;
       current_pair[1] = idx;
     end
     previous = state;
   end
-  return pair_indices, quote_counts
+  return pairIndices, quoteCounts
 end
 
 # Read a line and remove quotes where they are not changing anything
-function remove_superfluous_quotes(line, quoteChar::Char)
-
+function remove_superfluous_quotes(line, quoteChar::Char, intQuoteChar, intInsideQuotes)
+  statesBefore = assign_quote_state(line, '\"');
+  pairIndices, quoteCounts = index_statechanges(statesBefore, intQuoteChar);
+  removePositions = []; # Positions of chacters to be removed from the returned value
   ## Cases where quote state does not change after an even number of quotes > 2
-
+  evenQuotes = find(x -> iseven(x), quoteCounts)
+  evenPairs = pairIndices[evenQuotes]
+  idx = 0;
+  for pair in evenPairs
+    idx += 1;
+    if ( ( at_entry(statesBefore, pair[1]) == at_entry(statesBefore, pair[2]) ) 
+        || at_entry(statesBefore, pair[1]) == nothing
+        || at_entry(statesBefore, pair[2]) == nothing
+        ) #&& (quoteCounts[evenQuotes[idx]] > 2)
+      append!(removePositions, collect(pair[1]+1:pair[2]-1));
+    end
+  end
   ## Cases where quote state changes after an odd number of quotes > 1
-
-  ## Leading multiple quotes? odd/even?
-
-  ## Trailing multiple quotes? odd/even?
-
+  oddQuotes = find(x -> isodd(x), quoteCounts)
+  oddPairs = pairIndices[oddQuotes]
+  idx = 0;
+  for pair in oddPairs
+    idx += 1;
+    if (at_entry(statesBefore, pair[1]) != at_entry(statesBefore, pair[2])) && (quoteCounts[oddQuotes[idx]] > 1)
+      append!(removePositions, collect(pair[1]+2:pair[2]-1));
+    elseif ((at_entry(statesBefore, pair[2]) == nothing) # final character is a single quote (because we are in the odd number of quotes section (see above))
+        && (statesBefore[pair[1]] != intInsideQuotes)) # Closing quote not required
+      append!(removePositions, collect(pair[1]+1:pair[2]-1));
+    end
+  end
+  ## Check that all the character to be removed are quotes
+  for pos in removePositions
+    (line[pos] != quoteChar) && error(string(" (in remove_superfluous_quotes) Attempted to remove non-quote character at position ", pos, " (", line[pos], ") in string: ", line));
+  end
+  ## Remove superflous characters
+  after = "";
+  for ipos = 1:length(line)
+    (ipos in removePositions) && continue;
+    after = string(after, line[ipos])
+  end
   ## Check that quote state has not changed
-
-  return false
+  !is_quotestate_conserved(line, after, '\"') && error(string(" (in remove_superfluous_quotes) Attempt to remove superflous quotes resulted in a quote state change.  To avoid attempting to remove quotes run with the --keep-superfluous-quotes (-k) option.\nThe problem occured when trying to change the line:\n", line, "\n to: \n", after));
+  return after
 end
-
 
 # Write summary files
 function create_summary_files_(arrArrExpFvars, summaryPaths; verbose=false, createDirectory=true)
