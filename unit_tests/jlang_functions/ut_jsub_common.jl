@@ -519,6 +519,20 @@ Test.with_handler(ut_handler) do
   expString  = "start in888 string \"888\"/unit_tests/ foo\${VAR#*} bar\${VAR%afd} baz\${VAR:?asdf} boo\${VAR?!*} moo\${VAR\$!*} \"sample\"\"888\"\".txt\"888" # expString  = "start in!!! string \"!!!\"/unit_tests/ foo\${VAR#*} bar\${VAR%afd} baz\${VAR:?asdf} boo\${VAR?!*} moo\${VAR\$!*} \"sample\"!!!\".txt\""
   @test expandnameafterdollar(testString, "VAR", "888") == expString
 
+  ## is_escaped(inString, position, charEscape)
+  @test_throws BoundsError is_escaped("", 0, '\\')
+  @test is_escaped("", 1, '\\') == false
+  @test is_escaped("A", 1, '\\') == false
+  @test is_escaped("AB", 2, '\\') == false
+  @test is_escaped("\\B", 2, '\\') == true
+  @test is_escaped("\\B", 1, '\\') == false
+  @test is_escaped("\\\\B", 1, '\\') == false
+  @test is_escaped("\\\\B", 2, '\\') == true
+  @test is_escaped("\\\\B", 3, '\\') == false
+                  #  \ \ \B
+  @test is_escaped("\\\\\\B", 4, '\\') == true
+  @test is_escaped("\\\\\\\\B", 5, '\\') == false
+
   ## assign_quote_state(inString, charQuote) # For each character in the input and output string assign a 0 if it is outside quotes or a 1 if it is inside quotes or a 2 if it is a quote character
   @test assign_quote_state("A\"B\"", '\"') == [0, 2, 1, 2]
                            #1234 5678 90123 4 5678 90123 4567 89012            #1  2  3  4  5  6  7  8  9  0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5  6  7  8  9  0  1  2
@@ -529,9 +543,24 @@ Test.with_handler(ut_handler) do
   @test assign_quote_state("\"Hello\" \"World\"", '\"') == [2,1,1,1,1,1,2,0,2,1,1,1,1,1,2]
   @test assign_quote_state("\"Hello\" \"Sky", '\"') == [2,1,1,1,1,1,2,0,2,1,1,1]
   # Test default escape character cases
-  @test assign_quote_state("A\"B\\\"", '\"') == [0, 2, 1, 1, 1]
+                          # A "B \ "
+  @test assign_quote_state("A\"B\\\"", '\"') == [0,2,1,1,1]
+                          #  \ "A \ " 
+  @test assign_quote_state("\\\"A\\\"", '\"') == [0,0,0,0,0]
+                          #  \ \ "A \ \ " 
+  @test assign_quote_state("\\\\\"A\\\\\"", '\"') == [0,0,2,1,1,1,2]
+                          #  \ \ \ "A \ \ \ " 
+  @test assign_quote_state("\\\\\\\"A\\\\\\\"", '\"') == [0,0,0,0,0,0,0,0,0]
+                          #  \ \ \ "A \ \ \ "X 
+  @test assign_quote_state("\\\\\\\"A\\\\\\\"X", '\"') == [0,0,0,0,0,0,0,0,0,0]
+                          #  \ \ \ \ "A \ \ \ \ " 
+  @test assign_quote_state("\\\\\\\\\"A\\\\\\\\\"", '\"') == [0,0,0,0,2,1,1,1,1,1,2]
+                          #  \ \ \ \ "A \ \ \ \ "X 
+  @test assign_quote_state("\\\\\\\\\"A\\\\\\\\\"X", '\"') == [0,0,0,0,2,1,1,1,1,1,2,0]
+  @test assign_quote_state("", '\"') == []
   @test assign_quote_state("A\"B\\\"CD\"EF", '\"') == [0, 2, 1, 1, 1, 1, 1, 2, 0, 0]
-
+  @test assign_quote_state("A\"B\\\\\"CD\"EF", '\"') == [0, 2, 1, 1, 1, 2, 0, 0, 2, 1, 1] # backslash is escaped by a backslash
+                          # 0 21 1 1 200 211
   ## substitute_string(inString, subString, inclusive_start, inclusive_finish)
   @test substitute_string("A\"B\"C", "\"D", 2, 5) == "A\"D"
                           #12345678901                                    #12345678901
@@ -691,10 +720,17 @@ Test.with_handler(ut_handler) do
   expString  = "start in111 string \"222\"/unit_tests/ foo\${VAR0#*} bar\${VAR0%afd} baz\${VAR0:?asdf} boo\${VAR0?!*} moo\${VAR0\$!*} \"sample\"\"\$VAR3\"\".txt\""
   @test expandmanyafterdollars(testString, ["VAR0", "VAR1", "VAR2"], ["000", "111", "222"]) == expString
   @test expandmanyafterdollars("aa\"bb/\$DIR_BASE\"", ["DIR_BASE", "VAR1", "VAR2"], ["/path/some/where/", "AAA", "BBB"]) == "aa\"bb//path/some/where/\""
-
   @test expandmanyafterdollars("oo\"ii\"oo\"\$VAR1\"_\${VAR3}_ \$VAR2 \"ii\"oo", ["VAR1", "VAR2", "VAR3"], ["|inv|", "|ouv|", "|curly|"], adapt_quotation=false) == "oo\"ii\"oo\"|inv|\"_|curly|_ |ouv| \"ii\"oo"
   @test expandmanyafterdollars("oo\"ii\"oo\"\$VAR1\"_\${VAR3}_ \$VAR2 \"ii\"oo", ["VAR1", "VAR2", "VAR3"], ["|inv|", "|ouv|", "|curly|"], adapt_quotation=true)  == "oo\"ii\"oo\"\"|inv|\"\"_|curly|_ |ouv| \"ii\"oo"
   @test expandmanyafterdollars("oo\"ii\"oo\"\$VAR1\"_\${VAR3}_ \$VAR2 \"ii\"oo", ["VAR1", "VAR2", "VAR3"], ["\"|inv|\"", "|ouv|", "\"|curly|\""], adapt_quotation=true)  == "oo\"ii\"oo\"\"\"|inv|\"\"\"_\"|curly|\"_ |ouv| \"ii\"oo"
+  # Test with the keep_superfluous_quotes=false option
+  @test expandmanyafterdollars("\$FOO", ["FOO"], ["BAR"]; keep_superfluous_quotes=false) == "BAR"
+  @test expandmanyafterdollars("\$FOO\"", ["FOO"], ["BAR"]; keep_superfluous_quotes=false) == "BAR"
+  @test expandmanyafterdollars("\$FOO\"\"", ["FOO"], ["BAR"]; keep_superfluous_quotes=false) == "BAR"
+  @test expandmanyafterdollars("\$FOO\"\"xx", ["FOO"], ["BAR"]; keep_superfluous_quotes=false) == "BARxx"
+  @test expandmanyafterdollars("\$FOO\"\"\"xx", ["FOO"], ["BAR"]; keep_superfluous_quotes=false) == "BAR\"xx"
+
+  remove_superfluous_quotes("BAR\"\"xx", '\"', 2, 1)
 
   ## enforce_closingquote
   @test enforce_closingquote("a", '\"') == "a"

@@ -320,7 +320,7 @@ function expandnameafterdollar(inString, name, value; adapt_quotation=false, ret
         if processedCandidate != candidate && adapt_quotation
           inclusive_start = length(outString)+1;
           inclusive_finish = length(outString)+length(candidate); 
-          processedCandidate = enforce_quote_consistency(inString, processedCandidate, inclusive_start, inclusive_finish; charQuote='\"')
+          processedCandidate = enforce_quote_consistency(inString, processedCandidate, inclusive_start, inclusive_finish; charQuote='\"');
         end
       end
       # println("B Appending: ", processedCandidate )
@@ -334,15 +334,35 @@ function expandnameafterdollar(inString, name, value; adapt_quotation=false, ret
   return outString
 end
 
+## Check if the character at a given position is escaped but also make sure the escape character is not escaped
+function is_escaped(inString, position, charEscape)
+  escaped = false;
+  previousChar = previous_entry(inString, position);
+  if (previousChar == charEscape)
+    jdx = position;
+    while previousChar == charEscape
+      escaped = !escaped;
+      jdx -= 1;
+      previousChar = previous_entry(inString, jdx);
+    end
+  end
+  return escaped
+end
+
+## Returns a numerical vector indicating for each position in a string whether it is outside (0) or inside (1) quotes or is a quote character (2)
 function assign_quote_state(inString, charQuote::Char; charEscape='\\') # For each character in the input and output string assign a 0 if it is outside quotes or a 1 if it is inside quotes or a 2 if it is a quote character
   out = [];
-  inside_quotes = false;
+  insideQuotes = false;
   for idx in 1:length(inString)
-    if (inString[idx] == charQuote) && (previous_entry(inString, idx) != charEscape)
-      push!(out, 2);
-      inside_quotes = !inside_quotes;
+    if (inString[idx] == charQuote)
+      if !is_escaped(inString, idx, charEscape)
+        push!(out, 2);
+        insideQuotes = !insideQuotes;
+      else
+        push!(out, insideQuotes*1);
+      end
     else
-      push!(out, inside_quotes*1);
+      push!(out, insideQuotes*1);
     end
   end
   return out
@@ -466,7 +486,7 @@ function enforce_quote_consistency(inString, subString, inclusive_start, inclusi
 end
 
 ## Expand many variables in a string
-function expandmanyafterdollars(inString, varNames, varVals; adapt_quotation=false, returnTF=false)
+function expandmanyafterdollars(inString, varNames, varVals; adapt_quotation=false, returnTF=false, keep_superfluous_quotes=true)
   # Check that varNames is the same size as varVals
   if size(varNames) != size(varVals)
     ArgumentError(" in ExpandVariablesAtDollars size($varNames) != size($varVals).  Each input variable name should have exactly one corresponding value.  Is the .vars file correctly formated?")
@@ -475,7 +495,10 @@ function expandmanyafterdollars(inString, varNames, varVals; adapt_quotation=fal
   for idx = 1:size(varNames)[1]
     name = sanitizestring(string(varNames[idx]));
     value = sanitizestring(string(varVals[idx]));
-    outString = expandnameafterdollar(outString, name, value, adapt_quotation=adapt_quotation, returnTF=returnTF)
+    outString = expandnameafterdollar(outString, name, value, adapt_quotation=adapt_quotation, returnTF=returnTF);
+    if !keep_superfluous_quotes
+      outString = remove_superfluous_quotes(outString, '\"', 2, 1); # remove_superfluous_quotes(line, quoteChar::Char, intQuoteChar, intInsideQuotes)
+    end
   end
   return outString
 end
@@ -498,7 +521,7 @@ function enforce_closingquote(inString, charQuote::Char)
 end
 
 # Expand variables in array of arrays containing commands (ignoring comment lines)
-function expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=false, adapt_quotation=false, returnTF=false) 
+function expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=false, adapt_quotation=false, returnTF=false, keep_superfluous_quotes=true) 
   # Check that varNames is the same size as varVals
   if size(varNames) != size(varVals)
     ArgumentError(" in expand_inarrayofarrays size($varNames) != size($varVals).  Each input variable name should have exactly one corresponding value.  Is the .vars or .fvars file correctly formated?")
@@ -518,7 +541,7 @@ function expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=false, 
     icol = 0;
     for col in arrRow
       icol += 1;
-      expanded = expandmanyafterdollars(col, varNames, varVals, adapt_quotation=adapt_quotation, returnTF=returnTF)
+      expanded = expandmanyafterdollars(col, varNames, varVals, adapt_quotation=adapt_quotation, returnTF=returnTF, keep_superfluous_quotes=keep_superfluous_quotes)
       if adapt_quotation # Add closing quote to string
         expanded = enforce_closingquote(expanded, '\"');
       end
@@ -556,7 +579,7 @@ end
 # end
 
 # Expand variable values one row at a time as though they are being assigned at a shell command line
-function expandinorder(namesVarsRaw, valuesVarsRaw; adapt_quotation=false, returnTF=false)
+function expandinorder(namesVarsRaw, valuesVarsRaw; adapt_quotation=false, returnTF=false, keep_superfluous_quotes=true)
   ## Check that in put vector lengths match
   if (length(namesVarsRaw) != length(valuesVarsRaw)) 
     SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn(" (in expandinorder) variable name and values arguments should be vectors of equal lengths but appear to be of different lengths.");
@@ -567,7 +590,7 @@ function expandinorder(namesVarsRaw, valuesVarsRaw; adapt_quotation=false, retur
     if irow == 1
       valuesVars[irow] = valuesVarsRaw[irow];
     else 
-      valuesVars[irow] = expandmanyafterdollars(valuesVarsRaw[irow], namesVarsRaw[1:irow-1], valuesVarsRaw[1:irow-1], adapt_quotation=adapt_quotation, returnTF=returnTF); ## length comparison done inside expandmanyafterdollars
+      valuesVars[irow] = expandmanyafterdollars(valuesVarsRaw[irow], namesVarsRaw[1:irow-1], valuesVarsRaw[1:irow-1], adapt_quotation=adapt_quotation, returnTF=returnTF, keep_superfluous_quotes=keep_superfluous_quotes); ## length comparison done inside expandmanyafterdollars
       valuesVarsRaw[irow] = valuesVars[irow]; # Update the values to be used for subsequent expansions
     end
   end
@@ -645,7 +668,7 @@ function parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, dlmF
 end
 
 # Expand varaibles in .protocol using values from .fvars.  This necessarily results in one output summary file per list entry (list files indicated in .fvars)
-function protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose=false, adapt_quotation=false)
+function protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose=false, adapt_quotation=false, keep_superfluous_quotes=true)
   arrArrExpFvars = []; ## Initialise array for holding summary file data in the form of an arrays-of-arrays
   ## Loop over length of list files (currently assuming that all lists are of the same length but this may need to change in the future)
   for iln in 1:maximum( map(x->length(x), values(dictCmdLineIdxs)) )
@@ -669,7 +692,7 @@ function protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars,
       println("namesFvars = ", namesFvars);
       println("valuesFvars = ", valuesFvars);
     end
-    push!(arrArrExpFvars, expand_inarrayofarrays(arrProt, cmdRowsProt, namesFvars, valuesFvars; verbose=verbose, adapt_quotation=adapt_quotation ))
+    push!(arrArrExpFvars, expand_inarrayofarrays(arrProt, cmdRowsProt, namesFvars, valuesFvars; verbose=verbose, adapt_quotation=adapt_quotation, keep_superfluous_quotes=keep_superfluous_quotes))
   end
   return arrArrExpFvars
 end
