@@ -532,6 +532,18 @@ Test.with_handler(ut_handler) do
                   #  \ \ \B
   @test is_escaped("\\\\\\B", 4, '\\') == true
   @test is_escaped("\\\\\\\\B", 5, '\\') == false
+                  # 12 345 67 8
+  @test is_escaped("he\"ll\\o\"", 6, '\\') == false
+
+  ## remove_nonescaped_quotes(line, charQuote::Char, charEscape::Char)
+  @test remove_nonescaped("hello", '\"', '\\') == "hello"
+  @test remove_nonescaped("he\"llo", '\"', '\\') == "hello"
+  @test remove_nonescaped("he\\\"llo", '\"', '\\') == "he\\\"llo"
+  @test remove_nonescaped("he\\\"ll\\\"o\\\"", '\"', '\\') == "he\\\"ll\\\"o\\\""
+  @test remove_nonescaped("he\\\"ll\"o\\\"", '\"', '\\') == "he\\\"llo\\\""
+                         # 12 345 67 8
+  @test remove_nonescaped("he\\\"llo\\\"", '\\', '\\') == "he\"llo\""
+  @test remove_nonescaped(remove_nonescaped("he\\\"ll\"o\\\"", '\"', '\\'), '\\', '\\') == "he\"llo\""
 
   ## assign_quote_state(inString, charQuote) # For each character in the input and output string assign a 0 if it is outside quotes or a 1 if it is inside quotes or a 2 if it is a quote character
   @test assign_quote_state("A\"B\"", '\"') == [0, 2, 1, 2]

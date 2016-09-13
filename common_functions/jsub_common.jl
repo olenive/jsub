@@ -368,6 +368,21 @@ function assign_quote_state(inString, charQuote::Char; charEscape='\\') # For ea
   return out
 end
 
+## Removes not escaped quote from a string
+function remove_nonescaped(line, charQuote::Char, charEscape::Char)
+  out = "";
+  idx = 0;
+  for letter in line
+    idx += 1;
+    if letter != charQuote
+      out = string(out, letter);
+    elseif letter == charQuote && is_escaped(line, idx, charEscape)
+      out = string(out, letter);
+    end
+  end
+  return out
+end
+
 function substitute_string(inString, subString, inclusive_start, inclusive_finish; charQuote='\"', quotes_before=0, quotes_after=0)
   return inString[1:inclusive_start-1] * repeat(string(charQuote), quotes_before) * subString * repeat(string(charQuote), quotes_after) * inString[inclusive_finish+1:end];
 end
@@ -765,7 +780,7 @@ function get_summary_names(arrProt; prefix=nothing, suffix=".summary", timestamp
   if !allowNonUnique && length(summaryNames) != length(unique(summaryNames))
     error(" (in get_summary_names) output list of summary file names contains non-unique entries.")
   else
-    return summaryNames
+    return map(x -> remove_nonescaped(remove_nonescaped(x, '\"', '\\'), '\\', '\\'), summaryNames)
   end
 end
 

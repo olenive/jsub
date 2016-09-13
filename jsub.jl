@@ -263,8 +263,8 @@ parsed_args = parse_args(argSettings) # the result is a Dict{String,Any}
 
 ## Process flag states
 SUPPRESS_WARNINGS = parsed_args["suppress-warnings"];
-flagKeepQuotes = get_argument(parsed_args, "keep-superfluous-quotes", verbose=flagVerbose, optional=true, default=false);
 flagVerbose = parsed_args["verbose"];
+flagKeepQuotes = get_argument(parsed_args, "keep-superfluous-quotes", verbose=flagVerbose, optional=true, default=false);
 requiredStages = map_flags_sjb(parsed_args["generate-summaries"], parsed_args["generate-jobs"], parsed_args["submit-jobs"])
 flagVerbose && print("\nInterpreted jsub arguments as requesting the following stages: ")
 (flagVerbose && requiredStages[1]=='1') && print("1 ")
