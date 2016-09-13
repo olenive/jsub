@@ -332,7 +332,7 @@ flagVerbose && println(string("Prefix for output file names: ", longName));
 # Check that pathFvars contains 3 delmiterFvars separated columns
 
 ## STAGE 1
-function run_stage1_(pathProtocol, pathVars, pathFvars; flagVerbose=false, adapt_quotation=true, delimiterFvars='\t', tagsExpand=Dict())
+function run_stage1_(pathProtocol, pathVars, pathFvars; flagVerbose=false, adapt_quotation=true, delimiterFvars='\t', tagsExpand=Dict(), keep_superfluous_quotes=false)
 
   flagVerbose && println("\n - STAGE 1: Generating summary files using data from files supplied to the --protocol, --vars and --fvars options.");
 
@@ -370,7 +370,7 @@ function run_stage1_(pathProtocol, pathVars, pathFvars; flagVerbose=false, adapt
   flagVerbose && println("Creating summary files...");
   arrArrExpFvars = [];
   if length(keys(dictListArr)) != 0 && length(keys(dictCmdLineIdxs)) != 0
-    arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs; verbose=verbose, adapt_quotation=adapt_quotation, keep_superfluous_quotes=flagKeepQuotes);
+    arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs; verbose=verbose, adapt_quotation=adapt_quotation, keep_superfluous_quotes=keep_superfluous_quotes);
   else
     push!(arrArrExpFvars, arrProtExpVars); # If there is no data from list files, simply proceed using the protocol with expanded varibles (if applicable)
   end
@@ -491,7 +491,7 @@ end
 
 ## RUN ##
 if requiredStages[1] == '1'
-  pathSummariesList = run_stage1_(pathProtocol, pathVars, pathFvars; flagVerbose=flagVerbose, adapt_quotation=adapt_quotation, delimiterFvars=delimiterFvars, tagsExpand=tagsExpand)
+  pathSummariesList = run_stage1_(pathProtocol, pathVars, pathFvars; flagVerbose=flagVerbose, adapt_quotation=adapt_quotation, delimiterFvars=delimiterFvars, tagsExpand=tagsExpand, keep_superfluous_quotes=flagKeepQuotes)
 end
 if requiredStages[2] == '1'
   pathJobsList = run_stage2_(pathSummariesList, pathJobsList; flagVerbose=flagVerbose, tagsExpand=tagsExpand, checkpointsDict=checkpointsDict, commonFunctions=commonFunctions, doJsubVersionControl=doJsubVersionControl, processTimestamp=processTimestamp)

@@ -33,11 +33,11 @@ echo "Running all integration tests and writing output and errors to log file: "
 echo "Using local LSF options from: ""$FILE_LSF_COMMON"
 echo "Runnign integration tests on ""$DATETIME" > "$TEST_OUTPUT_LOG"
 
-# run_test basic/it_basic.sh
-# run_test basic/it_basic_zip.sh
-# run_test basic/it_basic_unzip.sh
+run_test basic/it_basic.sh
+run_test basic/it_basic_zip.sh
+run_test basic/it_basic_unzip.sh
 
-# run_test fvars/it_fvars.sh
-# run_test fvars/it_fvars_prefixes.sh
+run_test fvars/it_fvars.sh
+run_test fvars/it_fvars_prefixes.sh
 
 run_test vars_fvars/it_fvars_vars.sh
