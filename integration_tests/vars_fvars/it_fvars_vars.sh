@@ -167,7 +167,7 @@ assert "file_exists ${GENERATED_JOB_ERROR_01}" "yes"
 assert "file_exists ${GENERATED_JOB_ERROR_02}" "yes"
 assert "file_exists ${GENERATED_JOB_ERROR_03}" "yes"
 assert "file_exists ${GENERATED_SUBMITTED_JOBS_LIST}" "yes"
-
+# 29
 clear_generated # Remove existing output from previous tests
 
 ## Create summary and job file(s) from protocol
@@ -181,6 +181,7 @@ assert "diff ${GENERATED_SUMMARY_02} ${EXPECTED_SUMMARY_02}" ""
 assert "diff ${GENERATED_SUMMARY_03} ${EXPECTED_SUMMARY_03}" ""
 assert "file_exists ${GENERATED_SUMMARY_LIST}" "yes"
 assert "diff ${GENERATED_SUMMARY_LIST} ${EXPECTED_SUMMARY_LIST}" ""
+# 37
 # Check that a job file is generated from the summary file
 assert "file_exists ${GENERATED_JOB_IN_01}" "yes"
 assert "file_exists ${GENERATED_JOB_IN_02}" "yes"
@@ -190,7 +191,7 @@ assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_02} ${
 assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_03} ${EXPECTED_JOB_IN_03}" "" # Ignore the line that contain absolute paths or the job header prefix
 assert "file_exists ${GENERATED_JOB_LIST}" "yes"
 assert "diff ${GENERATED_JOB_LIST} ${EXPECTED_JOB_LIST}" ""
-
+# 45
 clear_generated # Remove existing output from previous tests
 ${CALL_JSUB} -s -p ${PROTOCOL_FILE} --vars ${VARS_FILE} --fvars ${FVARS_FILE} --summary-prefix ${SUMMARY_PREFIX} # Create summary files
 
@@ -211,7 +212,7 @@ awaitJobNameCompletion "$LSF_JOB_NAME_01"
 awaitJobNameCompletion "$LSF_JOB_NAME_02"
 awaitJobNameCompletion "$LSF_JOB_NAME_03"
 assert "file_exists ${GENERATED_JOB_DATA_01}" "yes"
-assert "file_exists ${GENERATED_JOB_DATA_02}" "yes"]
+assert "file_exists ${GENERATED_JOB_DATA_02}" "yes"
 assert "file_exists ${GENERATED_JOB_DATA_03}" "yes"
 assert "diff ${GENERATED_JOB_DATA_01} ${EXPECTED_JOB_DATA_01}" ""
 assert "diff ${GENERATED_JOB_DATA_02} ${EXPECTED_JOB_DATA_02}" ""

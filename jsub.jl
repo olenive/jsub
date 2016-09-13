@@ -251,7 +251,7 @@ include("./common_functions/jsub_common.jl")
     help = "When this flag is not present, timestamps of the format \"YYYYMMDD_HHMMSS\" are added to the log file by job files running the process_job function."
 
   "-k", "--keep-superfluous-quotes"
-    action = :store_false
+    action = :store_true
     help = "Do not remove superfluous quotes.  For example, the string \"abc\"\"def\" will not be converted to \"abcdef\"."
 
 end
@@ -370,7 +370,7 @@ function run_stage1_(pathProtocol, pathVars, pathFvars; flagVerbose=false, adapt
   flagVerbose && println("Creating summary files...");
   arrArrExpFvars = [];
   if length(keys(dictListArr)) != 0 && length(keys(dictCmdLineIdxs)) != 0
-    arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs; verbose=verbose, adapt_quotation=adapt_quotation);
+    arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs; verbose=verbose, adapt_quotation=adapt_quotation, keep_superfluous_quotes=flagKeepQuotes);
   else
     push!(arrArrExpFvars, arrProtExpVars); # If there is no data from list files, simply proceed using the protocol with expanded varibles (if applicable)
   end
