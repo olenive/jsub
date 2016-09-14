@@ -30,9 +30,7 @@ function isLineInFile {
   local query="$2"
   local flagMatch=false
   while read -r line || [[ -n "$line" ]]; do
-    if [[ ${query} == ${line} ]]; then
-      flagMatch=true
-    fi
+    [[ ${query} == ${line} ]] && flagMatch=true
   done < "$file"
   [[ ${flagMatch} == true ]] && echo "yes" || echo "no"
 }
