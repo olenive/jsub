@@ -55,7 +55,7 @@ function at_entry(arr, index)
   return arr[index]
 end
 
-function file2arrayofarrays_(fpath, comStr; cols=0::Integer, delimiter=nothing, verbose=false, tagsExpand=nothing)
+function file2arrayofarrays_(fpath, comStr; cols=0::Integer, delimiter=nothing, verbose=false, tagsExpand=nothing, expectedColumns=nothing)
   if verbose
     println("Reading file: ", fpath)
     cols==0 ? println("into '", delimiter, "' delimited columns") : println("into ", cols, " '", delimiter, "' delimited columns");
@@ -66,7 +66,9 @@ function file2arrayofarrays_(fpath, comStr; cols=0::Integer, delimiter=nothing, 
   ## Initialise output array
   listOut = Array(Array{UTF8String}, 0); # Insisting of UTF8String here to avoid conversion problems later (MethodError: `convert` has no method matching convert(::Type{SubString{ASCIIString}}, ::UTF8String))  #arrOut = Array(AbstractString, size(arrRaw)[1], numCols); 
   iNonBlank = 0; 
+  iln = 0;
   for wline in arrRaw
+    iln += 1;
     if isblank(wline) == false
       iNonBlank += 1;
       if iscomment(wline, comStr)
@@ -91,6 +93,14 @@ function file2arrayofarrays_(fpath, comStr; cols=0::Integer, delimiter=nothing, 
         else
           arrLine = split(line, delimiter; limit=cols, keep=false);
         end
+        if expectedColumns != nothing
+          if length(arrLine) != expectedColumns
+            println("\n ~ Note: check that the correct delimiter is used in the supplied .fvars (", fpath, ") file and that all columns contain values.");
+            println("   The expected delimiter for this file is set to \"", delimiter, "\" and can be changed using the --fvars-delimiter.");
+            println("   Error caused by line ", iln, ": ", wline, "\n");
+            error("In function file2arrayofarrays_ while reading file: ", fpath, "\n  The expected number of columns is ", expectedColumns, " (delimiter is \"", delimiter, "\") but found ", length(arrLine), " element(s) in array:\n", arrLine);
+          end
+        end
         push!(listOut, arrLine);
       end
     end
@@ -104,16 +114,17 @@ function sanitizestring(str)
   return sanitized
 end
 
-function columnfrom_arrayofarrays(arrArr, rows, col::Integer; dlm=' ')
+function columnfrom_arrayofarrays(arrArr::Array, rows, col::Integer; dlm=' ')
+  #println("columnfrom_arrayofarrays"); # println(arrArr)
   colVals=[];
   if col > 0
     for row in arrArr[rows]
-      #println(row)
+      # println(row)
       push!(colVals, sanitizestring(row[col]) );
     end
   elseif col == 0
     for row in arrArr[rows]
-      #println(row)
+      # println(row)
       push!(colVals, join((map( x->sanitizestring(x), row[1:end] )), dlm) );
     end
   else
@@ -588,11 +599,6 @@ function sanitizepath(raw)
   return join(arrOut)
 end
 
-## Function for reading every list file given in .fvars and extracting arrays of variable values
-# function ValuesFromLists (fpath, column) # Read a 'list' file and extract values from a selected column
-#   arrArr, cmdRows = file2arrayofarrays_(fileList; cols=0, delimiter = nothing)
-# end
-
 # Expand variable values one row at a time as though they are being assigned at a shell command line
 function expandinorder(namesVarsRaw, valuesVarsRaw; adapt_quotation=false, returnTF=false, keep_superfluous_quotes=true)
   ## Check that in put vector lengths match
@@ -623,7 +629,7 @@ end
 
 # Read the .fvars file and expand variables row by row.
 function parse_expandvars_fvarsfile_(fileFvars, namesVars, valuesVars; dlmFvars=nothing, adapt_quotation=false, verbose=false, tagsExpand=nothing) # Read the .fvars file 
-  arrFvars, cmdRowsFvars = file2arrayofarrays_(fileFvars, comStr; cols=3, delimiter=dlmFvars, tagsExpand=tagsExpand);
+  arrFvars, cmdRowsFvars = file2arrayofarrays_(fileFvars, comStr; cols=3, delimiter=dlmFvars, tagsExpand=tagsExpand, expectedColumns=3);
   ## Use variables from .vars to expand values in .fvars
   arrExpFvars = expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars; verbose = verbose, adapt_quotation=adapt_quotation);
   # Extract arrays of variable names and variable values
@@ -684,7 +690,6 @@ end
 
 # Expand varaibles in .protocol using values from .fvars.  This necessarily results in one output summary file per list entry (list files indicated in .fvars)
 function protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose=false, adapt_quotation=false, keep_superfluous_quotes=true)
-  println("keep_superfluous_quotes = ", keep_superfluous_quotes);
   arrArrExpFvars = []; ## Initialise array for holding summary file data in the form of an arrays-of-arrays
   ## Loop over length of list files (currently assuming that all lists are of the same length but this may need to change in the future)
   for iln in 1:maximum( map(x->length(x), values(dictCmdLineIdxs)) )

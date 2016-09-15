@@ -1,3 +1,0 @@
-# Basic integration test protocol involving only a call to a bash script that writes a single line to a text file.
-#JSUB<summary-name> sample0001A
-bash ../../bash_scripts/trivial.sh "outPrefix_"sample0001A".txt"

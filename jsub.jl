@@ -82,8 +82,7 @@ const comStr="#" # Note: this is expected to be a string ("#") rather than a cha
 # const dlmVars='\t' # Column delimiter for files containing variables
 # const dlmProtocol=' ' # Column delimiter for the protocol file
 const dlmWhitespace=[' ','\t','\n','\v','\f','\r'] # The default whitespace characters used by split
-const delimiterFvars = '\t'
-const verbose = false;
+# const verbose = false;
 const adapt_quotation=true; # this should be the default to avoid nasty accidents
 
 num_suppressed = [0];
@@ -101,7 +100,10 @@ commonFunctions = Dict(
   "process_job" => sourcePath * "common_functions/job_processing.sh",
   "version_control" => sourcePath * "common_functions/version_control.sh",
 )
-checkpointsDict = Dict()
+checkpointsDict = Dict(
+  "jcheck_file_not_empty" => sourcePath * "common_functions/jcheck_file_not_empty.sh",
+  "jcheck_checkpoint" => sourcePath * "common_functions/jcheck_checkpoint.sh",
+)
 
 bsubOptions = [
 "-ar",
@@ -254,6 +256,9 @@ include("./common_functions/jsub_common.jl")
     action = :store_true
     help = "Do not remove superfluous quotes.  For example, the string \"abc\"\"def\" will not be converted to \"abcdef\"."
 
+  "-g", "--fvars-delimiter"
+  help = "Delimiter used in the .fvars file.  The default delmiter character is a tab ('\t').  The .fvars file is expected to contain three columns (1) variable name, (2) one-indexed column number, (3) path to a text file."
+
 end
 
 parsed_args = parse_args(argSettings) # the result is a Dict{String,Any}
@@ -264,6 +269,7 @@ parsed_args = parse_args(argSettings) # the result is a Dict{String,Any}
 ## Process flag states
 SUPPRESS_WARNINGS = parsed_args["suppress-warnings"];
 flagVerbose = parsed_args["verbose"];
+const delimiterFvars = get_argument(parsed_args, "fvars-delimiter", verbose=flagVerbose, optional=true, default='\t');
 flagKeepQuotes = get_argument(parsed_args, "keep-superfluous-quotes", verbose=flagVerbose, optional=true, default=false);
 requiredStages = map_flags_sjb(parsed_args["generate-summaries"], parsed_args["generate-jobs"], parsed_args["submit-jobs"])
 flagVerbose && print("\nInterpreted jsub arguments as requesting the following stages: ")
@@ -370,7 +376,7 @@ function run_stage1_(pathProtocol, pathVars, pathFvars; flagVerbose=false, adapt
   flagVerbose && println("Creating summary files...");
   arrArrExpFvars = [];
   if length(keys(dictListArr)) != 0 && length(keys(dictCmdLineIdxs)) != 0
-    arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs; verbose=verbose, adapt_quotation=adapt_quotation, keep_superfluous_quotes=keep_superfluous_quotes);
+    arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs; verbose=false, adapt_quotation=adapt_quotation, keep_superfluous_quotes=keep_superfluous_quotes);
   else
     push!(arrArrExpFvars, arrProtExpVars); # If there is no data from list files, simply proceed using the protocol with expanded varibles (if applicable)
   end
@@ -483,9 +489,7 @@ function run_stage3_(pathJobsList, pathPortable, pathSubmissionScript, pathSubmi
         println(subZip);
       end
     end
-
   end
-
   flagVerbose && println("");
 end
 

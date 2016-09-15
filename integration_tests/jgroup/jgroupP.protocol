@@ -1,3 +1,20 @@
 # Basic integration test protocol involving only a call to a bash script that writes a single line to a text file.
 #JSUB<summary-name> "$SAMPLE_ID"
-bash "$PATH_TO_SCRIPT" "$OUT_PREFIX""$SAMPLE_ID.txt"
+echo "Processing summary data from: ""$SAMPLE_ID"
+# root group 
+OUTFILE="$OUT_PREFIX""$SAMPLE_ID.txt"
+bash "$PATH_TO_TRIVIAL" "$OUTFILE"
+bash "$PATH_TO_TRIVIAL" "$OUTFILE"
+
+#JGROUP first
+bash "$PATH_TO_CONCAT" "$OUTFILE"_first "$SUBSAMPLE_01" "$SUBSAMPLE_02"
+bash "$PATH_TO_CONCAT" "$OUTFILE"_first "$SUBSAMPLE_02" "$SUBSAMPLE_03"
+#JGROUP second
+bash "$PATH_TO_CONCAT" "$OUTFILE"_second "$SUBSAMPLE_02" "$SUBSAMPLE_03"
+bash "$PATH_TO_CONCAT" "$OUTFILE"_second "$SUBSAMPLE_03" "$SUBSAMPLE_01"
+#JGROUP third
+bash "$PATH_TO_CONCAT" "$OUTFILE"_third "$SUBSAMPLE_03" "$SUBSAMPLE_01"
+bash "$PATH_TO_CONCAT" "$OUTFILE"_third "$SUBSAMPLE_01" "$SUBSAMPLE_02"
+
+#JGROUP last
+bash "$PATH_TO_CATFILES" "$OUTFILE" "$OUTFILE"_first "$OUTFILE"_second "$OUTFILE"_third

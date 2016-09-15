@@ -109,6 +109,7 @@ NONWHITESPACE_FILE="bash_function_test_files/jcheck_file_not_empty/non_whitespac
 EXPECTED_EMPTY_FAIL="bash_function_test_files/jcheck_file_not_empty/expected_empty_fail.log"
 EXPECTED_WHITESPACE_FAIL="bash_function_test_files/jcheck_file_not_empty/expected_whitespace_fail.log"
 EXPECTED_SUCCESS="bash_function_test_files/jcheck_file_not_empty/expected_success.log"
+EXPECTED_MULTIPLE="bash_function_test_files/jcheck_file_not_empty/expected_multiple.log"
 JSUB_JOB_TIMESTAMP=false
 JSUB_JOB_ID="jcheck_file_not_empty_jobID"
 JSUB_LOG_FILE="bash_function_test_files/test_outputs/jcheck_file_not_empty/checkpoint.log"
@@ -129,8 +130,17 @@ assert "file_exists ${JSUB_LOG_FILE}" "no"
 assert "jcheck_file_not_empty ${NONWHITESPACE_FILE}" ""
 assert "diff ${JSUB_LOG_FILE} ${EXPECTED_SUCCESS}" ""
 # 39
+# Test cases with multiple arguments
+rm "$JSUB_LOG_FILE" # Clear log file
+assert "file_exists ${JSUB_LOG_FILE}" "no"
+assert "jcheck_file_not_empty ${EMPTY_FILE} ${WHITESPACE_FILE} ${NONWHITESPACE_FILE}" " jcheck_file_not_empty_jobID - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: ""$EMPTY_FILE""\n"" jcheck_file_not_empty_jobID - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: ""$WHITESPACE_FILE"
+assert "diff ${JSUB_LOG_FILE} ${EXPECTED_MULTIPLE}" ""
+# 42
+
+
+
+####################################################
 ## end of test suite
 assert_end
-
 echo ""
 # EOF

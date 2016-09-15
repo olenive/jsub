@@ -1,0 +1,18 @@
+# Basic integration test protocol involving only a call to a bash script that writes a single line to a text file.
+#JSUB<summary-name> sample0002A
+echo "Processing summary data from: "sample0002A
+# root group 
+OUTFILE="outPrefix_"sample0002A".txt"
+bash ../../bash_scripts/trivial.sh "$OUTFILE"
+bash ../../bash_scripts/trivial.sh "$OUTFILE"
+#JGROUP first
+bash ../../bash_scripts/concat.sh "$OUTFILE"_first sub02X sub02Y
+bash ../../bash_scripts/concat.sh "$OUTFILE"_first sub02Y sub02Z
+#JGROUP second
+bash ../../bash_scripts/concat.sh "$OUTFILE"_second sub02Y sub02Z
+bash ../../bash_scripts/concat.sh "$OUTFILE"_second sub02Z sub02X
+#JGROUP third
+bash ../../bash_scripts/concat.sh "$OUTFILE"_third sub02Z sub02X
+bash ../../bash_scripts/concat.sh "$OUTFILE"_third sub02X sub02Y
+#JGROUP last
+bash ../../bash_scripts/catfiles.sh "$OUTFILE" "$OUTFILE"_first "$OUTFILE"_second "$OUTFILE"_third

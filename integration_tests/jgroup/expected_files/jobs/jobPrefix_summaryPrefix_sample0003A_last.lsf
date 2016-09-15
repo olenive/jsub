@@ -1,17 +1,18 @@
 #!/bin/bash
 set -e
 
-#BSUB -J sample0001A
-#BSUB -e sample0001A.error
-#BSUB -o sample0001A.output
+#BSUB -w 'done("summaryPrefix_sample0003A_root")'
+#BSUB -J summaryPrefix_sample0003A_last
+#BSUB -e summaryPrefix_sample0003A_last.error
+#BSUB -o summaryPrefix_sample0003A_last.output
 
 
 # Job file variables:
 JSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>
-JSUB_JOB_ID="sample0001A"
-JSUB_LOG_FILE="sample0001A.log"
-JSUB_SUMMARY_COMPLETED="sample0001A.summary.completed"
-JSUB_SUMMARY_INCOMPLETE="sample0001A.summary.incomplete"
+JSUB_JOB_ID="summaryPrefix_sample0003A"
+JSUB_LOG_FILE="jobs/jobPrefix_summaryPrefix_sample0003A.log"
+JSUB_SUMMARY_COMPLETED="jobs/jobPrefix_summaryPrefix_sample0003A.summary.completed"
+JSUB_SUMMARY_INCOMPLETE="jobs/jobPrefix_summaryPrefix_sample0003A.summary.incomplete"
 JSUB_VERSION_CONTROL=true
 JSUB_JOB_TIMESTAMP=false
 
@@ -89,12 +90,11 @@ function version_control {
   echo "called version_control"
 }
 
-# Commands taken from summary file: sample0001A.summary
+# Commands taken from summary file: summaries/summaryPrefix_sample0003A.summary
 
 #JSUB<begin-job>
-# Basic integration test protocol involving only a call to a bash script that writes a single line to a text file.
-#JSUB<summary-name> sample0001A
-bash ../../bash_scripts/trivial.sh ""sample0001A".txt"
+#JGROUP last
+bash ../../bash_scripts/catfiles.sh "$OUTFILE" "$OUTFILE"_first "$OUTFILE"_second "$OUTFILE"_third
 
 #JSUB<finish-job>
 process_job

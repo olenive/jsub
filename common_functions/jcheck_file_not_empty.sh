@@ -10,11 +10,13 @@ function file_contains_nonwhitespace {
 function jcheck_file_not_empty {
   local dateTime=""
   [[ ${JSUB_JOB_TIMESTAMP} = true ]] && dateTime=`date +%Y%m%d_%H%M%S`
-  if [[ ! -s "$1" ]] || [[ $(file_contains_nonwhitespace "$1") = "no" ]]; then
-    JSUB_FLAG_FAIL=true
-    echo "$dateTime ""$JSUB_JOB_ID"" - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: ""$1"
-    echo "$dateTime ""$JSUB_JOB_ID"" - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: ""$1" >> ${JSUB_LOG_FILE}
-  else
-    echo "$dateTime ""$JSUB_JOB_ID"" - Passed checkpoint jcheck_file_not_empty for file: ""$1" >> ${JSUB_LOG_FILE}
-  fi
+  for var in "$@"; do
+    if [[ ! -s "$var" ]] || [[ $(file_contains_nonwhitespace "$var") = "no" ]]; then
+      JSUB_FLAG_FAIL=true
+      echo "$dateTime ""$JSUB_JOB_ID"" - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: ""$var"
+      echo "$dateTime ""$JSUB_JOB_ID"" - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: ""$var" >> ${JSUB_LOG_FILE}
+    else
+      echo "$dateTime ""$JSUB_JOB_ID"" - Passed checkpoint jcheck_file_not_empty for file: ""$var" >> ${JSUB_LOG_FILE}
+    fi
+  done
 }
