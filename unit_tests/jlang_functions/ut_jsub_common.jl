@@ -210,7 +210,6 @@ Test.with_handler(ut_handler) do
   ## columnfrom_arrayofarrays
   @test columnfrom_arrayofarrays(expArrFvars, expCmdRowsFvars, 2; dlm=' ') == ["0", "1"]
   @test columnfrom_arrayofarrays(expArrFvars, expCmdRowsFvars, 0; dlm=' ') == [string("LANE_NUM",' ',"0",' ',"\"\$DIR_BASE\"/\"unit_tests/lists/multiLane_\"\'\"1\"\'\"col.txt\""), string("SAMPLEID",' ',"1",' ',"\"\$DIR_BASE\"/\"unit_tests/lists/sampleIDs_1col.txt\"")]
-
   ## warn_notreplaced
   # warn_notreplaced("this include sub-string.", "sub-string")
 
@@ -1833,7 +1832,7 @@ Test.with_handler(ut_handler) do
     "suffixstuff"
   );
   @test create_job_header_string(suppliedJobArray; rootSleepSeconds="2.5", prefix="#!/bin/bash\n", suffix="suffixstuff", jobID="ID001", jobDate="YYYYMMDD_HHMMSS", appendOptions=false) == expHeader
-
+  
   # This call should not add a sleep command because #JGROUP at the start of the suppliedJobArray indicates that this is not a root job
   suppliedJobArray = [];
   push!(suppliedJobArray, ["#JGROUP second first third fourth fifth"]);
@@ -2101,6 +2100,13 @@ Test.with_handler(ut_handler) do
 
   ## get_groupname(jobArray; tagSplit="#JGROUP")
   suppliedJobArray = [];
+  push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
+  push!(suppliedJobArray, ["bash echo \"cmd 23\""]);
+  push!(suppliedJobArray, ["#JGROUP this one should be ignored by get_groupname"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 23\""]);
+  @test get_groupname(suppliedJobArray; tagSplit="#JGROUP") == "root"
+
+  suppliedJobArray = [];
   push!(suppliedJobArray, ["#JGROUP second first third fourth fifth"]);
   push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
   push!(suppliedJobArray, ["bash echo \"cmd 23\""]);
@@ -2228,9 +2234,9 @@ Test.with_handler(ut_handler) do
   try run(`rm $expectedFilePath01`) end
   expectedFileHeader01 = string( 
     "#!/bin/bash\n",
-    "\n#BSUB -J JOBDATE0_000000_jobID0000",
-    "\n#BSUB -e JOBDATE0_000000_jobID0000.error",
-    "\n#BSUB -o JOBDATE0_000000_jobID0000.output",
+    "\n#BSUB -J JOBDATE0_000000_jobID0000_root",
+    "\n#BSUB -e JOBDATE0_000000_jobID0000_root.error",
+    "\n#BSUB -o JOBDATE0_000000_jobID0000_root.output",
     "\n"
   );
   expectedJobFileVariables = string(
@@ -2366,9 +2372,9 @@ Test.with_handler(ut_handler) do
   try run(`rm $expectedFilePath01`) end
   expectedFileHeader01 = string( 
       "#!/bin/bash\n",
-      "\n#BSUB -J JOBDATE0_000000_jobID0000",
-      "\n#BSUB -e JOBDATE0_000000_jobID0000.error",
-      "\n#BSUB -o JOBDATE0_000000_jobID0000.output",
+      "\n#BSUB -J JOBDATE0_000000_jobID0000_root",
+      "\n#BSUB -e JOBDATE0_000000_jobID0000_root.error",
+      "\n#BSUB -o JOBDATE0_000000_jobID0000_root.output",
       "\n\nsleep 7.7",
       "\n"
     )

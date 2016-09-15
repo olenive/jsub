@@ -291,7 +291,6 @@ pathProtocol = get_argument(parsed_args, "protocol"; verbose=flagVerbose, option
 pathVars = get_argument(parsed_args, "vars"; verbose=flagVerbose, optional=true, default="");
 pathFvars = get_argument(parsed_args, "fvars"; verbose=flagVerbose, optional=true, default="");
 summaryFilePrefix = get_argument(parsed_args, "summary-prefix", verbose=flagVerbose, optional=true, default="");
-println(" ------ summaryFilePrefix = ", summaryFilePrefix);
 jobFilePrefix = get_argument(parsed_args, "job-prefix", verbose=flagVerbose, optional=true, default="");
 
 ## Create directory for job files if it does not already exist
@@ -320,12 +319,9 @@ pathJobsList = get_argument(parsed_args, "list-jobs"; verbose=flagVerbose,
   optional=(requiredStages[2]=='1' || requiredStages[3]=='0'), # Only optional if stage 2 is being run or stage 3 is not being run (the jobs have to come from)
   default=string(jobFilePrefix, basename(summaryFilePrefix), longName, ".list-jobs")
 );
-println(" ------ jobFilePrefix = ", jobFilePrefix);
-println(" ------ summaryFilePrefix = ", summaryFilePrefix);
-println(" ------ pathJobsList = ", pathJobsList);
 
 # String used at the start of every job file
-jobFileHeader = get_argument(parsed_args, "common-header"; verbose=flagVerbose, optional=true, default="#!/bin/bash\nset -e\n");
+jobFileHeader = get_argument(parsed_args, "common-header"; verbose=flagVerbose, optional=true, default="#!/bin/bash\nset -eu\n");
 
 # String added to the header of every job file
 pathCommonHeader = get_argument(parsed_args, "common-lsf-options"; verbose=flagVerbose, optional=true, default=nothing);

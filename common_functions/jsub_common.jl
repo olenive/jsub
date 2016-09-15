@@ -1001,7 +1001,7 @@ function cmd_await_jobs(jobArray; root="root", tagHeader="\n#BSUB", option="-w",
 end
 
 # Retrives the group name associated with this job (this not the job ID), assuming that the jobArray is a list of commands with the first entry being of the form "#JGROUP groupName ..."
-function get_groupname(jobArray; tagSplit="#JGROUP")
+function get_groupname(jobArray; tagSplit="#JGROUP", root="root")
   # Get group name
   groupName = "";
   if iscomment(join(jobArray[1]), tagSplit)
@@ -1011,6 +1011,8 @@ function get_groupname(jobArray; tagSplit="#JGROUP")
     else
       throw("Found a group/split tag without an associated group name", " on line: ", join(jobArray[1]));
     end
+  else
+    groupName = root;
   end
   return groupName
 end
@@ -1039,7 +1041,7 @@ function create_job_header_string(jobArray; root="root", tagHeader="\n#BSUB", pr
   end
   # If this is a root job, add a wait (sleep) command to give enough time for jobs which depend on this one to be submitted.  This may not be strictly necessary or may need to be made more robust depending on how LSF actually handles these things and the response times of the system in question.
   waitInstructions = "";
-  if rootSleepSeconds != nothing && groupName == ""
+  if rootSleepSeconds != nothing && groupName == root
     waitInstructions = string("\nsleep ", rootSleepSeconds, "\n");
   end
   return string(
@@ -1136,6 +1138,7 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
   )
   arrJobFilePaths = [];
   ## For each group in the summary file create a job file
+  (length(dictSummaries) > 1) ? (thisRoot=root) : (thisRoot="") # If there is no need to split the job there is no need for a root suffix
   for (idx, pair) in enumerate(dictSummaries)
     group = pair[1];
     if length(dictSummaries) == 1 
@@ -1163,7 +1166,7 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
     end
     ## Create job file
     push!(arrJobFilePaths, outFilePath)
-    create_job_file_(outFilePath, jobArray, dictCheckpoints; summaryFileOfOrigin=summaryFilePath, root=root,
+    create_job_file_(outFilePath, jobArray, dictCheckpoints; summaryFileOfOrigin=summaryFilePath, root=thisRoot,
       tagBegin=tagBegin, tagFinish=tagFinish, tagHeader=tagHeader, tagCheckpoint=tagCheckpoint, headerPrefix=headerPrefix, headerSuffix=headerSuffix, summaryFile=summaryFile, 
       jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds, verbose=verbose, doJsubVersionControl=doJsubVersionControl, processTimestamp=processTimestamp,
       pathLogFile=pathLogFile, pathSummaryCompleted=pathSummaryCompleted, pathSummaryIncomplete=pathSummaryIncomplete,
