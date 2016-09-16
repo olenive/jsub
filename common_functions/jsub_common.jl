@@ -1018,8 +1018,8 @@ function get_groupname(jobArray; tagSplit="#JGROUP", root="root")
 end
 
 ## Use summary file name and array of job instructions to get a file name for each job.
-function generate_jobfilepath(summaryName, jobArray; tagSplit="#JGROUP", prefix="", suffix=".lsf")
-  groupName = get_groupname(jobArray, tagSplit=tagSplit);
+function generate_jobfilepath(summaryName, jobArray; tagSplit="#JGROUP", prefix="", suffix=".lsf", root="root")
+  groupName = get_groupname(jobArray, tagSplit=tagSplit, root=root);
   if summaryName != nothing
     return string(prefix, summaryName, "_", groupName, suffix)
   else
@@ -1031,7 +1031,7 @@ end
 function create_job_header_string(jobArray; root="root", tagHeader="\n#BSUB", prefix="#!/bin/bash\n", suffix="", tagSplit="#JGROUP", jobID=nothing, jobDate="", appendOptions=true, rootSleepSeconds=nothing)
   # arrHeaderRows = jobArray[find((x)->iscomment(join(x), tagHeader), jobArray)] # Extract header rows from among command rows
   jobID = jobID_or_hash(jobArray; jobID=jobID, jobDate=jobDate);
-  groupName = get_groupname(jobArray, tagSplit=tagSplit);
+  groupName = get_groupname(jobArray, tagSplit=tagSplit, root=root);
   length(groupName) > 0 ? idDelim = "_" : idDelim = "";
   # Generate options strings
   options = "";

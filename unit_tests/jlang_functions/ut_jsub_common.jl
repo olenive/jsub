@@ -1833,6 +1833,43 @@ Test.with_handler(ut_handler) do
   );
   @test create_job_header_string(suppliedJobArray; rootSleepSeconds="2.5", prefix="#!/bin/bash\n", suffix="suffixstuff", jobID="ID001", jobDate="YYYYMMDD_HHMMSS", appendOptions=false) == expHeader
   
+  # This call should add a "\nsleep 2.5\n" command
+  suppliedJobArray = [];
+  push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
+  push!(suppliedJobArray, ["#BSUB -J jobID"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 22\""]);
+  push!(suppliedJobArray, ["#BSUB -P grantcode"]);
+  push!(suppliedJobArray, ["#BSUB -w overriding"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 23\""]);
+  expHeader = string( 
+    "#!/bin/bash\n",
+    "\n#BSUB -J YYYYMMDD_HHMMSS_ID001_root",
+    "\n#BSUB -e YYYYMMDD_HHMMSS_ID001_root.error",
+    "\n#BSUB -o YYYYMMDD_HHMMSS_ID001_root.output",
+    "\n",
+    "\nsleep 2.5\n",
+    "suffixstuff"
+  );
+  @test create_job_header_string(suppliedJobArray; rootSleepSeconds="2.5", prefix="#!/bin/bash\n", suffix="suffixstuff", jobID="ID001", jobDate="YYYYMMDD_HHMMSS", appendOptions=true) == expHeader
+  
+  suppliedJobArray = [];
+  push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
+  push!(suppliedJobArray, ["#BSUB -J jobID"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 22\""]);
+  push!(suppliedJobArray, ["#BSUB -P grantcode"]);
+  push!(suppliedJobArray, ["#BSUB -w overriding"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 23\""]);
+  expHeader = string( 
+    "#!/bin/bash\n",
+    "\n#BSUB -J YYYYMMDD_HHMMSS_ID001",
+    "\n#BSUB -e YYYYMMDD_HHMMSS_ID001.error",
+    "\n#BSUB -o YYYYMMDD_HHMMSS_ID001.output",
+    "\n",
+    "\nsleep 2.5\n",
+    "suffixstuff"
+  );
+  @test create_job_header_string(suppliedJobArray; root="", rootSleepSeconds="2.5", prefix="#!/bin/bash\n", suffix="suffixstuff", jobID="ID001", jobDate="YYYYMMDD_HHMMSS", appendOptions=true) == expHeader
+
   # This call should not add a sleep command because #JGROUP at the start of the suppliedJobArray indicates that this is not a root job
   suppliedJobArray = [];
   push!(suppliedJobArray, ["#JGROUP second first third fourth fifth"]);

@@ -42,9 +42,11 @@ echo ""
 echo "Running integration test: basic_zip..."
 
 ### FUNCTIONS ###
-function file_exists {
-  if [ -f "$1" ]; then echo "yes"; else echo "no"; fi
-}
+source ../common_it_functions.sh
+# function file_exists {
+#   if [ -f "$1" ]; then echo "yes"; else echo "no"; fi
+# }
+## Overwrite the fnction in common_it_functions to deal with the directory produced by unzipping
 function clear_generated {
   rm -f ${GENERATED_SUMMARY}
   rm -f ${GENERATED_SUMMARY_LIST}
@@ -58,35 +60,36 @@ function clear_generated {
   rm -f ${GENERATED_INCOMPLETE}
   rm -fr ${GENERATED_PROTABLE_DIR}
 }
-function isAbsolutePath {
-  local DIR="$1"
-  [[ ${DIR:0:1} == '/' ]] && echo "absolute" || echo "relative"
-}
-function isJobNameInQueue {
-  local jobName="$1"
-  local res=$(bjobs -J ${jobName})
-  if [ "$res" = "" ]; then
-    echo "no"
-  else
-    echo "yes"
-  fi
-}
-function awaitJobNameCompletion {
-  echo "Waiting for completion of job named ""$1"
-  while [ $(isJobNameInQueue "$1") == "yes" ]; do
-    sleep 1
-  done
-}
-# Function used to determine the require option (-c) and file path for the header file containing text included in all jobs
-function getCommonHeaderOptionString {
-  if [ "$1" == "" ]; then
-    echo ""
-  elif [ $(isAbsolutePath "$1") == "relative" ]; then
-    echo " -c ../""$1"
-  else
-    echo " -c ""$1"
-  fi
-}
+# function isAbsolutePath {
+#   local DIR="$1"
+#   [[ ${DIR:0:1} == '/' ]] && echo "absolute" || echo "relative"
+# }
+# function isJobNameInQueue {
+#   local jobName="$1"
+#   local res=$(bjobs -J ${jobName})
+#   if [ "$res" = "" ]; then
+#     echo "no"
+#   else
+#     echo "yes"
+#   fi
+# }
+# function awaitJobNameCompletion {
+#   echo "Waiting for completion of job named ""$1"
+#   while [ $(isJobNameInQueue "$1") == "yes" ]; do
+#     sleep 1
+#   done
+#   echo "...job presumed to be completed."
+# }
+# # Function used to determine the require option (-c) and file path for the header file containing text included in all jobs
+# function getCommonHeaderOptionString {
+#   if [ "$1" == "" ]; then
+#     echo ""
+#   elif [ $(isAbsolutePath "$1") == "relative" ]; then
+#     echo " -c ../""$1"
+#   else
+#     echo " -c ""$1"
+#   fi
+# }
 function forcePathAbsolute {
   if [ "$1" == "" ]; then
     echo ""
@@ -136,16 +139,22 @@ cd ${GENERATED_DIR}
 # assert "file_exists ${GENERATED_PORTABLE_ZIP}" "yes"
 
 clear_generated # Remove existing output from previous tests
-
 # Extract zipped jobs and submit them
 tar -zxvf ${GENERATED_PORTABLE_ZIP}
 rm -rf ../${GENERATED_PROTABLE_DIR}
 mv ${GENERATED_PROTABLE_DIR} .. # Too lazy to change the relative path in the protocol for this test alone
 cd ../${GENERATED_PROTABLE_DIR}
 # Manually combine the generated job and the rquired local system header information
-cat ${ABSOLUTE_HEADER_PATH} >> ${GENERATED_JOB_IN}
+if [[ ${ABSOLUTE_HEADER_PATH} != "" ]] && [[ ${GENERATED_JOB_IN} != "" ]]; then
+  cat ${ABSOLUTE_HEADER_PATH} >> ${GENERATED_JOB_IN}
+else
+  echo "Warning, there are unset headers variables, job submission may fail..."
+  echo "  ABSOLUTE_HEADER_PATH = "${ABSOLUTE_HEADER_PATH}
+  echo "  GENERATED_JOB_IN = "${GENERATED_JOB_IN}
+fi
 bash submit_lsf_jobs.sh ${GENERATED_JOB_LIST}
 awaitJobNameCompletion "$LSF_JOB_NAME"
+sleep 2 # To let the system catch up with the job output being created
 assert "file_exists ${GENERATED_JOB_DATA}" "yes"
 assert "diff ${GENERATED_JOB_DATA} ${EXPECTED_JOB_DATA}" ""
 assert "file_exists ${GENERATED_JOB_OUTPUT}" "yes"
@@ -153,8 +162,14 @@ assert "file_exists ${GENERATED_JOB_ERROR}" "yes"
 assert "file_exists ${GENERATED_SUBMITTED_JOBS_LIST}" "yes"
 assert "file_exists ${GENERATED_COMPLETED}" "yes"
 assert "diff ${GENERATED_COMPLETED} ${EXPECTED_COMPLETED}" ""
+pwd
+ls -l
 
 ## end of test suite
+echo ""
 assert_end
+
+pwd
+ls -l
 
 # EOF
