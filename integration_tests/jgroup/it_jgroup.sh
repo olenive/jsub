@@ -23,7 +23,7 @@ EXPECTED_JOB_LIST="../expected/""$LONG_NAME"".list-jobs"
 EXPECTED_JOB_DATA="../expected_files/it1_fvars.txt"
 
 JOB_PREFIX="jobs/jobPrefix_"
-OUT_PREFIX="outPrefix_"
+OUT_PREFIX="results/outPrefix_"
 GENERATED_SUMMARY_LIST="$SUMMARY_PREFIX""$LONG_NAME"".list-summaries"
 GENERATED_JOB_LIST="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""$LONG_NAME"".list-jobs"
 GENERATED_SUBMITTED_JOBS_LIST="$GENERATED_JOB_LIST".submitted
@@ -42,46 +42,13 @@ echo ""
 echo "Running integration test: ""$0""..."
 
 ### FUNCTIONS ###
-function file_exists {
-  if [ -f "$1" ]; then echo "yes"; else echo "no"; fi
-}
-function clear_generated {
-  rm -rf "summaries"
-  rm -rf "jobs"
-}
-function isAbsolutePath {
-  local DIR="$1"
-  [[ ${DIR:0:1} == '/' ]] && echo "absolute" || echo "relative"
-}
-function isJobNameInQueue {
-  local jobName="$1"
-  local res=$(bjobs -J ${jobName})
-  if [ "$res" = "" ]; then
-    echo "no"
-  else
-    echo "yes"
-  fi
-}
-function awaitJobNameCompletion {
-  while [ $(isJobNameInQueue "$1") == "yes" ]; do
-    sleep 1
-  done
-}
-# Function used to determine the require option (-c) and file path for the header file containing text included in all jobs
-function getCommonHeaderOptionString {
-  if [ "$1" == "" ]; then
-    echo ""
-  elif [ $(isAbsolutePath "$1") == "relative" ]; then
-    echo " -c ../""$1"
-  else
-    echo " -c ""$1"
-  fi
-}
+source ../common_it_functions.sh
 #################
 
 # Change to generated_files directory
 mkdir -p ${GENERATED_DIR}
 cd ${GENERATED_DIR}
+mkdir -p results
 
 clear_generated # Remove existing output from previous tests
 
@@ -114,22 +81,32 @@ assert "diff ${GENERATED_JOB_LIST} ${EXPECTED_JOB_LIST}" ""
 # Run jsub - submit jobs from list to LSF queue
 ${CALL_JSUB} -b -o ${GENERATED_JOB_LIST}
 for sample in "${SAMPELS[@]}"; do
+  GENERATED_JOB_DATA_00="${OUT_PREFIX}${sample}.txt"
+  GENERATED_JOB_DATA_01="${OUT_PREFIX}${sample}_first.txt"
+  GENERATED_JOB_DATA_02="${OUT_PREFIX}${sample}_second.txt"
+  GENERATED_JOB_DATA_03="${OUT_PREFIX}${sample}_third.txt"
   for jgroup in "${JGROUPS[@]}"; do
     GENERATED_JOB=${JOB_PREFIX}${SUMMARY_BASE_PREFIX}${sample}_${jgroup}.lsf
-    EXPECTED_JOB="../expected_files/"${GENERATED_JOB}
-    GENERATED_JOB_DATA=""
-    EXPECTED_JOB_DATA="../expected_files/"
-    GENERATED_JOB_OUTPUT=""
-    GENERATED_JOB_ERROR=""
     awaitJobNameCompletion "$GENERATED_JOB"
-    assert "file_exists ${GENERATED_JOB_DATA}" "yes"
-    assert "diff ${GENERATED_JOB_DATA} ${EXPECTED_JOB_DATA}" ""
+  done
+  sleep 1
+  assert "file_exists ${GENERATED_JOB_DATA_00}" "yes"
+  assert "file_exists ${GENERATED_JOB_DATA_01}" "yes"
+  assert "file_exists ${GENERATED_JOB_DATA_02}" "yes"
+  assert "file_exists ${GENERATED_JOB_DATA_03}" "yes"
+  assert "diff ${GENERATED_JOB_DATA_00} ../expected_files/${GENERATED_JOB_DATA_00}" ""
+  assert "diff ${GENERATED_JOB_DATA_01} ../expected_files/${GENERATED_JOB_DATA_01}" ""
+  assert "diff ${GENERATED_JOB_DATA_02} ../expected_files/${GENERATED_JOB_DATA_02}" ""
+  assert "diff ${GENERATED_JOB_DATA_03} ../expected_files/${GENERATED_JOB_DATA_03}" ""
+  for jgroup in "${JGROUPS[@]}"; do
+    GENERATED_JOB_OUTPUT="${SUMMARY_BASE_PREFIX}${sample}_${jgroup}.output"
+    GENERATED_JOB_ERROR="${SUMMARY_BASE_PREFIX}${sample}_${jgroup}.error"
     assert "file_exists ${GENERATED_JOB_OUTPUT}" "yes"
     assert "file_exists ${GENERATED_JOB_ERROR}" "yes"
   done
 done
 assert "file_exists ${GENERATED_SUBMITTED_JOBS_LIST}" "yes"
-# # 29
+# 101
 # clear_generated # Remove existing output from previous tests
 
 # ## Create summary and job file(s) from protocol

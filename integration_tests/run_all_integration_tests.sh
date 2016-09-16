@@ -35,6 +35,7 @@ echo "Runnign integration tests on ""$DATETIME" > "$TEST_OUTPUT_LOG"
 
 run_test basic/it_basic.sh
 run_test basic/it_basic_zip.sh
+sleep 1
 run_test basic/it_basic_unzip.sh
 
 run_test fvars/it_fvars.sh

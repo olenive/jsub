@@ -1,14 +1,16 @@
 #!/bin/bash
-set -e
+set -eu
 
 #BSUB -w 'done("summaryPrefix_sample0002A_root")'
 #BSUB -J summaryPrefix_sample0002A_second
 #BSUB -e summaryPrefix_sample0002A_second.error
 #BSUB -o summaryPrefix_sample0002A_second.output
+#BSUB -P prepay-houlston
+#BSUB -q short
 
 
 # Job file variables:
-JSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>
+JSUB_PATH_TO_THIS_JOB="/scratch/cancgene/olenive/jsub/integration_tests/jgroup/generated_files/jobs/jobPrefix_summaryPrefix_sample0002A_second.lsf"
 JSUB_JOB_ID="summaryPrefix_sample0002A"
 JSUB_LOG_FILE="jobs/jobPrefix_summaryPrefix_sample0002A.log"
 JSUB_SUMMARY_COMPLETED="jobs/jobPrefix_summaryPrefix_sample0002A.summary.completed"
@@ -18,7 +20,7 @@ JSUB_JOB_TIMESTAMP=false
 
 # Contents inserted from other files (this section is intended to be used only for functions):
 
-# --- From file: /Users/olenive/work/jsub_pipeliner/common_functions/job_processing.sh
+# --- From file: /scratch/cancgene/olenive/jsub/common_functions/job_processing.sh
 ## job_processing parses the job file, writes to log and summary files, and calls version control functions.
 # Function allowing job script termination
 trap "exit 1" TERM
@@ -84,7 +86,7 @@ function process_job {
   return 0
 }
 
-# --- From file: /Users/olenive/work/jsub_pipeliner/common_functions/version_control.sh
+# --- From file: /scratch/cancgene/olenive/jsub/common_functions/version_control.sh
 # Function used to try to keep track of the versions of arbitrary software on the system by checking the which command and checking for the existance of git repositories.
 function version_control {
   echo "called version_control"
@@ -94,8 +96,9 @@ function version_control {
 
 #JSUB<begin-job>
 #JGROUP second
-bash ../../bash_scripts/concat.sh "$OUTFILE"_second sub02Y sub02Z
-bash ../../bash_scripts/concat.sh "$OUTFILE"_second sub02Z sub02X
+OUTFILE="results/outPrefix_"sample0002A 
+bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub02Y sub02Z
+bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub02Z sub02X
 
 #JSUB<finish-job>
 process_job

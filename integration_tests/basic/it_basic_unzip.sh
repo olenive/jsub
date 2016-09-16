@@ -162,14 +162,9 @@ assert "file_exists ${GENERATED_JOB_ERROR}" "yes"
 assert "file_exists ${GENERATED_SUBMITTED_JOBS_LIST}" "yes"
 assert "file_exists ${GENERATED_COMPLETED}" "yes"
 assert "diff ${GENERATED_COMPLETED} ${EXPECTED_COMPLETED}" ""
-pwd
-ls -l
 
 ## end of test suite
 echo ""
 assert_end
-
-pwd
-ls -l
 
 # EOF

@@ -5,6 +5,9 @@ function file_exists {
 function clear_generated {
   rm -rf "summaries"
   rm -rf "jobs"
+  rm -rf "results"
+  rm -rf "*.error"
+  rm -rf "*.output"
 }
 function isAbsolutePath {
   local DIR="$1"

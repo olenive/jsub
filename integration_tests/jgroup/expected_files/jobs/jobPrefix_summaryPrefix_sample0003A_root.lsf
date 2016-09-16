@@ -1,13 +1,15 @@
 #!/bin/bash
-set -e
+set -eu
 
-#BSUB -J summaryPrefix_sample0003A
-#BSUB -e summaryPrefix_sample0003A.error
-#BSUB -o summaryPrefix_sample0003A.output
+#BSUB -J summaryPrefix_sample0003A_root
+#BSUB -e summaryPrefix_sample0003A_root.error
+#BSUB -o summaryPrefix_sample0003A_root.output
+#BSUB -P prepay-houlston
+#BSUB -q short
 
 
 # Job file variables:
-JSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>
+JSUB_PATH_TO_THIS_JOB="/scratch/cancgene/olenive/jsub/integration_tests/jgroup/generated_files/jobs/jobPrefix_summaryPrefix_sample0003A_root.lsf"
 JSUB_JOB_ID="summaryPrefix_sample0003A"
 JSUB_LOG_FILE="jobs/jobPrefix_summaryPrefix_sample0003A.log"
 JSUB_SUMMARY_COMPLETED="jobs/jobPrefix_summaryPrefix_sample0003A.summary.completed"
@@ -17,7 +19,7 @@ JSUB_JOB_TIMESTAMP=false
 
 # Contents inserted from other files (this section is intended to be used only for functions):
 
-# --- From file: /Users/olenive/work/jsub_pipeliner/common_functions/job_processing.sh
+# --- From file: /scratch/cancgene/olenive/jsub/common_functions/job_processing.sh
 ## job_processing parses the job file, writes to log and summary files, and calls version control functions.
 # Function allowing job script termination
 trap "exit 1" TERM
@@ -83,7 +85,7 @@ function process_job {
   return 0
 }
 
-# --- From file: /Users/olenive/work/jsub_pipeliner/common_functions/version_control.sh
+# --- From file: /scratch/cancgene/olenive/jsub/common_functions/version_control.sh
 # Function used to try to keep track of the versions of arbitrary software on the system by checking the which command and checking for the existance of git repositories.
 function version_control {
   echo "called version_control"
@@ -96,9 +98,9 @@ function version_control {
 #JSUB<summary-name> sample0003A
 echo "Processing summary data from: "sample0003A
 # root group 
-OUTFILE="outPrefix_"sample0003A".txt"
-bash ../../bash_scripts/trivial.sh "$OUTFILE"
-bash ../../bash_scripts/trivial.sh "$OUTFILE"
+OUTFILE="results/outPrefix_"sample0003A # Note: this is an example of what not to do! After the protocol is split OUTFILE will be undeclared in subsequent groups unless it is declared there again using variables from vars and variables from the top of the script.
+bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
+bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
 
 #JSUB<finish-job>
 process_job
