@@ -2,7 +2,7 @@
 #JSUB<summary-name> "$SAMPLE_ID"
 echo "Processing summary data from: ""$SAMPLE_ID"
 # root group 
-OUTFILE="$OUT_PREFIX""$SAMPLE_ID" # Note: this is an example of what not to do! After the protocol is split OUTFILE will be undeclared in subsequent groups unless it is declared there again using variables from vars and variables from the top of the script.
+OUTFILE="$OUT_PREFIX""$SAMPLE_ID" # Note: this is an example of what not to do! After the protocol is split OUTFILE will be undeclared in subsequent groups unless it is declared there again using variables from vars and fvars but NOT variables from the top of the script.
 bash "$PATH_TO_TRIVIAL" "$OUTFILE".txt
 bash "$PATH_TO_TRIVIAL" "$OUTFILE".txt
 
@@ -19,6 +19,6 @@ OUTFILE="$OUT_PREFIX""$SAMPLE_ID"
 bash "$PATH_TO_CONCAT" "$OUTFILE"_third.txt "$SUBSAMPLE_03" "$SUBSAMPLE_01"
 bash "$PATH_TO_CONCAT" "$OUTFILE"_third.txt "$SUBSAMPLE_01" "$SUBSAMPLE_02"
 
-#JGROUP last
+#JGROUP last fist second third
 OUTFILE="$OUT_PREFIX""$SAMPLE_ID"
 bash "$PATH_TO_CATFILES" "$OUTFILE".txt "$OUTFILE"_first.txt "$OUTFILE"_second.txt "$OUTFILE"_third.txt

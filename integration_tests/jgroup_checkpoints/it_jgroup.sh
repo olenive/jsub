@@ -48,9 +48,9 @@ source ../common_it_functions.sh
 # Change to generated_files directory
 mkdir -p ${GENERATED_DIR}
 cd ${GENERATED_DIR}
+mkdir -p results
 
 clear_generated # Remove existing output from previous tests
-mkdir -p results
 
 # Run jsub - only create summary file
 ${CALL_JSUB} -s -p ${PROTOCOL_FILE} --vars ${VARS_FILE} --fvars ${FVARS_FILE} --summary-prefix ${SUMMARY_PREFIX}
@@ -86,7 +86,8 @@ for sample in "${SAMPELS[@]}"; do
   GENERATED_JOB_DATA_02="${OUT_PREFIX}${sample}_second.txt"
   GENERATED_JOB_DATA_03="${OUT_PREFIX}${sample}_third.txt"
   for jgroup in "${JGROUPS[@]}"; do
-    awaitJobNameCompletion ${SUMMARY_BASE_PREFIX}${sample}_${jgroup}
+    GENERATED_JOB=${JOB_PREFIX}${SUMMARY_BASE_PREFIX}${sample}_${jgroup}.lsf
+    awaitJobNameCompletion "$GENERATED_JOB"
   done
   sleep 1
   assert "file_exists ${GENERATED_JOB_DATA_00}" "yes"

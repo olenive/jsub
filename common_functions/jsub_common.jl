@@ -667,8 +667,10 @@ function parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, dlmF
   if length( unique( map( x->length(x),  values(dictCmdLineIdxs) ) ) ) != 1  #previously: # if length(unique(map( x -> length(x) , arrCmdLineIdxs ))) != 1
     if !SUPPRESS_WARNINGS 
       warn("(in parse_expandvars_listfiles_) detected different numbers of command lines (non-comment non-blank) in input files:");
+      idx = 0;
       for file in filePathsFvars
-        println("number of command lines: ", length(dictCmdLineIdxs[file]), ", in file: ", filePathsFvars[file])
+        idx += 1;
+        println("number of command lines: ", length(dictCmdLineIdxs[file]), ", in file: ", filePathsFvars[idx])
       end
     else
       num_suppressed[1] += 1;
@@ -678,8 +680,10 @@ function parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, dlmF
   if length(unique(values(dictCmdLineIdxs))) != 1 #previously: # if length(unique(arrCmdLineIdxs)) != 1
     if !SUPPRESS_WARNINGS  
       warn("(in parse_expandvars_listfiles_) detected different indices of command lines (non-comment non-blank) in input files:");
-      for idx = 1:length(filePathsFvars)
-        println("Index of command lines: ", dictCmdLineIdxs[idx], ", in file: ", filePathsFvars[idx])
+      idx = 0;
+      for file in filePathsFvars
+        idx += 1;
+        println("index array of command lines: ", dictCmdLineIdxs[file], ", in file: ", filePathsFvars[idx])
       end
     else
       num_suppressed[1] += 1;

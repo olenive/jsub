@@ -43,6 +43,6 @@ run_test fvars/it_fvars_prefixes.sh
 
 run_test vars_fvars/it_fvars_vars.sh
 
-run_test jgroup/it_jgroup.sh.sh
+run_test jgroup/it_jgroup.sh
 
 # EOF
