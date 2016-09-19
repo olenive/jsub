@@ -982,9 +982,9 @@ function jobID_or_hash(jobArray; jobID=nothing, jobDate="")
 end
 
 # Determine parent jobs which must be completed first
-function cmd_await_jobs(jobArray; root="root", tagHeader="\n#BSUB", option="-w", condition="done", tagSplit="#JGROUP", jobID=nothing, jobDate="")
+function cmd_await_jobs(jobArray, jobID; root="root", tagHeader="\n#BSUB", option="-w", condition="done", tagSplit="#JGROUP", jobDate="")
   jobDate = get_timestamp_(jobDate);
-  jobID = jobID_or_hash(jobArray; jobID=jobID); # Generate unique-ish job ID if one is not provided
+  # jobID = jobID_or_hash(jobArray; jobID=jobID); # Generate unique-ish job ID if one is not provided
   # Check if the first entry in the job array begins with a group tag (tagSplit) and use this tag to identify parent jobs
   if iscomment(join(jobArray[1]), tagSplit)
     groupString = lstrip(join(jobArray[1]));
@@ -1052,7 +1052,7 @@ function create_job_header_string(jobArray; root="root", tagHeader="\n#BSUB", pr
     prefix,
     # join( map( x -> join(x), arrHeaderRows), '\n'), 
     # '\n',
-    cmd_await_jobs(jobArray, root=root, tagHeader=tagHeader, tagSplit=tagSplit, jobID=jobID, jobDate=jobDate),
+    cmd_await_jobs(jobArray, jobID, root=root, tagHeader=tagHeader, tagSplit=tagSplit, jobDate=jobDate),
     options,
     waitInstructions,
     suffix 
@@ -1127,6 +1127,11 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summ
     write(stream, string("\nprocess_job\n")); # Append call to process_job from job_processing.sh
     close(stream);
   end
+end
+
+# Function used to assign an integer value that indicates if this job needs to be submitted before or after another  job.
+function get_job_priority(jobArray)
+  #function body
 end
 
 ## Create all the job files associated with a particular summary file (Note that using the option filePathOverride means input to the jobFilePrefix and jobFileSuffix options will be ignored)

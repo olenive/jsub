@@ -409,7 +409,7 @@ function run_stage2_(pathSummariesList, pathJobsList; flagVerbose=false, tagsExp
   arrJobIDs = map((x) -> basename(remove_suffix(x, ".summary")) , summaryPaths2);
   
   ## Write job files
-  jobFilePathsArrays2 = map((summaryFilePath, dictSummaries, jobID) -> create_jobs_from_summary_(summaryFilePath, dictSummaries, commonFunctions, checkpointsDict; 
+  jobFilePathsArrays2, jobFilePriorities = map((summaryFilePath, dictSummaries, jobID) -> create_jobs_from_summary_(summaryFilePath, dictSummaries, commonFunctions, checkpointsDict; 
       jobFilePrefix=jobFilePrefix, jobID=jobID, jobDate=(
         parsed_args["timestamp"] ? get_timestamp_(nothing) : "";
       ),
