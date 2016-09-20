@@ -409,7 +409,7 @@ function run_stage2_(pathSummariesList, pathJobsList; flagVerbose=false, tagsExp
   arrJobIDs = map((x) -> basename(remove_suffix(x, ".summary")) , summaryPaths2);
   
   ## Write job files
-  jobFilePathsArrays2, jobFilePriorities = map((summaryFilePath, dictSummaries, jobID) -> create_jobs_from_summary_(summaryFilePath, dictSummaries, commonFunctions, checkpointsDict; 
+  jobFilePathsArrays2, jobFilePriorityArrays2 = map((summaryFilePath, dictSummaries, jobID) -> create_jobs_from_summary_(summaryFilePath, dictSummaries, commonFunctions, checkpointsDict; 
       jobFilePrefix=jobFilePrefix, jobID=jobID, jobDate=(
         parsed_args["timestamp"] ? get_timestamp_(nothing) : "";
       ),
@@ -417,6 +417,9 @@ function run_stage2_(pathSummariesList, pathJobsList; flagVerbose=false, tagsExp
     ),
     summaryPaths2, summaryArrDicts, arrJobIDs,
   );
+
+## Re-order job paths list according to job priority
+
   string2file_(pathJobsList, arrArr2string(jobFilePathsArrays2)) # Convert array of arrays into a single string
 
   return pathJobsList

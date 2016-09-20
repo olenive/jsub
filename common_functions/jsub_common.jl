@@ -931,22 +931,32 @@ function create_summary_files_(arrArrExpFvars, summaryPaths; verbose=false, crea
 end
 
 # Split summary file array into arrays (stored in a dictionary) from which job files will be created.
-function split_summary(summary; tagSplit="#JGROUP", root="root")
+function split_summary(summaryArray; tagSplit="#JGROUP", root="root")
   jobs = Dict();
   current = [];
+  arrGroupNames = [];
   group = root;
   tagLength = length(tagSplit);
   ## Split array of lines into dictionary of groups
-  for arrLine in summary
+  for arrLine in summaryArray
     line = lstrip(join(arrLine));
     if iscomment(line, tagSplit)  # Determine if line begins with tagSplit string
       jobs[group] = current; # Add existing group to dict
       current = []; # Clear current group array
       group = split(line[tagLength+1:end])[1] # Determine group name
+      push!(arrGroupNames, group);
     end
     push!(current, arrLine)
   end
   jobs[group] = current; # Add existing group to dict
+  ## Check for non-unique group names.
+  if length(arrGroupNames) != length(unique(arrGroupNames))
+    summaryString = "";
+    for line in summaryArray
+      summaryString = string(summaryString, join(line), "\n");
+    end
+    error(string("(in get_prioritiesarray) Group names must be unique to avoid ambiguity, the following group names were identified:\n", arrGroupNames, "\n  In the summary:\n", summaryString));
+  end
   return jobs
 end
 
@@ -981,29 +991,6 @@ function jobID_or_hash(jobArray; jobID=nothing, jobDate="")
   return jobID
 end
 
-# Determine parent jobs which must be completed first
-function cmd_await_jobs(jobArray, jobID; root="root", tagHeader="\n#BSUB", option="-w", condition="done", tagSplit="#JGROUP", jobDate="")
-  jobDate = get_timestamp_(jobDate);
-  # jobID = jobID_or_hash(jobArray; jobID=jobID); # Generate unique-ish job ID if one is not provided
-  # Check if the first entry in the job array begins with a group tag (tagSplit) and use this tag to identify parent jobs
-  if iscomment(join(jobArray[1]), tagSplit)
-    groupString = lstrip(join(jobArray[1]));
-    groupName = "";
-    groupParents = [];
-    if length(groupString) > length(tagSplit)
-      afterTag = split(groupString);
-      if length(afterTag) > 1
-        length(afterTag) > 2 ? groupNames = [root; afterTag[3:end]] : groupNames = [root]
-        length(jobID) > 0 ? delim = "_" : delim = "";
-        groupParents = map( (x) -> string(jobID, delim, x), groupNames); # Note that a root job is always added
-      end
-    end
-    return string(tagHeader, " ", option, " ", construct_conditions(groupParents; condition=condition))
-  else
-    return ""
-  end
-end
-
 # Retrives the group name associated with this job (this not the job ID), assuming that the jobArray is a list of commands with the first entry being of the form "#JGROUP groupName ..."
 function get_groupname(jobArray; tagSplit="#JGROUP", root="root")
   # Get group name
@@ -1013,12 +1000,56 @@ function get_groupname(jobArray; tagSplit="#JGROUP", root="root")
     if length(afterTag) > 1
       groupName = string(afterTag[2]);
     else
-      throw("Found a group/split tag without an associated group name", " on line: ", join(jobArray[1]));
+      error("Found a group/split tag without an associated group name", " on line: ", join(jobArray[1]));
+    end
+    ## Check for cases where user has used root as the job name
+    if groupName == root
+      error(string("(in get_groupname) the group name after the split tag (\"", tagSplit, "\") matches the root group name (\"", root, "\"). Please use a different group name to avoid ambiguity."));
     end
   else
     groupName = root;
   end
   return groupName
+end
+
+# Returns the group parents.  For example, "tagHeader groupName parent1 parent2 ..." will return "parent1 parent2 ..."
+function get_groupparents(jobArray, jobID; root="root", tagSplit="#JGROUP", jobDate="")
+  jobDate = get_timestamp_(jobDate);
+  # jobID = jobID_or_hash(jobArray; jobID=jobID); # Generate unique-ish job ID if one is not provided
+  (length(jobDate) > 0 && length(jobID) > 0) ? dateDelim = "_" : dateDelim = "";
+  jobDateAndID = string(jobDate, dateDelim, jobID);
+  groupName = get_groupname(jobArray; tagSplit=tagSplit, root=root);
+  # Check if the first entry in the job array begins with a group tag (tagSplit) and use this tag to identify parent jobs
+  if iscomment(join(jobArray[1]), tagSplit)
+    groupString = lstrip(join(jobArray[1]));
+    groupParents = [];
+    if length(groupString) > length(tagSplit)
+      afterTag = split(groupString);
+      if length(afterTag) > 1
+        length(afterTag) > 2 ? groupNames = [root; afterTag[3:end]] : groupNames = [root]
+        length(jobDateAndID) > 0 ? delim = "_" : delim = "";
+        groupParents = map( (x) -> string(jobDateAndID, delim, x), groupNames); # Note that a root job is always added
+      end
+    end
+    ## Make sure that the group is not also labeled as it's own parent.
+    if groupName in groupParents
+      groupParents = groupParents[find(x -> x != groupName, groupParents)];
+      SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn(string("in (get_groupparents) The following group contains it's own name among it's parents: ", groupString, "\nTreating group parents as: ", groupParents))
+    end
+    return groupParents;
+  else
+    return [];
+  end
+end
+
+# Determine parent jobs which must be completed first
+function cmd_await_jobs(jobArray, jobID; root="root", tagHeader="\n#BSUB", option="-w", condition="done", tagSplit="#JGROUP", jobDate="")
+  groupParents = get_groupparents(jobArray, jobID; root=root, tagSplit=tagSplit, jobDate=jobDate)
+  if groupParents != []
+    return string(tagHeader, " ", option, " ", construct_conditions(groupParents; condition=condition))
+  else
+    return ""
+  end
 end
 
 ## Use summary file name and array of job instructions to get a file name for each job.
@@ -1032,16 +1063,17 @@ function generate_jobfilepath(summaryName, jobArray; tagSplit="#JGROUP", prefix=
 end
 
 # Read job dictionary and return job header
-function create_job_header_string(jobArray; root="root", tagHeader="\n#BSUB", prefix="#!/bin/bash\n", suffix="", tagSplit="#JGROUP", jobID=nothing, jobDate="", appendOptions=true, rootSleepSeconds=nothing)
+function create_job_header_string(jobArray, jobID; root="root", tagHeader="\n#BSUB", prefix="#!/bin/bash\n", suffix="", tagSplit="#JGROUP", jobDate="", appendOptions=true, rootSleepSeconds=nothing)
   # arrHeaderRows = jobArray[find((x)->iscomment(join(x), tagHeader), jobArray)] # Extract header rows from among command rows
-  jobID = jobID_or_hash(jobArray; jobID=jobID, jobDate=jobDate);
+  (length(jobDate) > 0 && length(jobID) > 0) ? dateDelim = "_" : dateDelim = "";
+  jobDateAndID = string(jobDate, dateDelim, jobID); # previously # jobID = jobID_or_hash(jobArray; jobID=jobID, jobDate=jobDate);
   groupName = get_groupname(jobArray, tagSplit=tagSplit, root=root);
   length(groupName) > 0 ? idDelim = "_" : idDelim = "";
   # Generate options strings
   options = "";
   if appendOptions
     ## Determine group ID (first entry after group tag (e.g #JGROUP groupID otherGroupID ...))
-    options = string(tagHeader, " -J $jobID", idDelim, groupName, tagHeader, " -e $jobID", idDelim, groupName, ".error", tagHeader, " -o $jobID", idDelim, groupName, ".output", "\n");
+    options = string(tagHeader, " -J $jobDateAndID", idDelim, groupName, tagHeader, " -e $jobDateAndID", idDelim, groupName, ".error", tagHeader, " -o $jobDateAndID", idDelim, groupName, ".output", "\n");
   end
   # If this is a root job, add a wait (sleep) command to give enough time for jobs which depend on this one to be submitted.  This may not be strictly necessary or may need to be made more robust depending on how LSF actually handles these things and the response times of the system in question.
   waitInstructions = "";
@@ -1101,7 +1133,7 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summ
     # Overwrite with header
     verbose && println("Writing to job file: ", outFilePath);
     stream = open(outFilePath, "w");
-    write(stream, create_job_header_string(jobArray; root=root, tagHeader=tagHeader, prefix=headerPrefix, suffix=headerSuffix, jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds));
+    write(stream, create_job_header_string(jobArray, jobID; root=root, tagHeader=tagHeader, prefix=headerPrefix, suffix=headerSuffix, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds));
     # Append log file variable declarations (Note that the variable names used here need to match those expected by the process_job function in job_processing.sh)
     write(stream, "\n\n# Job file variables:");
     # write(stream, string("\n#<The next line will be deleted and replaced by the submit_lsf_jobs.sh script.>"));
@@ -1130,8 +1162,30 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summ
 end
 
 # Function used to assign an integer value that indicates if this job needs to be submitted before or after another  job.
-function get_job_priority(jobArray)
-  #function body
+function get_prioritiesarray(dictSummaries; tagSplit="#JGROUP", root="root")
+  priotries = [];
+  dictNamesParents = Dict()
+  ## Create a dictionary of group names and parents
+  for (idx, pair) in enumerate(dictSummaries)
+    println(idx);
+    println(pair);
+    groupName = get_groupname(pair[2]; tagSplit=tagSplit, root=root);
+    parents = get_groupparents(jobArray, jobID; root="root", tagSplit="#JGROUP", jobDate="")
+    println(groupName);
+    dictNamesParents[groupName] = parents
+  end
+  
+
+  ## Check for missing parent groups
+  if !(parentGroup in keys(dictNamesParents))
+    summaryString = "";
+    for line in summaryArray
+      summaryString = string(summaryString, join(line), "\n");
+    end
+    error(string("(in get_prioritiesarray) The group named \"", groupName, "\" lists the group named \"", parentGroup, "\" as a parent group but this group is not found in the summary: ", PRODIGY))
+  end
+
+  return priotries
 end
 
 ## Create all the job files associated with a particular summary file (Note that using the option filePathOverride means input to the jobFilePrefix and jobFileSuffix options will be ignored)
@@ -1145,7 +1199,9 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
     pathSummaryCompleted=string(prefixSummaryCompleted, basename(remove_suffix(summaryFilePath, ".summary") * ".summary.completed")),
     pathSummaryIncomplete=string(prefixSummaryIncomplete, basename(remove_suffix(summaryFilePath, ".summary") * ".summary.incomplete")),
   )
-  arrJobFilePaths = [];
+  arrJobFilePaths = []; 
+  arrJobFilePriority = []; # This array will be used to store an integer indicating how late (relative to other jobs from this summary) the job needs to be submitted (higher means submit later).
+  # If a job is submitted before the jobs it depends on have been submitted LSF will return an error and discard the job.
   ## For each group in the summary file create a job file
   (length(dictSummaries) > 1) ? (thisRoot=root) : (thisRoot="") # If there is no need to split the job there is no need for a root suffix
   for (idx, pair) in enumerate(dictSummaries)

@@ -77,9 +77,9 @@ global flag_test_fail = false
 
 # Load functions from file
 include("../../common_functions/jsub_common.jl")
-# function inc()
-#   include("../../common_functions/jsub_common.jl")
-# end
+function inc()
+  include("../../common_functions/jsub_common.jl")
+end
 
 # Load test files
 pathToTestProtocol = "jlang_function_test_files/refs_samples.protocol"
@@ -1745,33 +1745,85 @@ Test.with_handler(ut_handler) do
     "second" => group2
   )
   @test split_summary(suppliedSummaryArray; tagSplit="#JGROUP") == expectedSummaryDict
+  # Test for error if group names repeat
+  suppliedSummaryArray = [];
+  push!(suppliedSummaryArray, ["#JGROUP zeroth"]);
+  push!(suppliedSummaryArray, ["# This data would come from reading summary files."]);
+  push!(suppliedSummaryArray, ["#JSUB<summary-name>ProtocolName"]);
+  push!(suppliedSummaryArray, ["bash echo \"cmd 1\""]);
+  push!(suppliedSummaryArray, ["#JGROUP first"]);
+  push!(suppliedSummaryArray, ["bash echo \"cmd 12\""]);
+  push!(suppliedSummaryArray, ["bash echo \"cmd 13\""]);
+  push!(suppliedSummaryArray, ["#JGROUP second first"]);
+  push!(suppliedSummaryArray, ["bash echo \"cmd 21\""]);
+  push!(suppliedSummaryArray, ["bash echo \"cmd 22\""]);
+  push!(suppliedSummaryArray, ["#JGROUP first"]);
+  push!(suppliedSummaryArray, ["bash echo \"cmd 31\""]);
+  push!(suppliedSummaryArray, ["bash echo \"cmd 32\""]);
+  push!(suppliedSummaryArray, ["#JGROUP third second"]);
+  push!(suppliedSummaryArray, ["bash echo \"cmd 41\""]);
+  push!(suppliedSummaryArray, ["bash echo \"cmd 42\""]);
+  @test_throws ErrorException split_summary(suppliedSummaryArray; tagSplit="#JGROUP")
 
   ## construct_conditions(arrParents; condition="done", operator="&&")
   suppliedNames = ["first", "second", "third", "fourth"];
   expectedString = "\'done(\"first\")&&done(\"second\")&&done(\"third\")&&done(\"fourth\")\'";
   @test construct_conditions(suppliedNames; condition="done", operator="&&") == expectedString
 
+  ## get_groupparents(jobArray, jobID; root="root", tagHeader="\n#BSUB", tagSplit="#JGROUP", jobDate="")
   ## cmd_await_jobs(jobArray; condition="done", tagSplit="#JGROUP")
-  suppliedJobArray = [];
-  push!(suppliedJobArray, ["#JGROUP second first third fourth fifth"]);
-  push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
-  push!(suppliedJobArray, ["bash echo \"cmd 22\""]);
+  suppliedJobArray00 = [];
+  push!(suppliedJobArray00, ["bash echo \"cmd 21\""]);
+  push!(suppliedJobArray00, ["bash echo \"cmd 22\""]);
+  @test get_groupparents(suppliedJobArray00, ""; root="root", jobDate="") == []
   expectedCommand = "\n#BSUB -w \'done(\"root\")&&done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'";
-  @test cmd_await_jobs(suppliedJobArray; option="-w", condition="done", tagSplit="#JGROUP", jobID="", jobDate="") == expectedCommand
+  @test cmd_await_jobs(suppliedJobArray00, ""; option="-w", condition="done", tagSplit="#JGROUP", jobDate="") == ""
 
-  suppliedJobArray = [];
-  push!(suppliedJobArray, ["#JGROUP second first third fourth fifth"]);
-  push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
-  push!(suppliedJobArray, ["bash echo \"cmd 22\""]);
+  suppliedJobArray00b = [];
+  push!(suppliedJobArray00b, ["#JGROUP root"]);
+  push!(suppliedJobArray00b, ["bash echo \"cmd 21\""]);
+  push!(suppliedJobArray00b, ["bash echo \"cmd 22\""]);
+  @test_throws ErrorException get_groupparents(suppliedJobArray00b, ""; root="root", jobDate="");
+  @test_throws ErrorException cmd_await_jobs(suppliedJobArray00b, ""; option="-w", condition="done", tagSplit="#JGROUP", jobDate="")
+
+  suppliedJobArray00c = [];
+  push!(suppliedJobArray00c, ["#JGROUP"]);
+  push!(suppliedJobArray00c, ["bash echo \"cmd 21\""]);
+  push!(suppliedJobArray00c, ["bash echo \"cmd 22\""]);
+  @test_throws ErrorException get_groupparents(suppliedJobArray00c, ""; root="root", jobDate="")
+  @test_throws ErrorException cmd_await_jobs(suppliedJobArray00c, ""; option="-w", condition="done", tagSplit="#JGROUP", jobDate="")
+  
+  suppliedJobArray01 = [];
+  push!(suppliedJobArray01, ["#JGROUP second first third fourth fifth"]);
+  push!(suppliedJobArray01, ["bash echo \"cmd 21\""]);
+  push!(suppliedJobArray01, ["bash echo \"cmd 22\""]);
+  @test get_groupparents(suppliedJobArray01, ""; root="root", jobDate="") == ["root", "first", "third", "fourth", "fifth"]
+  expectedCommand = "\n#BSUB -w \'done(\"root\")&&done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'";
+  @test cmd_await_jobs(suppliedJobArray01, ""; option="-w", condition="done", tagSplit="#JGROUP", jobDate="") == expectedCommand
+
+  suppliedJobArray02 = [];
+  push!(suppliedJobArray02, ["#JGROUP second first third fourth fifth"]);
+  push!(suppliedJobArray02, ["bash echo \"cmd 21\""]);
+  push!(suppliedJobArray02, ["bash echo \"cmd 22\""]);
+  @test get_groupparents(suppliedJobArray02, "11331234539506827047"; root="root", jobDate="") == ["11331234539506827047_root", "11331234539506827047_first", "11331234539506827047_third", "11331234539506827047_fourth", "11331234539506827047_fifth"]
   expectedCommand = "\n#BSUB -w \'done(\"11331234539506827047_root\")&&done(\"11331234539506827047_first\")&&done(\"11331234539506827047_third\")&&done(\"11331234539506827047_fourth\")&&done(\"11331234539506827047_fifth\")\'";
-  @test cmd_await_jobs(suppliedJobArray; option="-w", condition="done", tagSplit="#JGROUP", jobID=nothing) == expectedCommand
+  @test cmd_await_jobs(suppliedJobArray02, jobID_or_hash(suppliedJobArray02; jobID=nothing); option="-w", condition="done", tagSplit="#JGROUP") == expectedCommand
 
-  suppliedJobArray = [];
-  push!(suppliedJobArray, ["#JGROUP second first third fourth fifth"]);
-  push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
-  push!(suppliedJobArray, ["bash echo \"cmd 22\""]);
+  suppliedJobArray03 = [];
+  push!(suppliedJobArray03, ["#JGROUP second first third fourth fifth"]);
+  push!(suppliedJobArray03, ["bash echo \"cmd 21\""]);
+  push!(suppliedJobArray03, ["bash echo \"cmd 22\""]);
+  @test get_groupparents(suppliedJobArray02, "ID01"; root="root", jobDate="") == ["ID01_root", "ID01_first", "ID01_third", "ID01_fourth", "ID01_fifth"]
   expectedCommand = "\n#BSUB -w \'done(\"ID01_root\")&&done(\"ID01_first\")&&done(\"ID01_third\")&&done(\"ID01_fourth\")&&done(\"ID01_fifth\")\'";
-  @test cmd_await_jobs(suppliedJobArray; option="-w", condition="done", tagSplit="#JGROUP", jobID="ID01", jobDate="") == expectedCommand
+  @test cmd_await_jobs(suppliedJobArray03, "ID01"; option="-w", condition="done", tagSplit="#JGROUP", jobDate="") == expectedCommand
+  # Test with date
+  suppliedJobArray04 = [];
+  push!(suppliedJobArray04, ["#JGROUP second first third fourth fifth"]);
+  push!(suppliedJobArray04, ["bash echo \"cmd 21\""]);
+  push!(suppliedJobArray04, ["bash echo \"cmd 22\""]);
+  @test get_groupparents(suppliedJobArray02, "ID01"; root="root", jobDate="YYYYMMDD_HHMMSS") == ["YYYYMMDD_HHMMSS_ID01_root", "YYYYMMDD_HHMMSS_ID01_first", "YYYYMMDD_HHMMSS_ID01_third", "YYYYMMDD_HHMMSS_ID01_fourth", "YYYYMMDD_HHMMSS_ID01_fifth"]
+  expectedCommand = "\n#BSUB -w \'done(\"YYYYMMDD_HHMMSS_ID01_root\")&&done(\"YYYYMMDD_HHMMSS_ID01_first\")&&done(\"YYYYMMDD_HHMMSS_ID01_third\")&&done(\"YYYYMMDD_HHMMSS_ID01_fourth\")&&done(\"YYYYMMDD_HHMMSS_ID01_fifth\")\'";
+  @test cmd_await_jobs(suppliedJobArray04, "ID01"; option="-w", condition="done", tagSplit="#JGROUP", jobDate="YYYYMMDD_HHMMSS") == expectedCommand
 
   ## create_job_header_string(jobArray; tagHeader="#BSUB" prefix="#!/bin/bash\n", suffix="")
   suppliedJobArray = [];
@@ -1788,21 +1840,21 @@ Test.with_handler(ut_handler) do
     "#BSUB -w \'done(\"root\")&&done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
     "\nheader suffix string"
   );
-  @test create_job_header_string(suppliedJobArray; prefix="#!/bin/bash\n", suffix="\nheader suffix string", jobID="", jobDate="", appendOptions=false) == expHeader
+  @test create_job_header_string(suppliedJobArray, ""; prefix="#!/bin/bash\n", suffix="\nheader suffix string", jobDate="", appendOptions=false) == expHeader
   expHeader = string( 
     "#!/bin/bash\n",
     '\n',
     "#BSUB -w \'done(\"root\")&&done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
     ""
   )
-  @test create_job_header_string(suppliedJobArray; prefix="#!/bin/bash\n", suffix="", jobID="", jobDate="", appendOptions=false) == expHeader
+  @test create_job_header_string(suppliedJobArray, ""; prefix="#!/bin/bash\n", suffix="", jobDate="", appendOptions=false) == expHeader
   expHeader = string( 
     "#!/bin/bash\n",
     '\n',
     "#BSUB -w \'done(\"YYYYMMDD_HHMMSS_ID001_root\")&&done(\"YYYYMMDD_HHMMSS_ID001_first\")&&done(\"YYYYMMDD_HHMMSS_ID001_third\")&&done(\"YYYYMMDD_HHMMSS_ID001_fourth\")&&done(\"YYYYMMDD_HHMMSS_ID001_fifth\")\'",
     ""
   )
-  @test create_job_header_string(suppliedJobArray; prefix="#!/bin/bash\n", suffix="", jobID="ID001", jobDate="YYYYMMDD_HHMMSS", appendOptions=false) == expHeader
+  @test create_job_header_string(suppliedJobArray, "ID001"; prefix="#!/bin/bash\n", suffix="", jobDate="YYYYMMDD_HHMMSS", appendOptions=false) == expHeader
 
   # This call should not add a "\nsleep 2.5" command because the default value of rootSleepSeconds=nothing
   suppliedJobArray = [];
@@ -1816,7 +1868,7 @@ Test.with_handler(ut_handler) do
     "#!/bin/bash\n",
     "suffixstuff"
   );
-  @test create_job_header_string(suppliedJobArray; prefix="#!/bin/bash\n", suffix="suffixstuff", jobID="ID001", jobDate="YYYYMMDD_HHMMSS", appendOptions=false) == expHeader
+  @test create_job_header_string(suppliedJobArray, "ID001"; prefix="#!/bin/bash\n", suffix="suffixstuff", jobDate="YYYYMMDD_HHMMSS", appendOptions=false) == expHeader
   
   # This call should add a "\nsleep 2.5\n" command
   suppliedJobArray = [];
@@ -1831,7 +1883,7 @@ Test.with_handler(ut_handler) do
     "\nsleep 2.5\n",
     "suffixstuff"
   );
-  @test create_job_header_string(suppliedJobArray; rootSleepSeconds="2.5", prefix="#!/bin/bash\n", suffix="suffixstuff", jobID="ID001", jobDate="YYYYMMDD_HHMMSS", appendOptions=false) == expHeader
+  @test create_job_header_string(suppliedJobArray, "ID001"; rootSleepSeconds="2.5", prefix="#!/bin/bash\n", suffix="suffixstuff", jobDate="YYYYMMDD_HHMMSS", appendOptions=false) == expHeader
   
   # This call should add a "\nsleep 2.5\n" command
   suppliedJobArray = [];
@@ -1850,7 +1902,7 @@ Test.with_handler(ut_handler) do
     "\nsleep 2.5\n",
     "suffixstuff"
   );
-  @test create_job_header_string(suppliedJobArray; rootSleepSeconds="2.5", prefix="#!/bin/bash\n", suffix="suffixstuff", jobID="ID001", jobDate="YYYYMMDD_HHMMSS", appendOptions=true) == expHeader
+  @test create_job_header_string(suppliedJobArray, "ID001"; rootSleepSeconds="2.5", prefix="#!/bin/bash\n", suffix="suffixstuff", jobDate="YYYYMMDD_HHMMSS", appendOptions=true) == expHeader
   
   suppliedJobArray = [];
   push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
@@ -1868,7 +1920,7 @@ Test.with_handler(ut_handler) do
     "\nsleep 2.5\n",
     "suffixstuff"
   );
-  @test create_job_header_string(suppliedJobArray; root="", rootSleepSeconds="2.5", prefix="#!/bin/bash\n", suffix="suffixstuff", jobID="ID001", jobDate="YYYYMMDD_HHMMSS", appendOptions=true) == expHeader
+  @test create_job_header_string(suppliedJobArray, "ID001"; root="", rootSleepSeconds="2.5", prefix="#!/bin/bash\n", suffix="suffixstuff", jobDate="YYYYMMDD_HHMMSS", appendOptions=true) == expHeader
 
   # This call should not add a sleep command because #JGROUP at the start of the suppliedJobArray indicates that this is not a root job
   suppliedJobArray = [];
@@ -1885,7 +1937,7 @@ Test.with_handler(ut_handler) do
     "#BSUB -w \'done(\"YYYYMMDD_HHMMSS_ID001_root\")&&done(\"YYYYMMDD_HHMMSS_ID001_first\")&&done(\"YYYYMMDD_HHMMSS_ID001_third\")&&done(\"YYYYMMDD_HHMMSS_ID001_fourth\")&&done(\"YYYYMMDD_HHMMSS_ID001_fifth\")\'",
     "suffixstuff"
   );
-  @test create_job_header_string(suppliedJobArray; rootSleepSeconds="2.5", prefix="#!/bin/bash\n", suffix="suffixstuff", jobID="ID001", jobDate="YYYYMMDD_HHMMSS", appendOptions=false) == expHeader
+  @test create_job_header_string(suppliedJobArray, "ID001"; rootSleepSeconds="2.5", prefix="#!/bin/bash\n", suffix="suffixstuff", jobDate="YYYYMMDD_HHMMSS", appendOptions=false) == expHeader
 
   ## identify_checkpoints
   suppliedJobArray = [];
@@ -2375,9 +2427,9 @@ Test.with_handler(ut_handler) do
     "\n#JSUB<finish-job>",
     "\nprocess_job\n"
   )
-  @test create_job_header_string(root, jobID="JOBDATE0_000000_jobID0000") == expectedFileHeader01
-  @test create_job_header_string(group1, jobID="JOBDATE0_000000_jobID0000") == expectedFileHeader02
-  @test create_job_header_string(group2, jobID="JOBDATE0_000000_jobID0000") == expectedFileHeader03
+  @test create_job_header_string(root, "JOBDATE0_000000_jobID0000") == expectedFileHeader01
+  @test create_job_header_string(group1, "JOBDATE0_000000_jobID0000") == expectedFileHeader02
+  @test create_job_header_string(group2, "JOBDATE0_000000_jobID0000") == expectedFileHeader03
   create_jobs_from_summary_(summaryFilePath, suppliedSummaryDict, commonFunctions, checkpointsDict; 
     jobFilePrefix="jlang_function_test_files/job_files/", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
     #tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true
@@ -2453,6 +2505,95 @@ Test.with_handler(ut_handler) do
   # E=split(expectedFileContents02, '\n')
   # compare_arrays(split(readall(expectedFilePath02), '\n'), split(expectedFileContents02, '\n'))
   @test expectedFileContents03 == readall(expectedFilePath03)
+
+  ## get_jobpriorityarray(dictSummaries)
+  # Supplied input
+  root = [];
+  push!(root, ["# This data would come from reading summary files."]);
+  push!(root, ["#JSUB<summary-name>ProtocolName"]);
+  push!(root, ["bash echo \"cmd 01\""]);
+  group1 = [];
+  push!(group1, ["#JGROUP first"]);
+  push!(group1, ["jcheck_resume"]);
+  push!(group1, ["dummy10_1 arg1_1 arg2_1"]);
+  group2 = [];
+  push!(group2, ["#JGROUP second"]);
+  push!(group2, ["dummy12 arg1 arg2"]);
+  push!(group2, ["bash echo \"cmd 22\""]);
+  group3 = [];
+  push!(group3, ["#JGROUP third second"]);
+  push!(group3, ["bash echo \"cmd 21\""]);
+  push!(group3, ["bash echo \"cmd 22\""]);
+  group4 = [];
+  push!(group4, ["#JGROUP fourth third"]);
+  group5 = [];
+  push!(group5, ["#JGROUP fifth fourth second"]);
+  push!(group5, ["bash echo \"cmd 22\""]);
+  group6 = [];
+  push!(group6, ["#JGROUP sixths first fifth"]);
+  push!(group6, ["bash echo \"cmd 22\""]);
+  suppliedSummaryDict = Dict(
+    "root" => root,
+    "first" => group1,
+    "second" => group2,
+    "third" => group3,
+    "fourth" => group4,
+    "fifth" => group5,
+    "sixths" => group6,
+  );
+  @test get_groupparents(root, ""; root="root", tagSplit="#JGROUP", jobDate="") == []
+  @test get_groupparents(group1, ""; root="root", tagSplit="#JGROUP", jobDate="") == ["root"]
+  @test get_groupparents(group2, ""; root="root", tagSplit="#JGROUP", jobDate="") == ["root"]
+  @test get_groupparents(group3, ""; root="root", tagSplit="#JGROUP", jobDate="") == ["root", "second"]
+  @test get_groupparents(group4, ""; root="root", tagSplit="#JGROUP", jobDate="") == ["root", "third"]
+  @test get_groupparents(group5, ""; root="root", tagSplit="#JGROUP", jobDate="") == ["root", "fourth", "second"]
+  @test get_groupparents(group6, ""; root="root", tagSplit="#JGROUP", jobDate="") == ["root", "first", "fifth"]
+  expectedPriorities = Dict(
+    "root" => 0,
+    "first" => 1,
+    "second" => 1,
+    "third" => 2,
+    "fourth" => 3,
+    "fifth" => 4,
+    "sixths" => 5,
+  );
+  @test get_prioritiesarray(suppliedSummaryDict; root="root", tagSplit="#JGROUP") == expectedPriorities
+
+  # Test that an error is thrown if group names are repeated
+  root = [];
+  push!(root, ["# This data would come from reading summary files."]);
+  push!(root, ["#JSUB<summary-name>ProtocolName"]);
+  push!(root, ["bash echo \"cmd 01\""]);
+  group1 = [];
+  push!(group1, ["#JGROUP first"]);
+  push!(group1, ["jcheck_resume"]);
+  push!(group1, ["dummy10_1 arg1_1 arg2_1"]);
+  group2 = [];
+  push!(group2, ["#JGROUP second"]);
+  push!(group2, ["dummy12 arg1 arg2"]);
+  push!(group2, ["bash echo \"cmd 22\""]);
+  group3 = [];
+  push!(group3, ["#JGROUP third second"]);
+  push!(group3, ["bash echo \"cmd 21\""]);
+  push!(group3, ["bash echo \"cmd 22\""]);
+  group4 = [];
+  push!(group4, ["#JGROUP second third"]);
+  group5 = [];
+  push!(group5, ["#JGROUP fifth fourth second"]);
+  push!(group5, ["bash echo \"cmd 22\""]);
+  group6 = [];
+  push!(group6, ["#JGROUP sixths first fifth"]);
+  push!(group6, ["bash echo \"cmd 22\""]);
+  suppliedSummaryDict = Dict(
+    "root" => root,
+    "first" => group1,
+    "second" => group2,
+    "third" => group3,
+    "second" => group4,
+    "fifth" => group5,
+    "sixths" => group6,
+  )
+  @test_throws ErrorException get_prioritiesarray(suppliedSummaryDict; root="root", tagSplit="#JGROUP")
 
   ## map_flags_sjb(flagSummaries, flagJobs, flagSubmit)
   @test map_flags_sjb(false, false, false) == "111"
