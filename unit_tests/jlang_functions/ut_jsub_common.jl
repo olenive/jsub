@@ -2430,10 +2430,14 @@ Test.with_handler(ut_handler) do
   @test create_job_header_string(root, "JOBDATE0_000000_jobID0000") == expectedFileHeader01
   @test create_job_header_string(group1, "JOBDATE0_000000_jobID0000") == expectedFileHeader02
   @test create_job_header_string(group2, "JOBDATE0_000000_jobID0000") == expectedFileHeader03
-  create_jobs_from_summary_(summaryFilePath, suppliedSummaryDict, commonFunctions, checkpointsDict; 
+  @test create_jobs_from_summary_(summaryFilePath, suppliedSummaryDict, commonFunctions, checkpointsDict; 
     jobFilePrefix="jlang_function_test_files/job_files/", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
     #tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true
     jobID="jobID0000", jobDate="JOBDATE0_000000"
+  ) == Dict(
+    "root"   => "jlang_function_test_files/job_files/ut_create_jobs_from_summary_root.lsf",
+    "second" => "jlang_function_test_files/job_files/ut_create_jobs_from_summary_second.lsf",
+    "first"  => "jlang_function_test_files/job_files/ut_create_jobs_from_summary_first.lsf",
   )
   @test expectedFileContents01 == readall(expectedFilePath01)
   # O=split(readall(expectedFilePath01), '\n')
@@ -2491,10 +2495,14 @@ Test.with_handler(ut_handler) do
     "\n#JSUB<finish-job>",
     "\nprocess_job\n"
   )
-  create_jobs_from_summary_(summaryFilePath, suppliedSummaryDict, commonFunctions, checkpointsDict; 
+  @test create_jobs_from_summary_(summaryFilePath, suppliedSummaryDict, commonFunctions, checkpointsDict; 
     jobFilePrefix="jlang_function_test_files/job_files/", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
     #tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true
     jobID="jobID0000", jobDate="JOBDATE0_000000", rootSleepSeconds="7.7"
+  ) == Dict(
+    "root"   => "jlang_function_test_files/job_files/ut_create_jobs_from_summary_root.lsf",
+    "second" => "jlang_function_test_files/job_files/ut_create_jobs_from_summary_second.lsf",
+    "first"  => "jlang_function_test_files/job_files/ut_create_jobs_from_summary_first.lsf",
   )
   @test expectedFileContents01 == readall(expectedFilePath01)
   # O=split(readall(expectedFilePath01), '\n')
@@ -2557,7 +2565,16 @@ Test.with_handler(ut_handler) do
     "fifth" => 4,
     "sixths" => 5,
   );
-  @test get_prioritiesarray(suppliedSummaryDict; root="root", tagSplit="#JGROUP") == expectedPriorities
+  suppliedDictPaths = Dict(
+    "root" => "path/to/job_root.lsf",
+    "first" => "path/to/job_first.lsf",
+    "second" => "path/to/job_second.lsf",
+    "third" => "path/to/job_third.lsf",
+    "fourth" => "path/to/job_fourth.lsf",
+    "fifth" => "path/to/job_fifth.lsf",
+    "sixths" => "path/to/job_sixths.lsf",
+  )
+  @test get_priorities(suppliedSummaryDict, suppliedDictPaths; root="root", tagSplit="#JGROUP") == expectedPriorities
 
   # Test that an error is thrown if group names are repeated
   root = [];
@@ -2593,7 +2610,174 @@ Test.with_handler(ut_handler) do
     "fifth" => group5,
     "sixths" => group6,
   )
-  @test_throws ErrorException get_prioritiesarray(suppliedSummaryDict; root="root", tagSplit="#JGROUP")
+  suppliedDictPaths = Dict(
+    "root" => "path/to/job_root.lsf",
+    "first" => "path/to/job_first.lsf",
+    "second" => "path/to/job_second.lsf",
+    "third" => "path/to/job_third.lsf",
+    "second" => "path/to/something.lsf",
+    "fifth" => "path/to/job_fifth.lsf",
+    "sixths" => "path/to/job_sixths.lsf",
+  )
+  @test_throws ErrorException get_priorities(suppliedSummaryDict, suppliedDictPaths; root="root", tagSplit="#JGROUP")
+
+  # Test that an error is thrown if group names are repeated
+  root = [];
+  push!(root, ["# This data would come from reading summary files."]);
+  push!(root, ["#JSUB<summary-name>ProtocolName"]);
+  push!(root, ["bash echo \"cmd 01\""]);
+  group1 = [];
+  push!(group1, ["#JGROUP first"]);
+  push!(group1, ["jcheck_resume"]);
+  push!(group1, ["dummy10_1 arg1_1 arg2_1"]);
+  group2 = [];
+  push!(group2, ["#JGROUP second"]);
+  push!(group2, ["dummy12 arg1 arg2"]);
+  push!(group2, ["bash echo \"cmd 22\""]);
+  group3 = [];
+  push!(group3, ["#JGROUP third second"]);
+  push!(group3, ["bash echo \"cmd 21\""]);
+  push!(group3, ["bash echo \"cmd 22\""]);
+  group4 = [];
+  push!(group4, ["#JGROUP second third"]);
+  group5 = [];
+  push!(group5, ["#JGROUP fifth fourth second"]);
+  push!(group5, ["bash echo \"cmd 22\""]);
+  group6 = [];
+  push!(group6, ["#JGROUP sixths first fifth"]);
+  push!(group6, ["bash echo \"cmd 22\""]);
+  suppliedSummaryDict = Dict(
+    "root" => root,
+    "first" => group1,
+    "third" => group3,
+    "fifth" => group5,
+    "sixths" => group6,
+  )
+  suppliedDictPaths = Dict(
+    "root" => "path/to/job_root.lsf",
+    "first" => "path/to/job_first.lsf",
+    "third" => "path/to/job_third.lsf",
+    "fifth" => "path/to/job_fifth.lsf",
+    "sixths" => "path/to/job_sixths.lsf",
+  )
+  @test_throws ErrorException get_priorities(suppliedSummaryDict, suppliedDictPaths; root="a", tagSplit="#JGROUP")
+
+  # Many f-number entries are used to check that repetative values don't somehow inflate rank
+  suppliedSummaryDict = Dict(
+    "a" => ["##JGROUP this should be ignored"],
+    "b" => ["#JGROUP b"],
+    "c" => ["#JGROUP c"],
+    "d" => ["#JGROUP d c"],
+    "e" => ["#JGROUP e b c"],
+    "f1" => ["#JGROUP f1 d"],
+    "f2" => ["#JGROUP f2 d"],
+    "f3" => ["#JGROUP f3 d"],
+    "f4" => ["#JGROUP f4 d"],
+    "f5" => ["#JGROUP f5 d"],
+    "f6" => ["#JGROUP f6 d"],
+    "f7" => ["#JGROUP f7 d"],
+    "f8" => ["#JGROUP f8 d"],
+    "f9" => ["#JGROUP f9 d"],
+    "f10" => ["#JGROUP f10 d"],
+    "f11" => ["#JGROUP f11 d"],
+    "f12" => ["#JGROUP f12 d"],
+    "f13" => ["#JGROUP f13 d"],
+    "f14" => ["#JGROUP f14 d"],
+    "f15" => ["#JGROUP f15 d"],
+    "f16" => ["#JGROUP f16 d"],
+    "f17" => ["#JGROUP f17 d"],
+    "f18" => ["#JGROUP f18 d"],
+    "f19" => ["#JGROUP f19 d"],
+    "f20" => ["#JGROUP f20 d"],
+    "f21" => ["#JGROUP f21 d"],
+    "f22" => ["#JGROUP f22 d"],
+    "f23" => ["#JGROUP f23 d"],
+    "f24" => ["#JGROUP f24 d"],
+    "f25" => ["#JGROUP f25 d"],
+    "g" => ["#JGROUP g e"],
+    "h" => ["#JGROUP h f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25"],
+    "i" => ["#JGROUP i j l h"],
+    "j" => ["#JGROUP j b"],
+    "k" => ["#JGROUP k e d"],
+    "l" => ["#JGROUP l b g"],
+  )
+  suppliedDictPaths = Dict(
+    "f17" => "path/to/f17.lsf",
+    "c" => "path/to/c.lsf",
+    "e" => "path/to/e.lsf",
+    "f13" => "path/to/f13.lsf",
+    "f24" => "path/to/f24.lsf",
+    "b" => "path/to/b.lsf",
+    "f4" => "path/to/f4.lsf",
+    "f2" => "path/to/f2.lsf",
+    "f8" => "path/to/f8.lsf",
+    "a" => "path/to/a.lsf",
+    "h" => "path/to/h.lsf",
+    "f18" => "path/to/f18.lsf",
+    "f22" => "path/to/f22.lsf",
+    "f11" => "path/to/f11.lsf",
+    "f1" => "path/to/f1.lsf",
+    "f5" => "path/to/f5.lsf",
+    "d" => "path/to/d.lsf",
+    "f9" => "path/to/f9.lsf",
+    "f23" => "path/to/f23.lsf",
+    "g" => "path/to/g.lsf",
+    "i" => "path/to/i.lsf",
+    "j" => "path/to/j.lsf",
+    "f21" => "path/to/f21.lsf",
+    "f20" => "path/to/f20.lsf",
+    "k" => "path/to/k.lsf",
+    "l" => "path/to/l.lsf",
+    "f10" => "path/to/f10.lsf",
+    "f14" => "path/to/f14.lsf",
+    "f12" => "path/to/f12.lsf",
+    "f19" => "path/to/f19.lsf",
+    "f25" => "path/to/f25.lsf",
+    "f3" => "path/to/f3.lsf",
+    "f6" => "path/to/f6.lsf",
+    "f7" => "path/to/f7.lsf",
+    "f16" => "path/to/f16.lsf",
+    "f15" => "path/to/f15.lsf",
+  )
+  expectedPriorities = Dict(
+    "a" => 0,
+    "b" => 1,
+    "c" => 1,
+    "d" => 2,
+    "e" => 2,
+    "f1" => 3,
+    "f10" => 3,
+    "f11" => 3,
+    "f12" => 3,
+    "f13" => 3,
+    "f14" => 3,
+    "f15" => 3,
+    "f16" => 3,
+    "f17" => 3,
+    "f18" => 3,
+    "f19" => 3,
+    "f2" => 3,
+    "f20" => 3,
+    "f21" => 3,
+    "f22" => 3,
+    "f23" => 3,
+    "f24" => 3,
+    "f25" => 3,
+    "f3" => 3,
+    "f4" => 3,
+    "f5" => 3,
+    "f6" => 3,
+    "f7" => 3,
+    "f8" => 3,
+    "f9" => 3,
+    "g" => 3,
+    "h" => 4,
+    "i" => 5,
+    "j" => 2,
+    "k" => 3,
+    "l" => 4,
+  )
+  @test get_priorities(suppliedSummaryDict, suppliedDictPaths; root="a", tagSplit="#JGROUP") == expectedPriorities
 
   ## map_flags_sjb(flagSummaries, flagJobs, flagSubmit)
   @test map_flags_sjb(false, false, false) == "111"

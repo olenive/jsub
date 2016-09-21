@@ -17,6 +17,19 @@ function get_timestamp_(theTime)
   end
 end
 
+# Utility function for helping to produce readable error output.
+function dict2string(dict)
+  out = "";
+  arrKeys = [];
+  for key in keys(dict)
+    push!(arrKeys, key)
+  end
+  for key in sort(arrKeys)
+    out = string(out, "\n", key, " => ", dict[key]);
+  end
+  return out
+end
+
 function iscomment(wline, comStr) # Check if input string starts with the comment sub-string after any leading whitespace
   line = lstrip(wline);
   if length(line) >= length(comStr)
@@ -955,7 +968,7 @@ function split_summary(summaryArray; tagSplit="#JGROUP", root="root")
     for line in summaryArray
       summaryString = string(summaryString, join(line), "\n");
     end
-    error(string("(in get_prioritiesarray) Group names must be unique to avoid ambiguity, the following group names were identified:\n", arrGroupNames, "\n  In the summary:\n", summaryString));
+    error(string("(in split_summary) Group names must be unique to avoid ambiguity, the following group names were identified:\n", arrGroupNames, "\n  In the summary:\n", summaryString));
   end
   return jobs
 end
@@ -1161,31 +1174,69 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summ
   end
 end
 
-# Function used to assign an integer value that indicates if this job needs to be submitted before or after another  job.
-function get_prioritiesarray(dictSummaries; tagSplit="#JGROUP", root="root")
+# Function used to assign an integer value that indicates if this job needs to be submitted before or after another job.
+function get_priorities(dictSummaries, dictPaths; jobID="", tagSplit="#JGROUP", root="root")
   priotries = [];
-  dictNamesParents = Dict()
-  ## Create a dictionary of group names and parents
-  for (idx, pair) in enumerate(dictSummaries)
-    println(idx);
-    println(pair);
+  dictNameParents = Dict();
+  dictNamePriority = Dict();
+  ## Make sure dictSummaries and dictPaths contain the same set of keys
+  if Set(keys(dictSummaries)) != Set(keys(dictPaths))
+    error(string(" (in get_priorities) the two input dictionaries do not contain the same set of keys, something has gone wrong: \n", keys(dictSummaries), "\n", keys(dictPaths)));
+  end
+  ## Make sure paths are unique
+  if length(values(dictPaths)) != length(unique(values(dictPaths)))
+    error(string(" (in get_priorities) The dictionary of job file paths contains non-unique entries: \n", dictPaths));
+  end
+  ## Create a dictionary of group names to parents and initialise a dictionary of group names to priorities
+  for pair in dictSummaries
     groupName = get_groupname(pair[2]; tagSplit=tagSplit, root=root);
-    parents = get_groupparents(jobArray, jobID; root="root", tagSplit="#JGROUP", jobDate="")
-    println(groupName);
-    dictNamesParents[groupName] = parents
+    parents = get_groupparents(pair[2], jobID; root=root, tagSplit="#JGROUP", jobDate="")
+    dictNameParents[groupName] = parents;
+    dictNamePriority[groupName] = 0;
   end
-  
-
-  ## Check for missing parent groups
-  if !(parentGroup in keys(dictNamesParents))
-    summaryString = "";
-    for line in summaryArray
-      summaryString = string(summaryString, join(line), "\n");
+  ## Assign a priority rating to each group
+  dictUnprocessed = deepcopy(dictNameParents);
+  delete!(dictUnprocessed, root);
+  processedGroups = [root];
+  while length(dictUnprocessed) > 0
+    # println(dictUnprocessed); println(processedGroups);
+    flagProcessedSomething = false;
+    for pair in dictUnprocessed
+      groupName = pair[1]
+      groupParents = pair[2]
+      # println("groupName = " * groupName); println("groupName = " * string(groupParents));
+      ## Continue if not all parents of this group have been processed
+      flagPass = false;
+      for parent in groupParents
+        !(parent in processedGroups) && (flagPass = true);
+      end
+      flagPass && continue;
+      ## Find the highest parent rank
+      ranks = [];
+      for parent in groupParents
+        ## Check for missing parent groups
+        if !(parent in keys(dictNamePriority))
+          summaryString = "";
+          for line in summaryArray
+            summaryString = string(summaryString, join(line), "\n");
+          end
+          error(string(" (in get_priorities) The group named \"", groupName, "\" lists the group named \"", parent, "\" as a parent group but this group is not found in the summary: \n", summaryString))
+        end
+        push!(ranks, dictNamePriority[parent])
+      end
+      dictNamePriority[groupName] = maximum(ranks) + 1;
+      ## Update processed groups
+      delete!(dictUnprocessed, groupName);
+      push!(processedGroups, groupName);
+      flagProcessedSomething = true;
     end
-    error(string("(in get_prioritiesarray) The group named \"", groupName, "\" lists the group named \"", parentGroup, "\" as a parent group but this group is not found in the summary: ", PRODIGY))
+    ## Check for being stuck in an infinite loop
+    if !flagProcessedSomething
+      # println("Failed at:");println("dictUnprocessed:");println(dict2string(dictUnprocessed));println("processedGroups:");println(processedGroups);
+      error(string(" (in get_priorities) Stuck in an infinite loop.  This may be due to repeated group names (or missing groups) in the input summary: \n", dict2string(dictSummaries) ));
+    end
   end
-
-  return priotries
+  return dictNamePriority
 end
 
 ## Create all the job files associated with a particular summary file (Note that using the option filePathOverride means input to the jobFilePrefix and jobFileSuffix options will be ignored)
@@ -1199,9 +1250,7 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
     pathSummaryCompleted=string(prefixSummaryCompleted, basename(remove_suffix(summaryFilePath, ".summary") * ".summary.completed")),
     pathSummaryIncomplete=string(prefixSummaryIncomplete, basename(remove_suffix(summaryFilePath, ".summary") * ".summary.incomplete")),
   )
-  arrJobFilePaths = []; 
-  arrJobFilePriority = []; # This array will be used to store an integer indicating how late (relative to other jobs from this summary) the job needs to be submitted (higher means submit later).
-  # If a job is submitted before the jobs it depends on have been submitted LSF will return an error and discard the job.
+  dictJobFilePaths = Dict(); 
   ## For each group in the summary file create a job file
   (length(dictSummaries) > 1) ? (thisRoot=root) : (thisRoot="") # If there is no need to split the job there is no need for a root suffix
   for (idx, pair) in enumerate(dictSummaries)
@@ -1230,7 +1279,7 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
       end
     end
     ## Create job file
-    push!(arrJobFilePaths, outFilePath)
+    dictJobFilePaths[pair[1]] = outFilePath; # push!(dictJobFilePaths, outFilePath)
     create_job_file_(outFilePath, jobArray, dictCheckpoints; summaryFileOfOrigin=summaryFilePath, root=thisRoot,
       tagBegin=tagBegin, tagFinish=tagFinish, tagHeader=tagHeader, tagCheckpoint=tagCheckpoint, headerPrefix=headerPrefix, headerSuffix=headerSuffix, summaryFile=summaryFile, 
       jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds, verbose=verbose, doJsubVersionControl=doJsubVersionControl, processTimestamp=processTimestamp,
@@ -1238,10 +1287,10 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
     );
   end
   ## Check that summary file names are unique
-  if length(unique(arrJobFilePaths)) != length(arrJobFilePaths)
-    SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_jobs_from_summary_) number of unique job file paths (", length(unique(arrJobFilePaths)), ") does not match total number of file paths generated (", length(arrJobFilePaths), ")." );
+  if length(unique(dictJobFilePaths)) != length(dictJobFilePaths)
+    SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_jobs_from_summary_) number of unique job file paths (", length(unique(dictJobFilePaths)), ") does not match total number of file paths generated (", length(dictJobFilePaths), ")." );
   end
-  return arrJobFilePaths
+  return dictJobFilePaths
 end
 
 ## Check if a #BSUB option appears more than once in the job array.

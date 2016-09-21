@@ -23,7 +23,7 @@ function isJobNameInQueue {
   fi
 }
 function awaitJobNameCompletion {
-  echo "Waiting completion of job named ""$1"
+  echo "Awaiting completion of job named ""$1"
   while [ $(isJobNameInQueue "$1") == "yes" ]; do
     sleep 1
   done
