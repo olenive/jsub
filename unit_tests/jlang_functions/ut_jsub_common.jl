@@ -2556,7 +2556,7 @@ Test.with_handler(ut_handler) do
   @test get_groupparents(group4, ""; root="root", tagSplit="#JGROUP", jobDate="") == ["root", "third"]
   @test get_groupparents(group5, ""; root="root", tagSplit="#JGROUP", jobDate="") == ["root", "fourth", "second"]
   @test get_groupparents(group6, ""; root="root", tagSplit="#JGROUP", jobDate="") == ["root", "first", "fifth"]
-  expectedPriorities = Dict(
+  expectedPriorities01 = Dict(
     "root" => 0,
     "first" => 1,
     "second" => 1,
@@ -2565,7 +2565,7 @@ Test.with_handler(ut_handler) do
     "fifth" => 4,
     "sixths" => 5,
   );
-  suppliedDictPaths = Dict(
+  suppliedDictPaths01 = Dict(
     "root" => "path/to/job_root.lsf",
     "first" => "path/to/job_first.lsf",
     "second" => "path/to/job_second.lsf",
@@ -2574,7 +2574,7 @@ Test.with_handler(ut_handler) do
     "fifth" => "path/to/job_fifth.lsf",
     "sixths" => "path/to/job_sixths.lsf",
   )
-  @test get_priorities(suppliedSummaryDict, suppliedDictPaths; root="root", tagSplit="#JGROUP") == expectedPriorities
+  @test get_priorities(suppliedSummaryDict, suppliedDictPaths01; root="root", tagSplit="#JGROUP") == expectedPriorities01
 
   # Test that an error is thrown if group names are repeated
   root = [];
@@ -2701,7 +2701,7 @@ Test.with_handler(ut_handler) do
     "k" => ["#JGROUP k e d"],
     "l" => ["#JGROUP l b g"],
   )
-  suppliedDictPaths = Dict(
+  suppliedDictPaths02 = Dict(
     "f17" => "path/to/f17.lsf",
     "c" => "path/to/c.lsf",
     "e" => "path/to/e.lsf",
@@ -2739,7 +2739,7 @@ Test.with_handler(ut_handler) do
     "f16" => "path/to/f16.lsf",
     "f15" => "path/to/f15.lsf",
   )
-  expectedPriorities = Dict(
+  expectedPriorities02 = Dict(
     "a" => 0,
     "b" => 1,
     "c" => 1,
@@ -2777,7 +2777,46 @@ Test.with_handler(ut_handler) do
     "k" => 3,
     "l" => 4,
   )
-  @test get_priorities(suppliedSummaryDict, suppliedDictPaths; root="a", tagSplit="#JGROUP") == expectedPriorities
+  @test get_priorities(suppliedSummaryDict, suppliedDictPaths02; root="a", tagSplit="#JGROUP") == expectedPriorities02
+
+  ## order_by_dictionary(ranks::Dict, toSort::Dict)
+  suppliedRanks = Dict(
+    "keyA1" => 0,
+    "keyA2" => 0,
+    "keyB1" => 1,
+    "keyB2" => 1,
+    "keyC" => 2,
+    "keyD" => 3,
+    "keyE1" => 4,
+    "keyE2" => 4,
+    "keyE3" => 4,
+    "keyF" => 5,
+  );
+  suppliedToSort = Dict(
+    "keyA1" => "out0a",
+    "keyA2" => "out0b",
+    "keyB1" => "out1a",
+    "keyB2" => "out1b",
+    "keyC" => "out2",
+    "keyD" => "out3",
+    "keyE1" => "out4a",
+    "keyE2" => "out4b",
+    "keyE3" => "out4c",
+    "keyF" => "out5",
+  );
+  expectedSorted = [
+    "out0b",
+    "out0a",
+    "out1a",
+    "out1b",
+    "out2",
+    "out3",
+    "out4b",
+    "out4c",
+    "out4a",
+    "out5",
+  ]
+  @test order_by_dictionary(suppliedRanks, suppliedToSort) == expectedSorted
 
   ## map_flags_sjb(flagSummaries, flagJobs, flagSubmit)
   @test map_flags_sjb(false, false, false) == "111"

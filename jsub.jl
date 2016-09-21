@@ -419,11 +419,13 @@ function run_stage2_(pathSummariesList, pathJobsList; flagVerbose=false, tagsExp
   );
 
   ## Get an array of job priorities
-  jobFilePriorityArrays2 = map((dictSummaries, dictFilePaths, jobID) -> get_priorities(dictSummaries, dictFilePaths, jobID=jobID), summaryArrDicts, arrDictFilePaths, arrJobIDs)
+  arrDictPriorities = map((dictSummaries, dictFilePaths, jobID) -> get_priorities(dictSummaries, dictFilePaths, jobID=jobID), summaryArrDicts, arrDictFilePaths, arrJobIDs)
 
   ## Re-order job paths list according to job priority
+  arrArrOrderedJobPaths = map((ranksDict, pathsDict) -> order_by_dictionary(ranksDict, pathsDict), arrDictPriorities, arrDictFilePaths)
 
-  string2file_(pathJobsList, arrArr2string(jobFilePathsArrays2)) # Convert array of arrays into a single string and write to file
+  ## Write ordered list of job paths to file
+  string2file_(pathJobsList, join(map(x -> join(x, '\n'), arrArrOrderedJobPaths), '\n'));
 
   return pathJobsList
 end

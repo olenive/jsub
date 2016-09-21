@@ -1174,6 +1174,60 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summ
   end
 end
 
+## Create all the job files associated with a particular summary file (Note that using the option filePathOverride means input to the jobFilePrefix and jobFileSuffix options will be ignored)
+function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonFunctions::Dict, checkpointsDict::Dict; jobFilePrefix="", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
+    tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n", headerSuffix="", summaryFile="", 
+    jobID=nothing, jobDate="", appendOptions=true, rootSleepSeconds=nothing, verbose=false, bsubOptions=["-J"], doJsubVersionControl=true, processTimestamp="true",
+    prefixLogFile=jobFilePrefix,
+    prefixSummaryCompleted=jobFilePrefix,
+    prefixSummaryIncomplete=jobFilePrefix,
+    pathLogFile=string(prefixLogFile, basename(remove_suffix(summaryFilePath, ".summary") * ".log")),
+    pathSummaryCompleted=string(prefixSummaryCompleted, basename(remove_suffix(summaryFilePath, ".summary") * ".summary.completed")),
+    pathSummaryIncomplete=string(prefixSummaryIncomplete, basename(remove_suffix(summaryFilePath, ".summary") * ".summary.incomplete")),
+  )
+  dictJobFilePaths = Dict(); 
+  ## For each group in the summary file create a job file
+  (length(dictSummaries) > 1) ? (thisRoot=root) : (thisRoot="") # If there is no need to split the job there is no need for a root suffix
+  for (idx, pair) in enumerate(dictSummaries)
+    group = pair[1];
+    if length(dictSummaries) == 1 
+      group = ""; # If there is only one job file produced from this summary, there is no need to append the root group name to the file name
+      rootSleepSeconds=nothing; # No need to add a sleep command since there will be no submitted jobs that are dependent on this one existing.
+    end
+    jobArray = pair[2];
+    dictCheckpoints = get_bash_functions(
+      commonFunctions,
+      identify_checkpoints(jobArray, checkpointsDict; tagCheckpoint=tagCheckpoint) ## Extract the checkpoints/bash functions needed for each job file
+    );
+    ## Get job file name from path and group
+    outFilePath = "";
+    if filePathOverride != nothing
+      outFilePath = filePathOverride;
+    else
+      (length(group) > 0) ? (group = "_" * group) : (group = ""); # # (length(group) > 0 && group != root) ? (group = "_" * group) : (group = ""); # job file specific suffix
+      outFilePath = string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary")), group, jobFileSuffix); # get longName from file path
+    end
+    ## Check for conflicting #BSUB options
+    for option in bsubOptions
+      if detect_option_conflicts(jobArray; tag=remove_prefix(tagHeader, "\n"), option=option)
+        SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_jobs_from_summary_) found conflicting instances of ", tagHeader, " ", option, " in the following array of commands:\n", jobArray);
+      end
+    end
+    ## Create job file
+    dictJobFilePaths[pair[1]] = outFilePath; # push!(dictJobFilePaths, outFilePath)
+    create_job_file_(outFilePath, jobArray, dictCheckpoints; summaryFileOfOrigin=summaryFilePath, root=thisRoot,
+      tagBegin=tagBegin, tagFinish=tagFinish, tagHeader=tagHeader, tagCheckpoint=tagCheckpoint, headerPrefix=headerPrefix, headerSuffix=headerSuffix, summaryFile=summaryFile, 
+      jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds, verbose=verbose, doJsubVersionControl=doJsubVersionControl, processTimestamp=processTimestamp,
+      pathLogFile=pathLogFile, pathSummaryCompleted=pathSummaryCompleted, pathSummaryIncomplete=pathSummaryIncomplete,
+    );
+  end
+  ## Check that summary file names are unique
+  if length(unique(dictJobFilePaths)) != length(dictJobFilePaths)
+    SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_jobs_from_summary_) number of unique job file paths (", length(unique(dictJobFilePaths)), ") does not match total number of file paths generated (", length(dictJobFilePaths), ")." );
+  end
+  return dictJobFilePaths
+end
+
 # Function used to assign an integer value that indicates if this job needs to be submitted before or after another job.
 function get_priorities(dictSummaries, dictPaths; jobID="", tagSplit="#JGROUP", root="root")
   priotries = [];
@@ -1239,58 +1293,29 @@ function get_priorities(dictSummaries, dictPaths; jobID="", tagSplit="#JGROUP", 
   return dictNamePriority
 end
 
-## Create all the job files associated with a particular summary file (Note that using the option filePathOverride means input to the jobFilePrefix and jobFileSuffix options will be ignored)
-function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonFunctions::Dict, checkpointsDict::Dict; jobFilePrefix="", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
-    tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n", headerSuffix="", summaryFile="", 
-    jobID=nothing, jobDate="", appendOptions=true, rootSleepSeconds=nothing, verbose=false, bsubOptions=["-J"], doJsubVersionControl=true, processTimestamp="true",
-    prefixLogFile=jobFilePrefix,
-    prefixSummaryCompleted=jobFilePrefix,
-    prefixSummaryIncomplete=jobFilePrefix,
-    pathLogFile=string(prefixLogFile, basename(remove_suffix(summaryFilePath, ".summary") * ".log")),
-    pathSummaryCompleted=string(prefixSummaryCompleted, basename(remove_suffix(summaryFilePath, ".summary") * ".summary.completed")),
-    pathSummaryIncomplete=string(prefixSummaryIncomplete, basename(remove_suffix(summaryFilePath, ".summary") * ".summary.incomplete")),
-  )
-  dictJobFilePaths = Dict(); 
-  ## For each group in the summary file create a job file
-  (length(dictSummaries) > 1) ? (thisRoot=root) : (thisRoot="") # If there is no need to split the job there is no need for a root suffix
-  for (idx, pair) in enumerate(dictSummaries)
-    group = pair[1];
-    if length(dictSummaries) == 1 
-      group = ""; # If there is only one job file produced from this summary, there is no need to append the root group name to the file name
-      rootSleepSeconds=nothing; # No need to add a sleep command since there will be no submitted jobs that are dependent on this one existing.
-    end
-    jobArray = pair[2];
-    dictCheckpoints = get_bash_functions(
-      commonFunctions,
-      identify_checkpoints(jobArray, checkpointsDict; tagCheckpoint=tagCheckpoint) ## Extract the checkpoints/bash functions needed for each job file
-    );
-    ## Get job file name from path and group
-    outFilePath = "";
-    if filePathOverride != nothing
-      outFilePath = filePathOverride;
-    else
-      (length(group) > 0) ? (group = "_" * group) : (group = ""); # # (length(group) > 0 && group != root) ? (group = "_" * group) : (group = ""); # job file specific suffix
-      outFilePath = string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary")), group, jobFileSuffix); # get longName from file path
-    end
-    ## Check for conflicting #BSUB options
-    for option in bsubOptions
-      if detect_option_conflicts(jobArray; tag=remove_prefix(tagHeader, "\n"), option=option)
-        SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_jobs_from_summary_) found conflicting instances of ", tagHeader, " ", option, " in the following array of commands:\n", jobArray);
+# Takes two dictionaries (ranks and values) with matching keys and returns an ordered array of values according to their ranks.
+function order_by_dictionary(ranks::Dict, toSort::Dict)
+  out = [];
+  bunch = deepcopy(toSort);
+  ## Make sure input keys match
+  if Set(keys(ranks)) != Set(keys(toSort))
+    error(string(" (in order_by_dictionary) the two input dictionaries do not contain the same set of keys, something has gone wrong: \n", keys(dictSummaries), "\n", keys(dictPaths)));
+  end
+  ## Sort keys according to ranks.  Get values using the sorted keys and write to output array
+  for rankNow in sort(unique(values(ranks))) 
+    for rankPair in ranks
+      rankKey = rankPair[1]; rankValue = rankPair[2];
+      if rankValue == rankNow
+        push!(out, toSort[rankKey]);
+        delete!(bunch,rankKey); # Used to make sure this entry has not been added to out array already
       end
     end
-    ## Create job file
-    dictJobFilePaths[pair[1]] = outFilePath; # push!(dictJobFilePaths, outFilePath)
-    create_job_file_(outFilePath, jobArray, dictCheckpoints; summaryFileOfOrigin=summaryFilePath, root=thisRoot,
-      tagBegin=tagBegin, tagFinish=tagFinish, tagHeader=tagHeader, tagCheckpoint=tagCheckpoint, headerPrefix=headerPrefix, headerSuffix=headerSuffix, summaryFile=summaryFile, 
-      jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds, verbose=verbose, doJsubVersionControl=doJsubVersionControl, processTimestamp=processTimestamp,
-      pathLogFile=pathLogFile, pathSummaryCompleted=pathSummaryCompleted, pathSummaryIncomplete=pathSummaryIncomplete,
-    );
   end
-  ## Check that summary file names are unique
-  if length(unique(dictJobFilePaths)) != length(dictJobFilePaths)
-    SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_jobs_from_summary_) number of unique job file paths (", length(unique(dictJobFilePaths)), ") does not match total number of file paths generated (", length(dictJobFilePaths), ")." );
+  ## Make sure that sets and lengths match
+  if length(bunch) != 0
+    error(string(" (in order_by_dictionary) unexpected left over values: \n", dict2string(bunch) ))
   end
-  return dictJobFilePaths
+  return out
 end
 
 ## Check if a #BSUB option appears more than once in the job array.
