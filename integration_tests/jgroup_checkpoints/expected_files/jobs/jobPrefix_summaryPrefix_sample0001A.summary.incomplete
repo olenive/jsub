@@ -1,0 +1,5 @@
+#JGROUP last first second third
+jcheck_file_not_empty "results/outPrefix_"sample0001A_first.txt "results/outPrefix_"sample0001A"_second.txt "results/outPrefix_"sample0001A_third.txt"
+bash ../../bash_scripts/catfiles.sh "results/outPrefix_"sample0001A.txt "results/outPrefix_"sample0001A"_first.txt "results/outPrefix_"sample0001A_second.txt results/outPrefix_"sample0001A_third.txt
+jcheck_file_not_empty "results/outPrefix_"sample0001A.txt
+

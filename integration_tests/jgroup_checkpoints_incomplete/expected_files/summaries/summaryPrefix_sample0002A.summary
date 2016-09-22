@@ -1,0 +1,22 @@
+# Basic integration test protocol involving only a call to a bash script that writes a single line to a text file.
+#JSUB<summary-name> sample0002A
+echo "Processing summary data from: "sample0002A
+# root group 
+OUTFILE="results/outPrefix_"sample0002A # Note: this is an example of what not to do! After the protocol is split OUTFILE will be undeclared in subsequent groups unless it is declared there again using variables from vars and variables from the top of the script.
+bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
+bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
+#JGROUP first
+OUTFILE="results/outPrefix_"sample0002A 
+bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub02X sub02Y
+bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub02Y sub02Z
+#JGROUP second
+OUTFILE="results/outPrefix_"sample0002A 
+bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub02Y sub02Z
+bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub02Z sub02X
+#JGROUP third
+OUTFILE="results/outPrefix_"sample0002A 
+bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub02Z sub02X
+bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub02X sub02Y
+#JGROUP last
+OUTFILE="results/outPrefix_"sample0002A
+bash ../../bash_scripts/catfiles.sh "$OUTFILE".txt "$OUTFILE"_first.txt "$OUTFILE"_second.txt "$OUTFILE"_third.txt

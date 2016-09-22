@@ -2,21 +2,25 @@
 #JSUB<summary-name> sample0003A
 echo "Processing summary data from: "sample0003A
 # root group 
-OUTFILE="results/outPrefix_"sample0003A # Note: this is an example of what not to do! After the protocol is split OUTFILE will be undeclared in subsequent groups unless it is declared there again using variables from vars and variables from the top of the script.
-bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
-bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
+bash ../../bash_scripts/trivial.sh "results/outPrefix_"sample0003A.txt
+bash ../../bash_scripts/trivial.sh "results/outPrefix_"sample0003A.txt
+jcheck_file_not_empty "results/outPrefix_"sample0003A.txt
 #JGROUP first
-OUTFILE="results/outPrefix_"sample0003A 
-bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub03X sub03Y
-bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub03Y sub03Z
+bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0003A_first.txt sub03X sub03Y
+jcheck_file_not_empty  "results/outPrefix_"sample0003A_first.txt
+bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0003A_first.txt sub03Y sub03Z
+jcheck_file_not_empty  "results/outPrefix_"sample0003A_first.txt
 #JGROUP second
-OUTFILE="results/outPrefix_"sample0003A 
-bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub03Y sub03Z
-bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub03Z sub03X
+bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0003A_second.txt sub03Y sub03Z
+jcheck_file_not_empty  "results/outPrefix_"sample0003A_second.txt
+bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0003A_second.txt sub03Z sub03X
+jcheck_file_not_empty  "results/outPrefix_"sample0003A_second.txt
 #JGROUP third
-OUTFILE="results/outPrefix_"sample0003A 
-bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub03Z sub03X
-bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub03X sub03Y
-#JGROUP last
-OUTFILE="results/outPrefix_"sample0003A
-bash ../../bash_scripts/catfiles.sh "$OUTFILE".txt "$OUTFILE"_first.txt "$OUTFILE"_second.txt "$OUTFILE"_third.txt
+bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0003A_third.txt sub03Z sub03X
+jcheck_file_not_empty  "results/outPrefix_"sample0003A_third.txt
+bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0003A_third.txt sub03X sub03Y
+jcheck_file_not_empty  "results/outPrefix_"sample0003A_third.txt
+#JGROUP last first second third
+jcheck_file_not_empty                                  "results/outPrefix_"sample0003A_first.txt "results/outPrefix_"sample0003A"_second.txt "results/outPrefix_"sample0003A_third.txt"
+bash ../../bash_scripts/catfiles.sh "results/outPrefix_"sample0003A.txt "results/outPrefix_"sample0003A"_first.txt "results/outPrefix_"sample0003A_second.txt results/outPrefix_"sample0003A_third.txt
+jcheck_file_not_empty    "results/outPrefix_"sample0003A.txt

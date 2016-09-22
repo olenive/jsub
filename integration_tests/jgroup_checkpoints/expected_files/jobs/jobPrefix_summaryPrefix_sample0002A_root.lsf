@@ -9,7 +9,7 @@ set -eu
 
 
 # Job file variables:
-JSUB_PATH_TO_THIS_JOB="/scratch/cancgene/olenive/jsub/integration_tests/jgroup/generated_files/jobs/jobPrefix_summaryPrefix_sample0002A_root.lsf"
+JSUB_PATH_TO_THIS_JOB="/scratch/cancgene/olenive/jsub/integration_tests/jgroup_checkpoints/generated_files/jobs/jobPrefix_summaryPrefix_sample0002A_root.lsf"
 JSUB_JOB_ID="summaryPrefix_sample0002A"
 JSUB_LOG_FILE="jobs/jobPrefix_summaryPrefix_sample0002A.log"
 JSUB_SUMMARY_COMPLETED="jobs/jobPrefix_summaryPrefix_sample0002A.summary.completed"
@@ -19,6 +19,29 @@ JSUB_JOB_TIMESTAMP=false
 
 # Contents inserted from other files (this section is intended to be used only for functions):
 
+# --- From file: /scratch/cancgene/olenive/jsub/common_functions/jcheck_file_not_empty.sh
+function file_contains_nonwhitespace {
+  while read -r line || [[ -n "$line" ]]; do
+    if [[ "$line" = *[![:space:]]* ]]; then
+      echo "yes"
+      return 0
+    fi
+  done < "$1"
+  echo "no"
+}
+function jcheck_file_not_empty {
+  local dateTime=""
+  [[ ${JSUB_JOB_TIMESTAMP} = true ]] && dateTime=`date +%Y%m%d_%H%M%S`
+  for var in "$@"; do
+    if [[ ! -s "$var" ]] || [[ $(file_contains_nonwhitespace "$var") = "no" ]]; then
+      JSUB_FLAG_FAIL=true
+      echo "$dateTime ""$JSUB_JOB_ID"" - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: ""$var"
+      echo "$dateTime ""$JSUB_JOB_ID"" - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: ""$var" >> ${JSUB_LOG_FILE}
+    else
+      echo "$dateTime ""$JSUB_JOB_ID"" - Passed checkpoint jcheck_file_not_empty for file: ""$var" >> ${JSUB_LOG_FILE}
+    fi
+  done
+}
 # --- From file: /scratch/cancgene/olenive/jsub/common_functions/job_processing.sh
 ## job_processing parses the job file, writes to log and summary files, and calls version control functions.
 # Function allowing job script termination
@@ -98,9 +121,9 @@ function version_control {
 #JSUB<summary-name> sample0002A
 echo "Processing summary data from: "sample0002A
 # root group 
-OUTFILE="results/outPrefix_"sample0002A # Note: this is an example of what not to do! After the protocol is split OUTFILE will be undeclared in subsequent groups unless it is declared there again using variables from vars and variables from the top of the script.
-bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
-bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
+bash ../../bash_scripts/trivial.sh "results/outPrefix_"sample0002A.txt
+bash ../../bash_scripts/trivial.sh "results/outPrefix_"sample0002A.txt
+jcheck_file_not_empty "results/outPrefix_"sample0002A.txt
 
 #JSUB<finish-job>
 process_job

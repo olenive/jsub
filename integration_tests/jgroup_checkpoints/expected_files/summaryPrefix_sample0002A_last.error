@@ -1,1 +1,3 @@
 cat: results/outPrefix_sample0002A_third.txt: No such file or directory
+cat: results/outPrefix_sample0002A_first.txt: No such file or directory
+cat: results/outPrefix_sample0002A_third.txt: No such file or directory

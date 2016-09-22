@@ -1,0 +1,27 @@
+ summaryPrefix_sample0001A completed - # Basic integration test protocol involving only a call to a bash script that writes a single line to a text file.
+ summaryPrefix_sample0001A completed - #JSUB<summary-name> sample0001A
+ summaryPrefix_sample0001A completed - echo "Processing summary data from: "sample0001A
+ summaryPrefix_sample0001A completed - # root group
+ summaryPrefix_sample0001A completed - OUTFILE="results/outPrefix_"sample0001A # Note: this is an example of what not to do! After the protocol is split OUTFILE will be undeclared in subsequent groups unless it is declared there again using variables from vars and variables from the top of the script.
+ summaryPrefix_sample0001A completed - bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
+ summaryPrefix_sample0001A completed - bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
+ summaryPrefix_sample0001A completed - 
+ summaryPrefix_sample0001A completed - #JGROUP third
+ summaryPrefix_sample0001A completed - OUTFILE="results/outPrefix_"sample0001A
+ summaryPrefix_sample0001A completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub01Z sub01X
+ summaryPrefix_sample0001A completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub01X sub01Y
+ summaryPrefix_sample0001A completed - 
+ summaryPrefix_sample0001A completed - #JGROUP last
+ summaryPrefix_sample0001A completed - OUTFILE="results/outPrefix_"sample0001A
+ summaryPrefix_sample0001A completed - bash ../../bash_scripts/catfiles.sh "$OUTFILE".txt "$OUTFILE"_first.txt "$OUTFILE"_second.txt "$OUTFILE"_third.txt
+ summaryPrefix_sample0001A completed - 
+ summaryPrefix_sample0001A completed - #JGROUP second
+ summaryPrefix_sample0001A completed - OUTFILE="results/outPrefix_"sample0001A
+ summaryPrefix_sample0001A completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub01Y sub01Z
+ summaryPrefix_sample0001A completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub01Z sub01X
+ summaryPrefix_sample0001A completed - 
+ summaryPrefix_sample0001A completed - #JGROUP first
+ summaryPrefix_sample0001A completed - OUTFILE="results/outPrefix_"sample0001A
+ summaryPrefix_sample0001A completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub01X sub01Y
+ summaryPrefix_sample0001A completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub01Y sub01Z
+ summaryPrefix_sample0001A completed - 

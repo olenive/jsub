@@ -2,26 +2,15 @@
 #JSUB<summary-name> sample0001A
 echo "Processing summary data from: "sample0001A
 # root group
-OUTFILE="results/outPrefix_"sample0001A # Note: this is an example of what not to do! After the protocol is split OUTFILE will be undeclared in subsequent groups unless it is declared there again using variables from vars and variables from the top of the script.
-bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
-bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
-
-#JGROUP third
-OUTFILE="results/outPrefix_"sample0001A
-bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub01Z sub01X
-bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub01X sub01Y
-
-#JGROUP last
-OUTFILE="results/outPrefix_"sample0001A
-bash ../../bash_scripts/catfiles.sh "$OUTFILE".txt "$OUTFILE"_first.txt "$OUTFILE"_second.txt "$OUTFILE"_third.txt
-
+bash ../../bash_scripts/trivial.sh "results/outPrefix_"sample0001A.txt
+bash ../../bash_scripts/trivial.sh "results/outPrefix_"sample0001A.txt
+jcheck_file_not_empty "results/outPrefix_"sample0001A.txt
 #JGROUP second
-OUTFILE="results/outPrefix_"sample0001A
-bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub01Y sub01Z
-bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub01Z sub01X
-
+bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0001A_second.txt sub01Y sub01Z
+jcheck_file_not_empty "results/outPrefix_"sample0001A_second.txt
 #JGROUP first
-OUTFILE="results/outPrefix_"sample0001A
-bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub01X sub01Y
-bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub01Y sub01Z
-
+bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0001A_first.txt sub01X sub01Y
+jcheck_file_not_empty "results/outPrefix_"sample0001A_first.txt
+#JGROUP third
+bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0001A_third.txt sub01Z sub01X
+jcheck_file_not_empty "results/outPrefix_"sample0001A_third.txt
