@@ -14,6 +14,7 @@ jcheck_file_not_empty  "$OUT_PREFIX""$SAMPLE_ID"_first.txt
 
 #JGROUP second
 bash "$PATH_TO_CONCAT" "$OUT_PREFIX""$SAMPLE_ID"_second.txt "$SUBSAMPLE_02" "$SUBSAMPLE_03"
+echo " " >             "$OUT_PREFIX""$SAMPLE_ID"_second.txt
 jcheck_file_not_empty  "$OUT_PREFIX""$SAMPLE_ID"_second.txt
 bash "$PATH_TO_CONCAT" "$OUT_PREFIX""$SAMPLE_ID"_second.txt "$SUBSAMPLE_03" "$SUBSAMPLE_01"
 jcheck_file_not_empty  "$OUT_PREFIX""$SAMPLE_ID"_second.txt
@@ -21,6 +22,7 @@ jcheck_file_not_empty  "$OUT_PREFIX""$SAMPLE_ID"_second.txt
 bash "$PATH_TO_CONCAT" "$OUT_PREFIX""$SAMPLE_ID"_third.txt "$SUBSAMPLE_03" "$SUBSAMPLE_01"
 jcheck_file_not_empty  "$OUT_PREFIX""$SAMPLE_ID"_third.txt
 bash "$PATH_TO_CONCAT" "$OUT_PREFIX""$SAMPLE_ID"_third.txt "$SUBSAMPLE_01" "$SUBSAMPLE_02"
+echo "  " >            "$OUT_PREFIX""$SAMPLE_ID"_third.txt
 jcheck_file_not_empty  "$OUT_PREFIX""$SAMPLE_ID"_third.txt
 
 #JGROUP last

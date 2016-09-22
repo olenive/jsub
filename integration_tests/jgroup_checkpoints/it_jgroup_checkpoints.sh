@@ -85,8 +85,7 @@ for sample in "${SAMPELS[@]}"; do
     GENERATED_JOBNAME=${SUMMARY_BASE_PREFIX}${sample}_${jgroup}
     awaitJobNameCompletion "$GENERATED_JOBNAME"
   done
-  bjobs
-  sleep 3
+  sleep 1
   bjobs
 
   GENERATED_JOB_DATA_00="${OUT_PREFIX}${sample}.txt"
