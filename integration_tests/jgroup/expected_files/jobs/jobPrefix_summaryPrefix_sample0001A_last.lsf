@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eu
 
-#BSUB -w 'done("summaryPrefix_sample0001A_root")'
+#BSUB -w 'done("summaryPrefix_sample0001A_root")&&done("summaryPrefix_sample0001A_first")&&done("summaryPrefix_sample0001A_second")&&done("summaryPrefix_sample0001A_third")'
 #BSUB -J summaryPrefix_sample0001A_last
 #BSUB -e summaryPrefix_sample0001A_last.error
 #BSUB -o summaryPrefix_sample0001A_last.output
@@ -95,7 +95,7 @@ function version_control {
 # Commands taken from summary file: summaries/summaryPrefix_sample0001A.summary
 
 #JSUB<begin-job>
-#JGROUP last
+#JGROUP last first second third
 OUTFILE="results/outPrefix_"sample0001A
 bash ../../bash_scripts/catfiles.sh "$OUTFILE".txt "$OUTFILE"_first.txt "$OUTFILE"_second.txt "$OUTFILE"_third.txt
 

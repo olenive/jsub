@@ -1,0 +1,4 @@
+Concatenated arguments produced by ../../bash_scripts/concat.sh:
+sub06X_sub06Y
+Concatenated arguments produced by ../../bash_scripts/concat.sh:
+sub06Y_sub06Z

@@ -1229,7 +1229,7 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
 end
 
 # Function used to assign an integer value that indicates if this job needs to be submitted before or after another job.
-function get_priorities(dictSummaries, dictPaths; jobID="", tagSplit="#JGROUP", root="root")
+function get_priorities(dictSummaries, dictPaths; tagSplit="#JGROUP", root="root", debug=false)
   priotries = [];
   dictNameParents = Dict();
   dictNamePriority = Dict();
@@ -1242,23 +1242,26 @@ function get_priorities(dictSummaries, dictPaths; jobID="", tagSplit="#JGROUP", 
     error(string(" (in get_priorities) The dictionary of job file paths contains non-unique entries: \n", dictPaths));
   end
   ## Create a dictionary of group names to parents and initialise a dictionary of group names to priorities
+  # (length(jobDate) > 0 && length(jobID) > 0) ? dateDelim = "_" : dateDelim = "";
+  # jobDateAndID = string(jobDate, dateDelim, jobID);
   for pair in dictSummaries
     groupName = get_groupname(pair[2]; tagSplit=tagSplit, root=root);
-    parents = get_groupparents(pair[2], jobID; root=root, tagSplit="#JGROUP", jobDate="")
+    parents = get_groupparents(pair[2], ""; root=root, tagSplit="#JGROUP", jobDate="") # The scond argument is jobID, this is not needed here because only the relative priority of jobs within the same dependency tree matters.
     dictNameParents[groupName] = parents;
     dictNamePriority[groupName] = 0;
   end
+  debug && (println("dictNameParents:"); println(dict2string(dictNameParents)); println("");)
   ## Assign a priority rating to each group
   dictUnprocessed = deepcopy(dictNameParents);
   delete!(dictUnprocessed, root);
   processedGroups = [root];
   while length(dictUnprocessed) > 0
-    # println(dictUnprocessed); println(processedGroups);
+    debug && (println(dictUnprocessed); println(processedGroups);)
     flagProcessedSomething = false;
     for pair in dictUnprocessed
       groupName = pair[1]
       groupParents = pair[2]
-      # println("groupName = " * groupName); println("groupName = " * string(groupParents));
+      debug && (println("groupName = " * groupName); println("groupName = " * string(groupParents));)
       ## Continue if not all parents of this group have been processed
       flagPass = false;
       for parent in groupParents
@@ -1286,8 +1289,8 @@ function get_priorities(dictSummaries, dictPaths; jobID="", tagSplit="#JGROUP", 
     end
     ## Check for being stuck in an infinite loop
     if !flagProcessedSomething
-      # println("Failed at:");println("dictUnprocessed:");println(dict2string(dictUnprocessed));println("processedGroups:");println(processedGroups);
-      error(string(" (in get_priorities) Stuck in an infinite loop.  This may be due to repeated group names (or missing groups) in the input summary: \n", dict2string(dictSummaries) ));
+      debug && (println("Failed at:");println("dictUnprocessed:");println(dict2string(dictUnprocessed));println("processedGroups:");println(processedGroups););
+      error(string(" (in get_priorities) Stuck in an infinite loop.  This may be due to repeated or missing group names (or parent group names) in the input summary.\nThe following groups could not be processed:\n", dict2string(dictUnprocessed), "\n\nAll groups' summary data:\n", dict2string(dictSummaries) ));
     end
   end
   return dictNamePriority

@@ -2,7 +2,7 @@
 #JSUB<summary-name> sample0002A
 echo "Processing summary data from: "sample0002A
 # root group 
-OUTFILE="results/outPrefix_"sample0002A # Note: this is an example of what not to do! After the protocol is split OUTFILE will be undeclared in subsequent groups unless it is declared there again using variables from vars and variables from the top of the script.
+OUTFILE="results/outPrefix_"sample0002A # Note: this is an example of what not to do! After the protocol is split OUTFILE will be undeclared in subsequent groups unless it is declared there again using variables from vars and fvars but NOT variables from the top of the script.
 bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
 bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
 #JGROUP first
@@ -17,6 +17,6 @@ bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub02Z sub02X
 OUTFILE="results/outPrefix_"sample0002A 
 bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub02Z sub02X
 bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub02X sub02Y
-#JGROUP last
+#JGROUP last first second third
 OUTFILE="results/outPrefix_"sample0002A
 bash ../../bash_scripts/catfiles.sh "$OUTFILE".txt "$OUTFILE"_first.txt "$OUTFILE"_second.txt "$OUTFILE"_third.txt

@@ -2779,6 +2779,29 @@ Test.with_handler(ut_handler) do
   )
   @test get_priorities(suppliedSummaryDict, suppliedDictPaths02; root="a", tagSplit="#JGROUP") == expectedPriorities02
 
+  problemSumamryDict = Dict(
+    "first" => Any[UTF8String["#JGROUP first"],UTF8String["OUTFILE=\"results/outPrefix_\"sample0001A "],UTF8String["bash ../../bash_scripts/concat.sh \"\$OUTFILE\"_first.txt sub01X sub01Y"],UTF8String["bash ../../bash_scripts/concat.sh \"\$OUTFILE\"_first.txt sub01Y sub01Z"]],
+    "last" => Any[UTF8String["#JGROUP last first second third"],UTF8String["OUTFILE=\"results/outPrefix_\"sample0001A"],UTF8String["bash ../../bash_scripts/catfiles.sh \"\$OUTFILE\".txt \"\$OUTFILE\"_first.txt \"\$OUTFILE\"_second.txt \"\$OUTFILE\"_third.txt"]],
+    "root" => Any[UTF8String["# Basic integration test protocol involving only a call to a bash script that writes a single line to a text file."],UTF8String["#JSUB<summary-name> sample0001A"],UTF8String["echo \"Processing summary data from: \"sample0001A"],UTF8String["# root group "],UTF8String["OUTFILE=\"results/outPrefix_\"sample0001A # Note: this is an example of what not to do! After the protocol is split OUTFILE will be undeclared in subsequent groups unless it is declared there again using variables from vars and fvars but NOT variables from the top of the script."],UTF8String["bash ../../bash_scripts/trivial.sh \"\$OUTFILE\".txt"],UTF8String["bash ../../bash_scripts/trivial.sh \"\$OUTFILE\".txt"]],
+    "second" => Any[UTF8String["#JGROUP second"],UTF8String["OUTFILE=\"results/outPrefix_\"sample0001A "],UTF8String["bash ../../bash_scripts/concat.sh \"\$OUTFILE\"_second.txt sub01Y sub01Z"],UTF8String["bash ../../bash_scripts/concat.sh \"\$OUTFILE\"_second.txt sub01Z sub01X"]],
+    "third" => Any[UTF8String["#JGROUP third"],UTF8String["OUTFILE=\"results/outPrefix_\"sample0001A "],UTF8String["bash ../../bash_scripts/concat.sh \"\$OUTFILE\"_third.txt sub01Z sub01X"],UTF8String["bash ../../bash_scripts/concat.sh \"\$OUTFILE\"_third.txt sub01X sub01Y"]],
+  )
+  examplePathsDict = Dict(
+    "first" => "path/example/first.lsf",
+    "last" => "path/example/last.lsf",
+    "root" => "path/example/root.lsf",
+    "second" => "path/example/second.lsf",
+    "third" => "path/example/third.lsf",
+  )
+  expectedPriorities03 = Dict(
+    "first" => 1,
+    "last" => 2,
+    "root" => 0,
+    "second" => 1,
+    "third" => 1,
+  )
+  @test get_priorities(problemSumamryDict, examplePathsDict; root="root", tagSplit="#JGROUP") == expectedPriorities03;
+
   ## order_by_dictionary(ranks::Dict, toSort::Dict)
   suppliedRanks = Dict(
     "keyA1" => 0,

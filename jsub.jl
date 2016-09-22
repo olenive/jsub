@@ -419,7 +419,7 @@ function run_stage2_(pathSummariesList, pathJobsList; flagVerbose=false, tagsExp
   );
 
   ## Get an array of job priorities
-  arrDictPriorities = map((dictSummaries, dictFilePaths, jobID) -> get_priorities(dictSummaries, dictFilePaths, jobID=jobID), summaryArrDicts, arrDictFilePaths, arrJobIDs)
+  arrDictPriorities = map((dictSummaries, dictFilePaths, jobID) -> get_priorities(dictSummaries, dictFilePaths), summaryArrDicts, arrDictFilePaths, arrJobIDs)
 
   ## Re-order job paths list according to job priority
   arrArrOrderedJobPaths = map((ranksDict, pathsDict) -> order_by_dictionary(ranksDict, pathsDict), arrDictPriorities, arrDictFilePaths)

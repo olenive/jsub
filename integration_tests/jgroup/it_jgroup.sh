@@ -15,7 +15,7 @@ LONG_NAME="jgroupP_jgroupV_jgroupFV"
 SUMMARY_PREFIX="summaries/summaryPrefix_"
 SUMMARY_BASE_PREFIX=$(basename $SUMMARY_PREFIX)
 
-declare -a SAMPELS=("sample0001A" "sample0002A" "sample0003A")
+declare -a SAMPELS=("sample0001A" "sample0002A" "sample0003A" "sample0004A" "sample0005A" "sample0006A" "sample0007A" "sample0008A" "sample0009A" "sample0010A" "sample0011A")
 declare -a JGROUPS=("root" "first" "second" "third" "last")
 
 EXPECTED_SUMMARY_LIST="../expected_files/""$SUMMARY_BASE_PREFIX""$LONG_NAME"".list-summaries"
