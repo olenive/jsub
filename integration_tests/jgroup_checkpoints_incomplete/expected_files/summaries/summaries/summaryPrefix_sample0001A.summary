@@ -11,6 +11,7 @@ bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0001A_first.txt sub0
 jcheck_file_not_empty  "results/outPrefix_"sample0001A_first.txt
 #JGROUP second
 bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0001A_second.txt sub01Y sub01Z
+echo " " >             "results/outPrefix_"sample0001A_second.txt
 jcheck_file_not_empty  "results/outPrefix_"sample0001A_second.txt
 bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0001A_second.txt sub01Z sub01X
 jcheck_file_not_empty  "results/outPrefix_"sample0001A_second.txt
@@ -18,8 +19,9 @@ jcheck_file_not_empty  "results/outPrefix_"sample0001A_second.txt
 bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0001A_third.txt sub01Z sub01X
 jcheck_file_not_empty  "results/outPrefix_"sample0001A_third.txt
 bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0001A_third.txt sub01X sub01Y
+echo "  " >            "results/outPrefix_"sample0001A_third.txt
 jcheck_file_not_empty  "results/outPrefix_"sample0001A_third.txt
-#JGROUP last first second third
+#JGROUP last
 jcheck_file_not_empty                                  "results/outPrefix_"sample0001A_first.txt "results/outPrefix_"sample0001A"_second.txt "results/outPrefix_"sample0001A_third.txt"
 bash ../../bash_scripts/catfiles.sh "results/outPrefix_"sample0001A.txt "results/outPrefix_"sample0001A"_first.txt "results/outPrefix_"sample0001A_second.txt results/outPrefix_"sample0001A_third.txt
 jcheck_file_not_empty    "results/outPrefix_"sample0001A.txt

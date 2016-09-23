@@ -6,8 +6,8 @@ function clear_generated {
   rm -rf "summaries"
   rm -rf "jobs"
   rm -rf "results"
-  rm  *".error"
-  rm  *".output"
+  rm -f *".error"
+  rm -f *".output"
 }
 function isAbsolutePath {
   local DIR="$1"
