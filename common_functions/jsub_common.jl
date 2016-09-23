@@ -1152,7 +1152,9 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summ
     # write(stream, string("\n#<The next line will be deleted and replaced by the submit_lsf_jobs.sh script.>"));
     write(stream, string("\nJSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>"));
     # write(stream, string("\n"));
-    write(stream, string("\nJSUB_JOB_ID=\"", jobID, "\""));
+    groupName = get_groupname(jobArray; tagSplit="#JGROUP", root="root")
+    (length(groupName) > 0 && length(jobID) > 0) ? (groupDelim = "_") : (groupDelim = "")
+    write(stream, string("\nJSUB_JOB_ID=\"", jobID, groupDelim, groupName, "\""));
     write(stream, string("\nJSUB_LOG_FILE=\"", pathLogFile, "\""));
     write(stream, string("\nJSUB_SUMMARY_COMPLETED=\"", pathSummaryCompleted, "\""));
     write(stream, string("\nJSUB_SUMMARY_INCOMPLETE=\"", pathSummaryIncomplete, "\""));

@@ -8,10 +8,10 @@ JOB_HEADER="$1"
 
 GENERATED_DIR="generated_files/"
 PROTOCOL_DIR="../"
-PROTOCOL_FILE="$PROTOCOL_DIR"/"jgroupP.protocol"
+PROTOCOL_FILE="$PROTOCOL_DIR"/"jgroup_incomplete.protocol"
 VARS_FILE="$PROTOCOL_DIR"/"jgroupV.vars"
 FVARS_FILE="$PROTOCOL_DIR"/"jgroupFV.fvars"
-LONG_NAME="jgroupP_jgroupV_jgroupFV"
+LONG_NAME="jgroup_incomplete_jgroupV_jgroupFV"
 SUMMARY_PREFIX="summaries/summaryPrefix_"
 SUMMARY_BASE_PREFIX=$(basename $SUMMARY_PREFIX)
 

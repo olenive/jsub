@@ -8,7 +8,7 @@
 
 # Job file variables:
 JSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>
-JSUB_JOB_ID="ID002"
+JSUB_JOB_ID="ID002_second"
 JSUB_LOG_FILE="jlang_function_test_files/job_files/ut_generated_job.log"
 JSUB_SUMMARY_COMPLETED="jlang_function_test_files/job_files/ut_generated_job.summary.completed"
 JSUB_SUMMARY_INCOMPLETE="jlang_function_test_files/job_files/ut_generated_job.summary.incomplete"
