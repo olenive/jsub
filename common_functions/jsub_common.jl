@@ -1075,11 +1075,15 @@ function generate_jobfilepath(summaryName, jobArray; tagSplit="#JGROUP", prefix=
   end
 end
 
+# Stick to strings together using the supplied delimiter.  If either of the strings is empty do not include a delimiter
+function stick_together(str1::AbstractString, str2::AbstractString, delim::AbstractString)
+  (length(str1) > 0 && length(str2) > 0) ? (middle = delim) : (middle = "");
+  return string(str1, middle, str2);
+end
+
 # Read job dictionary and return job header
 function create_job_header_string(jobArray, jobID; root="root", tagHeader="\n#BSUB", prefix="#!/bin/bash\n", suffix="", tagSplit="#JGROUP", jobDate="", appendOptions=true, rootSleepSeconds=nothing)
-  # arrHeaderRows = jobArray[find((x)->iscomment(join(x), tagHeader), jobArray)] # Extract header rows from among command rows
-  (length(jobDate) > 0 && length(jobID) > 0) ? dateDelim = "_" : dateDelim = "";
-  jobDateAndID = string(jobDate, dateDelim, jobID); # previously # jobID = jobID_or_hash(jobArray; jobID=jobID, jobDate=jobDate);
+  jobDateAndID = stick_together(jobDate, jobID, "_");
   groupName = get_groupname(jobArray, tagSplit=tagSplit, root=root);
   length(groupName) > 0 ? idDelim = "_" : idDelim = "";
   # Generate options strings
@@ -1136,8 +1140,8 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summ
     headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=(remove_suffix(basename(outFilePath), ".lsf")), jobDate="", appendOptions=true, rootSleepSeconds=nothing, verbose=false, doJsubVersionControl=true, 
     processTimestamp="true",
     pathLogFile=(remove_suffix(outFilePath, ".lsf") * ".log"),
-    pathSummaryCompleted=(remove_suffix(outFilePath, ".lsf") * ".summary.completed"),
-    pathSummaryIncomplete=(remove_suffix(outFilePath, ".lsf") * ".summary.incomplete"),
+    pathCompleted=(remove_suffix(outFilePath, ".lsf") * ".completed"),
+    pathIncomplete=(remove_suffix(outFilePath, ".lsf") * ".incomplete"),
   )
   # Check if jobArray is empty
   if jobArray == []
@@ -1156,8 +1160,8 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summ
     (length(groupName) > 0 && length(jobID) > 0) ? (groupDelim = "_") : (groupDelim = "")
     write(stream, string("\nJSUB_JOB_ID=\"", jobID, groupDelim, groupName, "\""));
     write(stream, string("\nJSUB_LOG_FILE=\"", pathLogFile, "\""));
-    write(stream, string("\nJSUB_SUMMARY_COMPLETED=\"", pathSummaryCompleted, "\""));
-    write(stream, string("\nJSUB_SUMMARY_INCOMPLETE=\"", pathSummaryIncomplete, "\""));
+    write(stream, string("\nJSUB_SUMMARY_COMPLETED=\"", pathCompleted, "\""));
+    write(stream, string("\nJSUB_SUMMARY_INCOMPLETE=\"", pathIncomplete, "\""));
     write(stream, string("\nJSUB_VERSION_CONTROL=", doJsubVersionControl));
     write(stream, string("\nJSUB_JOB_TIMESTAMP=", processTimestamp));
     # Append common functions
@@ -1181,11 +1185,9 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
     tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n", headerSuffix="", summaryFile="", 
     jobID=nothing, jobDate="", appendOptions=true, rootSleepSeconds=nothing, verbose=false, bsubOptions=["-J"], doJsubVersionControl=true, processTimestamp="true",
     prefixLogFile=jobFilePrefix,
-    prefixSummaryCompleted=jobFilePrefix,
-    prefixSummaryIncomplete=jobFilePrefix,
     pathLogFile=string(prefixLogFile, basename(remove_suffix(summaryFilePath, ".summary") * ".log")),
-    pathSummaryCompleted=string(prefixSummaryCompleted, basename(remove_suffix(summaryFilePath, ".summary") * ".summary.completed")),
-    pathSummaryIncomplete=string(prefixSummaryIncomplete, basename(remove_suffix(summaryFilePath, ".summary") * ".summary.incomplete")),
+    pathCompleted=nothing,#string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary") * ".completed")),
+    pathIncomplete=nothing#string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary") * ".incomplete")),
   )
   dictJobFilePaths = Dict(); 
   ## For each group in the summary file create a job file
@@ -1206,7 +1208,7 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
     if filePathOverride != nothing
       outFilePath = filePathOverride;
     else
-      (length(group) > 0) ? (group = "_" * group) : (group = ""); # # (length(group) > 0 && group != root) ? (group = "_" * group) : (group = ""); # job file specific suffix
+      (length(group) > 0) && (group = "_" * group);
       outFilePath = string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary")), group, jobFileSuffix); # get longName from file path
     end
     ## Check for conflicting #BSUB options
@@ -1215,12 +1217,17 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
         SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_jobs_from_summary_) found conflicting instances of ", tagHeader, " ", option, " in the following array of commands:\n", jobArray);
       end
     end
+    ## Set paths for the .completed and .incomplete file
+    passedPathCompleted = "";
+    (pathCompleted == nothing) && (passedPathCompleted = remove_suffix(outFilePath, ".lsf") * ".completed");
+    passedPathIncomplete = "";
+    (pathIncomplete == nothing) && (passedPathIncomplete = remove_suffix(outFilePath, ".lsf") * ".incomplete");
     ## Create job file
     dictJobFilePaths[pair[1]] = outFilePath; # push!(dictJobFilePaths, outFilePath)
     create_job_file_(outFilePath, jobArray, dictCheckpoints; summaryFileOfOrigin=summaryFilePath, root=thisRoot,
       tagBegin=tagBegin, tagFinish=tagFinish, tagHeader=tagHeader, tagCheckpoint=tagCheckpoint, headerPrefix=headerPrefix, headerSuffix=headerSuffix, summaryFile=summaryFile, 
       jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds, verbose=verbose, doJsubVersionControl=doJsubVersionControl, processTimestamp=processTimestamp,
-      pathLogFile=pathLogFile, pathSummaryCompleted=pathSummaryCompleted, pathSummaryIncomplete=pathSummaryIncomplete,
+      pathLogFile=pathLogFile, pathCompleted=passedPathCompleted, pathIncomplete=passedPathIncomplete,
     );
   end
   ## Check that summary file names are unique

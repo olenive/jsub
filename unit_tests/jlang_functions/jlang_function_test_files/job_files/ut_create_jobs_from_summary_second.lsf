@@ -10,8 +10,8 @@
 JSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>
 JSUB_JOB_ID="jobID0000_second"
 JSUB_LOG_FILE="jlang_function_test_files/job_files/ut_create_jobs_from_summary.log"
-JSUB_SUMMARY_COMPLETED="jlang_function_test_files/job_files/ut_create_jobs_from_summary.summary.completed"
-JSUB_SUMMARY_INCOMPLETE="jlang_function_test_files/job_files/ut_create_jobs_from_summary.summary.incomplete"
+JSUB_SUMMARY_COMPLETED="jlang_function_test_files/job_files/ut_create_jobs_from_summary_second.completed"
+JSUB_SUMMARY_INCOMPLETE="jlang_function_test_files/job_files/ut_create_jobs_from_summary_second.incomplete"
 JSUB_VERSION_CONTROL=true
 JSUB_JOB_TIMESTAMP=true
 

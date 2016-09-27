@@ -1825,6 +1825,12 @@ Test.with_handler(ut_handler) do
   expectedCommand = "\n#BSUB -w \'done(\"YYYYMMDD_HHMMSS_ID01_root\")&&done(\"YYYYMMDD_HHMMSS_ID01_first\")&&done(\"YYYYMMDD_HHMMSS_ID01_third\")&&done(\"YYYYMMDD_HHMMSS_ID01_fourth\")&&done(\"YYYYMMDD_HHMMSS_ID01_fifth\")\'";
   @test cmd_await_jobs(suppliedJobArray04, "ID01"; option="-w", condition="done", tagSplit="#JGROUP", jobDate="YYYYMMDD_HHMMSS") == expectedCommand
 
+  ## stick_together(str1, str2, delim)
+  @test stick_together("str1", "str2", "_") == "str1_str2"
+  @test stick_together("str1", "", "_") == "str1"
+  @test stick_together("", "str2", "_") == "str2"
+  @test stick_together("", "", "_") == ""
+
   ## create_job_header_string(jobArray; tagHeader="#BSUB" prefix="#!/bin/bash\n", suffix="")
   suppliedJobArray = [];
   push!(suppliedJobArray, ["#JGROUP second first third fourth fifth"]);
@@ -2024,8 +2030,8 @@ Test.with_handler(ut_handler) do
     "\nJSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>",
     "\nJSUB_JOB_ID=\"second\"",                                   
     "\nJSUB_LOG_FILE=\"jlang_function_test_files/job_files/ut_generated_job.log\"",
-    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_generated_job.summary.completed\"",
-    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_generated_job.summary.incomplete\"",
+    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_generated_job.completed\"",
+    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_generated_job.incomplete\"",
     "\nJSUB_VERSION_CONTROL=true",
     "\nJSUB_JOB_TIMESTAMP=true",                                                                         
     "\n",
@@ -2056,9 +2062,9 @@ Test.with_handler(ut_handler) do
     "\n"
   )
   @test expected_file_contents == readall(filePath)
-  # arr1 = split(readall(filePath), '\n')
-  # arr2 = split(expected_file_contents, '\n')
-  # compare_arrays(arr1, arr2)
+  arr1 = split(readall(filePath), '\n')
+  arr2 = split(expected_file_contents, '\n')
+  compare_arrays(arr1, arr2)
   
   # stream = open("/jlang_function_test_files/job_files/compare.txt", "w");
   # write(stream, expected_file_contents)
@@ -2094,8 +2100,8 @@ Test.with_handler(ut_handler) do
     "\nJSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>",
     "\nJSUB_JOB_ID=\"ID002_second\"",                                   
     "\nJSUB_LOG_FILE=\"jlang_function_test_files/job_files/ut_generated_job.log\"",
-    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_generated_job.summary.completed\"",
-    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_generated_job.summary.incomplete\"",
+    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_generated_job.completed\"",
+    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_generated_job.incomplete\"",
     "\nJSUB_VERSION_CONTROL=true",
     "\nJSUB_JOB_TIMESTAMP=true",                                                                         
     "\n",
@@ -2328,17 +2334,6 @@ Test.with_handler(ut_handler) do
     "\n#BSUB -o JOBDATE0_000000_jobID0000_root.output",
     "\n"
   );
-  expectedJobFileVariables = string(
-    "\n",
-    "\n# Job file variables:",
-    "\nJSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>",
-    "\nJSUB_JOB_ID=\"jobID0000\"",                                   
-    "\nJSUB_LOG_FILE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary.log\"",
-    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary.summary.completed\"",
-    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary.summary.incomplete\"",
-    "\nJSUB_VERSION_CONTROL=true",
-    "\nJSUB_JOB_TIMESTAMP=true",
-  );
   expectedFileContents01 = string( 
     expectedFileHeader01,
     "\n",
@@ -2346,8 +2341,8 @@ Test.with_handler(ut_handler) do
     "\nJSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>",
     "\nJSUB_JOB_ID=\"jobID0000_root\"",                                   
     "\nJSUB_LOG_FILE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary.log\"",
-    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary.summary.completed\"",
-    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary.summary.incomplete\"",
+    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary_root.completed\"",
+    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary_root.incomplete\"",
     "\nJSUB_VERSION_CONTROL=true",
     "\nJSUB_JOB_TIMESTAMP=true",
     "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n",
@@ -2388,8 +2383,8 @@ Test.with_handler(ut_handler) do
     "\nJSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>",
     "\nJSUB_JOB_ID=\"jobID0000_first\"",                                   
     "\nJSUB_LOG_FILE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary.log\"",
-    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary.summary.completed\"",
-    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary.summary.incomplete\"",
+    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary_first.completed\"",
+    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary_first.incomplete\"",
     "\nJSUB_VERSION_CONTROL=true",
     "\nJSUB_JOB_TIMESTAMP=true",
     "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n",
@@ -2428,8 +2423,8 @@ Test.with_handler(ut_handler) do
     "\nJSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>",
     "\nJSUB_JOB_ID=\"jobID0000_second\"",                                   
     "\nJSUB_LOG_FILE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary.log\"",
-    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary.summary.completed\"",
-    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary.summary.incomplete\"",
+    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary_second.completed\"",
+    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary_second.incomplete\"",
     "\nJSUB_VERSION_CONTROL=true",
     "\nJSUB_JOB_TIMESTAMP=true",
     "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n",
@@ -2464,13 +2459,13 @@ Test.with_handler(ut_handler) do
     "first"  => "jlang_function_test_files/job_files/ut_create_jobs_from_summary_first.lsf",
   )
   @test expectedFileContents01 == readall(expectedFilePath01)
-  # O=split(readall(expectedFilePath01), '\n')
-  # E=split(expectedFileContents01, '\n')
-  # compare_arrays(split(readall(expectedFilePath01), '\n'), split(expectedFileContents01, '\n'))
+  # O=split(readall(expectedFilePath01), '\n');
+  # E=split(expectedFileContents01, '\n');
+  # compare_arrays(split(readall(expectedFilePath01), '\n'), split(expectedFileContents01, '\n'));
   @test expectedFileContents02 == readall(expectedFilePath02)
-  # O=split(readall(expectedFilePath02), '\n')
-  # E=split(expectedFileContents02, '\n')
-  # compare_arrays(split(readall(expectedFilePath02), '\n'), split(expectedFileContents02, '\n'))
+  # O=split(readall(expectedFilePath02), '\n');
+  # E=split(expectedFileContents02, '\n');
+  # compare_arrays(split(readall(expectedFilePath02), '\n'), split(expectedFileContents02, '\n'));
   @test expectedFileContents03 == readall(expectedFilePath03)
   # Observed03=split(readall(expectedFilePath03), '\n');
   # Expected03=split(expectedFileContents03, '\n');
@@ -2502,8 +2497,8 @@ Test.with_handler(ut_handler) do
     "\nJSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>",
     "\nJSUB_JOB_ID=\"jobID0000_root\"",                                   
     "\nJSUB_LOG_FILE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary.log\"",
-    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary.summary.completed\"",
-    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary.summary.incomplete\"",
+    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary_root.completed\"",
+    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary_root.incomplete\"",
     "\nJSUB_VERSION_CONTROL=true",
     "\nJSUB_JOB_TIMESTAMP=true",
     "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n",
@@ -2541,9 +2536,9 @@ Test.with_handler(ut_handler) do
   # E=split(expectedFileContents01, '\n')
   # compare_arrays(split(readall(expectedFilePath01), '\n'), split(expectedFileContents01, '\n'))
   @test expectedFileContents02 == readall(expectedFilePath02)
-  # O=split(readall(expectedFilePath02), '\n')
-  # E=split(expectedFileContents02, '\n')
-  # compare_arrays(split(readall(expectedFilePath02), '\n'), split(expectedFileContents02, '\n'))
+  O=split(readall(expectedFilePath02), '\n')
+  E=split(expectedFileContents02, '\n')
+  compare_arrays(split(readall(expectedFilePath02), '\n'), split(expectedFileContents02, '\n'))
   @test expectedFileContents03 == readall(expectedFilePath03)
 
   ## get_jobpriorityarray(dictSummaries)
