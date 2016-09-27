@@ -14,7 +14,7 @@ EXPECTED_SUMMARY_LIST="../expected_files/basic.list-summaries"
 EXPECTED_JOB_IN="../expected_files/basic_0001.lsf"
 EXPECTED_JOB_LIST="../expected/basic.list-jobs"
 EXPECTED_JOB_DATA="../expected_files/it1_basic.txt"
-EXPECTED_COMPLETED="../expected_files/basic_0001.summary.completed"
+EXPECTED_COMPLETED="../expected_files/basic_0001.completed"
 EXPECTED_PROTABLE_DIR="../expected_files/portable"
 EXPECTED_PORTABLE_ZIP="$EXPECTED_PROTABLE_DIR".tar.gz
 
@@ -27,8 +27,8 @@ GENERATED_JOB_DATA="it1_basic.txt"
 GENERATED_JOB_OUTPUT="basic_0001.error"
 GENERATED_JOB_ERROR="basic_0001.output"
 GENERATED_SUBMITTED_JOBS_LIST="basic.list-jobs.submitted"
-GENERATED_COMPLETED="basic_0001.summary.completed"
-GENERATED_INCOMPLETE="basic_0001.summary.incomplete"
+GENERATED_COMPLETED="basic_0001.completed"
+GENERATED_INCOMPLETE="basic_0001.incomplete"
 GENERATED_PROTABLE_DIR="portable"
 GENERATED_PORTABLE_ZIP="$GENERATED_PROTABLE_DIR".tar.gz
 

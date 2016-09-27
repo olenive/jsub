@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#BSUB -w 'done("JOBDATE0_000000_jobID0000_root")'
+#BSUB -w 'ended("JOBDATE0_000000_jobID0000_root")'
 #BSUB -J JOBDATE0_000000_jobID0000_first
 #BSUB -e JOBDATE0_000000_jobID0000_first.error
 #BSUB -o JOBDATE0_000000_jobID0000_first.output

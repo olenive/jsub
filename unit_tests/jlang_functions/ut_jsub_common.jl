@@ -1765,65 +1765,65 @@ Test.with_handler(ut_handler) do
   push!(suppliedSummaryArray, ["bash echo \"cmd 42\""]);
   @test_throws ErrorException split_summary(suppliedSummaryArray; tagSplit="#JGROUP")
 
-  ## construct_conditions(arrParents; condition="done", operator="&&")
+  ## construct_conditions(arrParents; condition="ended", operator="&&")
   suppliedNames = ["first", "second", "third", "fourth"];
-  expectedString = "\'done(\"first\")&&done(\"second\")&&done(\"third\")&&done(\"fourth\")\'";
-  @test construct_conditions(suppliedNames; condition="done", operator="&&") == expectedString
+  expectedString = "\'ended(\"first\")&&ended(\"second\")&&ended(\"third\")&&ended(\"fourth\")\'";
+  @test construct_conditions(suppliedNames; condition="ended", operator="&&") == expectedString
 
   ## get_groupparents(jobArray, jobID; root="root", tagHeader="\n#BSUB", tagSplit="#JGROUP", jobDate="")
-  ## cmd_await_jobs(jobArray; condition="done", tagSplit="#JGROUP")
+  ## cmd_await_jobs(jobArray; condition="ended", tagSplit="#JGROUP")
   suppliedJobArray00 = [];
   push!(suppliedJobArray00, ["bash echo \"cmd 21\""]);
   push!(suppliedJobArray00, ["bash echo \"cmd 22\""]);
   @test get_groupparents(suppliedJobArray00, ""; root="root", jobDate="") == []
-  expectedCommand = "\n#BSUB -w \'done(\"root\")&&done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'";
-  @test cmd_await_jobs(suppliedJobArray00, ""; option="-w", condition="done", tagSplit="#JGROUP", jobDate="") == ""
+  expectedCommand = "\n#BSUB -w \'ended(\"root\")&&ended(\"first\")&&ended(\"third\")&&ended(\"fourth\")&&ended(\"fifth\")\'";
+  @test cmd_await_jobs(suppliedJobArray00, ""; option="-w", condition="ended", tagSplit="#JGROUP", jobDate="") == ""
 
   suppliedJobArray00b = [];
   push!(suppliedJobArray00b, ["#JGROUP root"]);
   push!(suppliedJobArray00b, ["bash echo \"cmd 21\""]);
   push!(suppliedJobArray00b, ["bash echo \"cmd 22\""]);
   @test_throws ErrorException get_groupparents(suppliedJobArray00b, ""; root="root", jobDate="");
-  @test_throws ErrorException cmd_await_jobs(suppliedJobArray00b, ""; option="-w", condition="done", tagSplit="#JGROUP", jobDate="")
+  @test_throws ErrorException cmd_await_jobs(suppliedJobArray00b, ""; option="-w", condition="ended", tagSplit="#JGROUP", jobDate="")
 
   suppliedJobArray00c = [];
   push!(suppliedJobArray00c, ["#JGROUP"]);
   push!(suppliedJobArray00c, ["bash echo \"cmd 21\""]);
   push!(suppliedJobArray00c, ["bash echo \"cmd 22\""]);
   @test_throws ErrorException get_groupparents(suppliedJobArray00c, ""; root="root", jobDate="")
-  @test_throws ErrorException cmd_await_jobs(suppliedJobArray00c, ""; option="-w", condition="done", tagSplit="#JGROUP", jobDate="")
+  @test_throws ErrorException cmd_await_jobs(suppliedJobArray00c, ""; option="-w", condition="ended", tagSplit="#JGROUP", jobDate="")
   
   suppliedJobArray01 = [];
   push!(suppliedJobArray01, ["#JGROUP second first third fourth fifth"]);
   push!(suppliedJobArray01, ["bash echo \"cmd 21\""]);
   push!(suppliedJobArray01, ["bash echo \"cmd 22\""]);
   @test get_groupparents(suppliedJobArray01, ""; root="root", jobDate="") == ["root", "first", "third", "fourth", "fifth"]
-  expectedCommand = "\n#BSUB -w \'done(\"root\")&&done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'";
-  @test cmd_await_jobs(suppliedJobArray01, ""; option="-w", condition="done", tagSplit="#JGROUP", jobDate="") == expectedCommand
+  expectedCommand = "\n#BSUB -w \'ended(\"root\")&&ended(\"first\")&&ended(\"third\")&&ended(\"fourth\")&&ended(\"fifth\")\'";
+  @test cmd_await_jobs(suppliedJobArray01, ""; option="-w", condition="ended", tagSplit="#JGROUP", jobDate="") == expectedCommand
 
   suppliedJobArray02 = [];
   push!(suppliedJobArray02, ["#JGROUP second first third fourth fifth"]);
   push!(suppliedJobArray02, ["bash echo \"cmd 21\""]);
   push!(suppliedJobArray02, ["bash echo \"cmd 22\""]);
   @test get_groupparents(suppliedJobArray02, "11331234539506827047"; root="root", jobDate="") == ["11331234539506827047_root", "11331234539506827047_first", "11331234539506827047_third", "11331234539506827047_fourth", "11331234539506827047_fifth"]
-  expectedCommand = "\n#BSUB -w \'done(\"11331234539506827047_root\")&&done(\"11331234539506827047_first\")&&done(\"11331234539506827047_third\")&&done(\"11331234539506827047_fourth\")&&done(\"11331234539506827047_fifth\")\'";
-  @test cmd_await_jobs(suppliedJobArray02, jobID_or_hash(suppliedJobArray02; jobID=nothing); option="-w", condition="done", tagSplit="#JGROUP") == expectedCommand
+  expectedCommand = "\n#BSUB -w \'ended(\"11331234539506827047_root\")&&ended(\"11331234539506827047_first\")&&ended(\"11331234539506827047_third\")&&ended(\"11331234539506827047_fourth\")&&ended(\"11331234539506827047_fifth\")\'";
+  @test cmd_await_jobs(suppliedJobArray02, jobID_or_hash(suppliedJobArray02; jobID=nothing); option="-w", condition="ended", tagSplit="#JGROUP") == expectedCommand
 
   suppliedJobArray03 = [];
   push!(suppliedJobArray03, ["#JGROUP second first third fourth fifth"]);
   push!(suppliedJobArray03, ["bash echo \"cmd 21\""]);
   push!(suppliedJobArray03, ["bash echo \"cmd 22\""]);
   @test get_groupparents(suppliedJobArray02, "ID01"; root="root", jobDate="") == ["ID01_root", "ID01_first", "ID01_third", "ID01_fourth", "ID01_fifth"]
-  expectedCommand = "\n#BSUB -w \'done(\"ID01_root\")&&done(\"ID01_first\")&&done(\"ID01_third\")&&done(\"ID01_fourth\")&&done(\"ID01_fifth\")\'";
-  @test cmd_await_jobs(suppliedJobArray03, "ID01"; option="-w", condition="done", tagSplit="#JGROUP", jobDate="") == expectedCommand
+  expectedCommand = "\n#BSUB -w \'ended(\"ID01_root\")&&ended(\"ID01_first\")&&ended(\"ID01_third\")&&ended(\"ID01_fourth\")&&ended(\"ID01_fifth\")\'";
+  @test cmd_await_jobs(suppliedJobArray03, "ID01"; option="-w", condition="ended", tagSplit="#JGROUP", jobDate="") == expectedCommand
   # Test with date
   suppliedJobArray04 = [];
   push!(suppliedJobArray04, ["#JGROUP second first third fourth fifth"]);
   push!(suppliedJobArray04, ["bash echo \"cmd 21\""]);
   push!(suppliedJobArray04, ["bash echo \"cmd 22\""]);
   @test get_groupparents(suppliedJobArray02, "ID01"; root="root", jobDate="YYYYMMDD_HHMMSS") == ["YYYYMMDD_HHMMSS_ID01_root", "YYYYMMDD_HHMMSS_ID01_first", "YYYYMMDD_HHMMSS_ID01_third", "YYYYMMDD_HHMMSS_ID01_fourth", "YYYYMMDD_HHMMSS_ID01_fifth"]
-  expectedCommand = "\n#BSUB -w \'done(\"YYYYMMDD_HHMMSS_ID01_root\")&&done(\"YYYYMMDD_HHMMSS_ID01_first\")&&done(\"YYYYMMDD_HHMMSS_ID01_third\")&&done(\"YYYYMMDD_HHMMSS_ID01_fourth\")&&done(\"YYYYMMDD_HHMMSS_ID01_fifth\")\'";
-  @test cmd_await_jobs(suppliedJobArray04, "ID01"; option="-w", condition="done", tagSplit="#JGROUP", jobDate="YYYYMMDD_HHMMSS") == expectedCommand
+  expectedCommand = "\n#BSUB -w \'ended(\"YYYYMMDD_HHMMSS_ID01_root\")&&ended(\"YYYYMMDD_HHMMSS_ID01_first\")&&ended(\"YYYYMMDD_HHMMSS_ID01_third\")&&ended(\"YYYYMMDD_HHMMSS_ID01_fourth\")&&ended(\"YYYYMMDD_HHMMSS_ID01_fifth\")\'";
+  @test cmd_await_jobs(suppliedJobArray04, "ID01"; option="-w", condition="ended", tagSplit="#JGROUP", jobDate="YYYYMMDD_HHMMSS") == expectedCommand
 
   ## stick_together(str1, str2, delim)
   @test stick_together("str1", "str2", "_") == "str1_str2"
@@ -1843,21 +1843,21 @@ Test.with_handler(ut_handler) do
   expHeader = string( 
     "#!/bin/bash\n",
     '\n',
-    "#BSUB -w \'done(\"root\")&&done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
+    "#BSUB -w \'ended(\"root\")&&ended(\"first\")&&ended(\"third\")&&ended(\"fourth\")&&ended(\"fifth\")\'",
     "\nheader suffix string"
   );
   @test create_job_header_string(suppliedJobArray, ""; prefix="#!/bin/bash\n", suffix="\nheader suffix string", jobDate="", appendOptions=false) == expHeader
   expHeader = string( 
     "#!/bin/bash\n",
     '\n',
-    "#BSUB -w \'done(\"root\")&&done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
+    "#BSUB -w \'ended(\"root\")&&ended(\"first\")&&ended(\"third\")&&ended(\"fourth\")&&ended(\"fifth\")\'",
     ""
   )
   @test create_job_header_string(suppliedJobArray, ""; prefix="#!/bin/bash\n", suffix="", jobDate="", appendOptions=false) == expHeader
   expHeader = string( 
     "#!/bin/bash\n",
     '\n',
-    "#BSUB -w \'done(\"YYYYMMDD_HHMMSS_ID001_root\")&&done(\"YYYYMMDD_HHMMSS_ID001_first\")&&done(\"YYYYMMDD_HHMMSS_ID001_third\")&&done(\"YYYYMMDD_HHMMSS_ID001_fourth\")&&done(\"YYYYMMDD_HHMMSS_ID001_fifth\")\'",
+    "#BSUB -w \'ended(\"YYYYMMDD_HHMMSS_ID001_root\")&&ended(\"YYYYMMDD_HHMMSS_ID001_first\")&&ended(\"YYYYMMDD_HHMMSS_ID001_third\")&&ended(\"YYYYMMDD_HHMMSS_ID001_fourth\")&&ended(\"YYYYMMDD_HHMMSS_ID001_fifth\")\'",
     ""
   )
   @test create_job_header_string(suppliedJobArray, "ID001"; prefix="#!/bin/bash\n", suffix="", jobDate="YYYYMMDD_HHMMSS", appendOptions=false) == expHeader
@@ -1940,7 +1940,7 @@ Test.with_handler(ut_handler) do
   expHeader = string( 
     "#!/bin/bash\n",
     '\n',
-    "#BSUB -w \'done(\"YYYYMMDD_HHMMSS_ID001_root\")&&done(\"YYYYMMDD_HHMMSS_ID001_first\")&&done(\"YYYYMMDD_HHMMSS_ID001_third\")&&done(\"YYYYMMDD_HHMMSS_ID001_fourth\")&&done(\"YYYYMMDD_HHMMSS_ID001_fifth\")\'",
+    "#BSUB -w \'ended(\"YYYYMMDD_HHMMSS_ID001_root\")&&ended(\"YYYYMMDD_HHMMSS_ID001_first\")&&ended(\"YYYYMMDD_HHMMSS_ID001_third\")&&ended(\"YYYYMMDD_HHMMSS_ID001_fourth\")&&ended(\"YYYYMMDD_HHMMSS_ID001_fifth\")\'",
     "suffixstuff"
   );
   @test create_job_header_string(suppliedJobArray, "ID001"; rootSleepSeconds="2.5", prefix="#!/bin/bash\n", suffix="suffixstuff", jobDate="YYYYMMDD_HHMMSS", appendOptions=false) == expHeader
@@ -2002,11 +2002,13 @@ Test.with_handler(ut_handler) do
 
   ## create_job_file_(filePath, jobArray, bash_functions::Dict; tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="#BSUB", headerPrefix="#!/bin/bash\n" , headerSuffix="")
   filePath = "jlang_function_test_files/job_files/ut_generated_job.lsf";
-  run(`rm $filePath`);
+  try
+    run(`rm $filePath`);
+  end
   headerString = string( 
     "#!/bin/bash\n",
     '\n',
-    "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
+    "#BSUB -w \'ended(\"first\")&&ended(\"third\")&&ended(\"fourth\")&&ended(\"fifth\")\'",
     "\nheader suffix string"
   );
   suppliedJobArray = [];
@@ -2017,12 +2019,12 @@ Test.with_handler(ut_handler) do
   push!(suppliedJobArray, ["#BSUB -P grantcode"]);
   push!(suppliedJobArray, ["#BSUB -w overriding"]);
   push!(suppliedJobArray, ["bash echo \"cmd 23\""]);
-  create_job_file_(filePath, suppliedJobArray, output_dict; jobID="", jobDate="", appendOptions=false)
+  create_job_file_(filePath, suppliedJobArray, output_dict, "jlang_function_test_files/job_files/ut_generated_job.completed", "jlang_function_test_files/job_files/ut_generated_job.incomplete"; jobID="", jobDate="", appendOptions=false)
   expected_file_contents = string( 
     string( 
       "#!/bin/bash\n",
       '\n',
-      "#BSUB -w \'done(\"root\")&&done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
+      "#BSUB -w \'ended(\"root\")&&ended(\"first\")&&ended(\"third\")&&ended(\"fourth\")&&ended(\"fifth\")\'",
       ""
     ),
     "\n",
@@ -2071,11 +2073,13 @@ Test.with_handler(ut_handler) do
   # close(stream)
 
   filePath = "jlang_function_test_files/job_files/ut_generated_job.lsf";
-  run(`rm $filePath`);
+  try
+    run(`rm $filePath`);
+  end
   headerString = string( 
     "#!/bin/bash\n",
     '\n',
-    "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
+    "#BSUB -w \'ended(\"first\")&&ended(\"third\")&&ended(\"fourth\")&&ended(\"fifth\")\'",
     "\nheader suffix string"
   );
   suppliedJobArray = [];
@@ -2086,12 +2090,12 @@ Test.with_handler(ut_handler) do
   push!(suppliedJobArray, ["#BSUB -P grantcode"]);
   push!(suppliedJobArray, ["#BSUB -w overriding"]);
   push!(suppliedJobArray, ["bash echo \"cmd 23\""]);
-  create_job_file_(filePath, suppliedJobArray, output_dict; jobID="ID002", jobDate="")
+  create_job_file_(filePath, suppliedJobArray, output_dict, "jlang_function_test_files/job_files/ut_generated_job.completed", "jlang_function_test_files/job_files/ut_generated_job.incomplete"; jobID="ID002", jobDate="")
   expected_file_contents = string( 
     string( 
       "#!/bin/bash\n",
       '\n',
-      "#BSUB -w \'done(\"ID002_root\")&&done(\"ID002_first\")&&done(\"ID002_third\")&&done(\"ID002_fourth\")&&done(\"ID002_fifth\")\'",
+      "#BSUB -w \'ended(\"ID002_root\")&&ended(\"ID002_first\")&&ended(\"ID002_third\")&&ended(\"ID002_fourth\")&&ended(\"ID002_fifth\")\'",
       string("\n", "#BSUB", " -J ID002_second\n", "#BSUB", " -e ID002_second.error\n", "#BSUB", " -o ID002_second.output\n"),
       ""
     ),
@@ -2144,11 +2148,11 @@ Test.with_handler(ut_handler) do
   headerString = string( 
     "#!/bin/bash\n",
     '\n',
-    "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
+    "#BSUB -w \'ended(\"first\")&&ended(\"third\")&&ended(\"fourth\")&&ended(\"fifth\")\'",
     "\nheader suffix string"
   );
   suppliedJobArray = [];
-  create_job_file_(filePath, suppliedJobArray, output_dict; )
+  create_job_file_(filePath, suppliedJobArray, output_dict, "jlang_function_test_files/job_files/ut_generated_job.completed", "jlang_function_test_files/job_files/ut_generated_job.incomplete"; )
   @test isfile(filePath) == false
 
   ## detect_option_conflicts(jobArray; tag="#BSUB", option="-J")
@@ -2278,7 +2282,7 @@ Test.with_handler(ut_handler) do
   headerString = string( 
     "#!/bin/bash\n",
     '\n',
-    "#BSUB -w \'done(\"first\")&&done(\"third\")&&done(\"fourth\")&&done(\"fifth\")\'",
+    "#BSUB -w \'ended(\"first\")&&ended(\"third\")&&ended(\"fourth\")&&ended(\"fifth\")\'",
     "\nheader suffix string"
   );
   summaryFilePath = "dir/name/is/ignored/ut_create_jobs_from_summary.summary"
@@ -2370,7 +2374,7 @@ Test.with_handler(ut_handler) do
   try run(`rm $expectedFilePath02`) end
   expectedFileHeader02 = string( 
       "#!/bin/bash\n",
-      "\n#BSUB -w \'done(\"JOBDATE0_000000_jobID0000_root\")\'",
+      "\n#BSUB -w \'ended(\"JOBDATE0_000000_jobID0000_root\")\'",
       "\n#BSUB -J JOBDATE0_000000_jobID0000_first",
       "\n#BSUB -e JOBDATE0_000000_jobID0000_first.error",
       "\n#BSUB -o JOBDATE0_000000_jobID0000_first.output",
@@ -2410,7 +2414,7 @@ Test.with_handler(ut_handler) do
   try run(`rm $expectedFilePath03`) end
   expectedFileHeader03 = string( 
       "#!/bin/bash\n",
-      "\n#BSUB -w \'done(\"JOBDATE0_000000_jobID0000_root\")&&done(\"JOBDATE0_000000_jobID0000_first\")\'",
+      "\n#BSUB -w \'ended(\"JOBDATE0_000000_jobID0000_root\")&&ended(\"JOBDATE0_000000_jobID0000_first\")\'",
       "\n#BSUB -J JOBDATE0_000000_jobID0000_second",
       "\n#BSUB -e JOBDATE0_000000_jobID0000_second.error",
       "\n#BSUB -o JOBDATE0_000000_jobID0000_second.output",
@@ -2463,9 +2467,9 @@ Test.with_handler(ut_handler) do
   # E=split(expectedFileContents01, '\n');
   # compare_arrays(split(readall(expectedFilePath01), '\n'), split(expectedFileContents01, '\n'));
   @test expectedFileContents02 == readall(expectedFilePath02)
-  # O=split(readall(expectedFilePath02), '\n');
-  # E=split(expectedFileContents02, '\n');
-  # compare_arrays(split(readall(expectedFilePath02), '\n'), split(expectedFileContents02, '\n'));
+  O=split(readall(expectedFilePath02), '\n');
+  E=split(expectedFileContents02, '\n');
+  compare_arrays(split(readall(expectedFilePath02), '\n'), split(expectedFileContents02, '\n'));
   @test expectedFileContents03 == readall(expectedFilePath03)
   # Observed03=split(readall(expectedFilePath03), '\n');
   # Expected03=split(expectedFileContents03, '\n');
@@ -2536,9 +2540,9 @@ Test.with_handler(ut_handler) do
   # E=split(expectedFileContents01, '\n')
   # compare_arrays(split(readall(expectedFilePath01), '\n'), split(expectedFileContents01, '\n'))
   @test expectedFileContents02 == readall(expectedFilePath02)
-  O=split(readall(expectedFilePath02), '\n')
-  E=split(expectedFileContents02, '\n')
-  compare_arrays(split(readall(expectedFilePath02), '\n'), split(expectedFileContents02, '\n'))
+  # O=split(readall(expectedFilePath02), '\n')
+  # E=split(expectedFileContents02, '\n')
+  # compare_arrays(split(readall(expectedFilePath02), '\n'), split(expectedFileContents02, '\n'))
   @test expectedFileContents03 == readall(expectedFilePath03)
 
   ## get_jobpriorityarray(dictSummaries)

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#BSUB -w 'done("JOBDATE0_000000_jobID0000_root")&&done("JOBDATE0_000000_jobID0000_first")'
+#BSUB -w 'ended("JOBDATE0_000000_jobID0000_root")&&ended("JOBDATE0_000000_jobID0000_first")'
 #BSUB -J JOBDATE0_000000_jobID0000_second
 #BSUB -e JOBDATE0_000000_jobID0000_second.error
 #BSUB -o JOBDATE0_000000_jobID0000_second.output

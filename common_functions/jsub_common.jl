@@ -974,7 +974,7 @@ function split_summary(summaryArray; tagSplit="#JGROUP", root="root")
 end
 
 ## Creates strings of the form 'done("jobID1")&&done("jobID2")'' (this should probably be refactored to be part of cmd_await_jobs)
-function construct_conditions(arrNames; condition="done", operator="&&")
+function construct_conditions(arrNames; condition="ended", operator="&&")
   lenArray = length(arrNames);
   if lenArray == 0
     return ""
@@ -1056,7 +1056,7 @@ function get_groupparents(jobArray, jobID; root="root", tagSplit="#JGROUP", jobD
 end
 
 # Determine parent jobs which must be completed first
-function cmd_await_jobs(jobArray, jobID; root="root", tagHeader="\n#BSUB", option="-w", condition="done", tagSplit="#JGROUP", jobDate="")
+function cmd_await_jobs(jobArray, jobID; root="root", tagHeader="\n#BSUB", option="-w", condition="ended", tagSplit="#JGROUP", jobDate="")
   groupParents = get_groupparents(jobArray, jobID; root=root, tagSplit=tagSplit, jobDate=jobDate)
   if groupParents != []
     return string(tagHeader, " ", option, " ", construct_conditions(groupParents; condition=condition))
@@ -1136,12 +1136,12 @@ end
 
 ## Create job file from array of instructions and a dictionary of functions
 # Use file2arrayofarrays_(x, "#", cols=1) to read summary file
-function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summaryFileOfOrigin="", root="root", tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", 
+function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict, pathCompleted, pathIncomplete; summaryFileOfOrigin="", root="root", tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", 
     headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=(remove_suffix(basename(outFilePath), ".lsf")), jobDate="", appendOptions=true, rootSleepSeconds=nothing, verbose=false, doJsubVersionControl=true, 
     processTimestamp="true",
     pathLogFile=(remove_suffix(outFilePath, ".lsf") * ".log"),
-    pathCompleted=(remove_suffix(outFilePath, ".lsf") * ".completed"),
-    pathIncomplete=(remove_suffix(outFilePath, ".lsf") * ".incomplete"),
+    # pathCompleted=(remove_suffix(outFilePath, ".lsf") * ".completed"),
+    # pathIncomplete=(remove_suffix(outFilePath, ".lsf") * ".incomplete"),
   )
   # Check if jobArray is empty
   if jobArray == []
@@ -1219,15 +1219,15 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
     end
     ## Set paths for the .completed and .incomplete file
     passedPathCompleted = "";
-    (pathCompleted == nothing) && (passedPathCompleted = remove_suffix(outFilePath, ".lsf") * ".completed");
+    (pathCompleted == nothing) ? (passedPathCompleted = remove_suffix(outFilePath, ".lsf") * ".completed") : (passedPathCompleted = pathCompleted);
     passedPathIncomplete = "";
-    (pathIncomplete == nothing) && (passedPathIncomplete = remove_suffix(outFilePath, ".lsf") * ".incomplete");
+    (pathIncomplete == nothing) ? (passedPathIncomplete = remove_suffix(outFilePath, ".lsf") * ".incomplete") : (passedPathCompleted = pathIncomplete);
     ## Create job file
     dictJobFilePaths[pair[1]] = outFilePath; # push!(dictJobFilePaths, outFilePath)
-    create_job_file_(outFilePath, jobArray, dictCheckpoints; summaryFileOfOrigin=summaryFilePath, root=thisRoot,
+    create_job_file_(outFilePath, jobArray, dictCheckpoints, passedPathCompleted, passedPathIncomplete; summaryFileOfOrigin=summaryFilePath, root=thisRoot,
       tagBegin=tagBegin, tagFinish=tagFinish, tagHeader=tagHeader, tagCheckpoint=tagCheckpoint, headerPrefix=headerPrefix, headerSuffix=headerSuffix, summaryFile=summaryFile, 
       jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds, verbose=verbose, doJsubVersionControl=doJsubVersionControl, processTimestamp=processTimestamp,
-      pathLogFile=pathLogFile, pathCompleted=passedPathCompleted, pathIncomplete=passedPathIncomplete,
+      pathLogFile=pathLogFile #, pathCompleted=passedPathCompleted, pathIncomplete=passedPathIncomplete,
     );
   end
   ## Check that summary file names are unique
