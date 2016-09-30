@@ -45,4 +45,6 @@ run_test vars_fvars/it_fvars_vars.sh
 
 run_test jgroup/it_jgroup.sh
 
+run_test jgroup_checkpoints/it_jgroup_checkpoints.sh
+
 # EOF

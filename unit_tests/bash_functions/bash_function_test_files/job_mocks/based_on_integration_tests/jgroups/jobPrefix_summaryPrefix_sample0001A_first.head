@@ -1,0 +1,28 @@
+#!/bin/bash
+set -eu
+
+##### Coded added when making the unit test
+DIR_OUT="bash_function_test_files/test_outputs/job_processing/based_on_integration_tests/jgroups/"
+BASH_SCRIPTS="bash_function_test_files/job_mocks/bash_scripts"
+RESULTS="bash_function_test_files/test_outputs/job_processing/based_on_integration_tests/jgroups/results"
+
+###### Code from integration test (with some small changes) #########
+
+#BSUB -w 'ended("summaryPrefix_sample0001A_root")'
+#BSUB -J summaryPrefix_sample0001A_first
+#BSUB -e summaryPrefix_sample0001A_first.error
+#BSUB -o summaryPrefix_sample0001A_first.output
+#BSUB -P grant-code
+#BSUB -q short
+
+
+# Job file variables:
+JSUB_PATH_TO_THIS_JOB="bash_function_test_files/job_mocks/based_on_integration_tests/jgroups/jobPrefix_summaryPrefix_sample0001A_first.lsf"
+JSUB_JOB_ID="summaryPrefix_sample0001A_first"
+JSUB_LOG_FILE=${DIR_OUT}/"jobPrefix_summaryPrefix_sample0001A.log"
+JSUB_SUMMARY_COMPLETED=${DIR_OUT}/"jobPrefix_summaryPrefix_sample0001A_first.completed"
+JSUB_SUMMARY_INCOMPLETE=${DIR_OUT}/"jobPrefix_summaryPrefix_sample0001A_first.incomplete"
+JSUB_VERSION_CONTROL=true
+JSUB_JOB_TIMESTAMP=true
+
+# Contents inserted from other files (this section is intended to be used only for functions):

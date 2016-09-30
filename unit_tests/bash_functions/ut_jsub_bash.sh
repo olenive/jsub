@@ -24,7 +24,7 @@ function file_exists {
 # assert_raises "exit 127" 128
 ##############
 
-#### Unit tests for the job_processing function ####
+#### Unit tests for the process_job function ####
 ## A successful job that leaves no summary.incomplete file
 # Declare paths to mock files and test output files
 DIR_EXPECTEDS="bash_function_test_files/job_mocks"
@@ -137,7 +137,29 @@ assert "jcheck_file_not_empty ${EMPTY_FILE} ${WHITESPACE_FILE} ${NONWHITESPACE_F
 assert "diff ${JSUB_LOG_FILE} ${EXPECTED_MULTIPLE}" ""
 # 42
 
-
+## Unit tests to make sure that process_job writes all the completed steps to the .completed file when jcheck_file_not_empty is used.
+DIR_EXPECTEDS="bash_function_test_files/job_mocks//based_on_integration_tests/jgroups/"
+FILE_EXPECTED_LOG=${DIR_EXPECTEDS}/"jobPrefix_summaryPrefix_sample0001A_first.log"
+FILE_EXPECTED_COMPLETED=${DIR_EXPECTEDS}/"jobPrefix_summaryPrefix_sample0001A_first.completed"
+FILE_EXPECTED_INCOMPLETE=${DIR_EXPECTEDS}/"jobPrefix_summaryPrefix_sample0001A_first.incomplete"
+DIR_OUT="bash_function_test_files/test_outputs/job_processing/based_on_integration_tests/jgroups/"
+mkdir -p ${DIR_OUT}/results
+mkdir -p ${DIR_OUT}/jbos
+FILE_TEST_JOB=${DIR_EXPECTEDS}/"jobPrefix_summaryPrefix_sample0001A_first.lsf"
+RESULTS="bash_function_test_files/test_outputs/job_processing/based_on_integration_tests/jgroups/results"
+FILE_JOB_RESULT=${RESULTS}/"outPrefix_"sample0001A_first.txt
+FILE_LOG=${DIR_OUT}/"jobPrefix_summaryPrefix_sample0001A.log"
+FILE_COMPLETED=${DIR_OUT}/"jobPrefix_summaryPrefix_sample0001A_first.completed"
+FILE_INCOMPLETE=${DIR_OUT}/"jobPrefix_summaryPrefix_sample0001A_first.incomplete"
+# Remove output files produced by previous test runs
+rm -f ${FILE_TEST_JOB} ${FILE_JOB_RESULT} ${FILE_LOG} ${FILE_COMPLETED} ${FILE_INCOMPLETE}
+# Concatenate test job file header, job_processing function and tail.
+cat ${DIR_EXPECTEDS}/"jobPrefix_summaryPrefix_sample0001A_first.head" \
+  "../../common_functions/jcheck_file_not_empty.sh" \
+  "../../common_functions/job_processing.sh" \
+  ${DIR_EXPECTEDS}/"jobPrefix_summaryPrefix_sample0001A_first.tail" > ${FILE_TEST_JOB}
+# Change to the job directory and run the job
+bash ${FILE_TEST_JOB}
 
 ####################################################
 ## end of test suite

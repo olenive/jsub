@@ -1,0 +1,3 @@
+This directory contains the functions used to create and submit job files.
+In this version functions for checking output inside the job begin with "jcheck_"*.
+Note: when creating new jcheck_ functions remember to call process_job inside the function.  This is because process_job stops when it encounters a line starting with jcheck_ in order to let the checking function set the JSUB_FLAG_FAIL variable.  This is the used to determine if the lines of code were exectued successfully and if they should be written to *.completed or *.incomplete.  If the jcheck_ function does not call process_jobs the remaining code from the job may be logged in the *.incomplete file even if it ran.

@@ -24,7 +24,7 @@ bash "$PATH_TO_CONCAT" "$OUT_PREFIX""$SAMPLE_ID"_third.txt "$SUBSAMPLE_01" "$SUB
 echo "  " >            "$OUT_PREFIX""$SAMPLE_ID"_third.txt
 jcheck_file_not_empty  "$OUT_PREFIX""$SAMPLE_ID"_third.txt
 
-#JGROUP last fisrt second third
+#JGROUP last first second third
 jcheck_file_not_empty                                  "$OUT_PREFIX""$SAMPLE_ID"_first.txt "$OUT_PREFIX""$SAMPLE_ID"_second.txt "$OUT_PREFIX""$SAMPLE_ID"_third.txt
 bash "$PATH_TO_CATFILES" "$OUT_PREFIX""$SAMPLE_ID".txt "$OUT_PREFIX""$SAMPLE_ID"_first.txt "$OUT_PREFIX""$SAMPLE_ID"_second.txt "$OUT_PREFIX""$SAMPLE_ID"_third.txt
 jcheck_file_not_empty    "$OUT_PREFIX""$SAMPLE_ID".txt
