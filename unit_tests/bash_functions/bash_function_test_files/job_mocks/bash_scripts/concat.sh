@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-echo "Running $0"
+#echo "Running $0"
 OUTFILE="$1"
-echo "Concatenated arguments produced by $0:" >> "$OUTFILE"
+#echo "Concatenated arguments produced by $0:" >> "$OUTFILE"
 shift
 OUTSTRING=""
 for var in "$@"; do

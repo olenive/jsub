@@ -61,11 +61,11 @@ function kill_this_job {
 JSUB_BEGIN_JOB_TAG="#JSUB<begin-job>"
 JSUB_CHECKPOINT_TAG="jcheck_"
 JSUB_FINISH_JOB_TAG="#JSUB<finish-job>"
+JSUB_SUCCESSFUL_COMPLETION="#JSUB Successfully ran job on: "
 # Job processing variables
 JSUB_PREVIOUS_END=0
 JSUB_FLAG_FAIL=false
-# Writes to log and summray (completed and incomplete) files
-function process_job {
+function process_job { # This function reads the job file line by line and writes to log and summray (completed and incomplete) files.
   local dateTime=""
   [[ ${JSUB_JOB_TIMESTAMP} = true ]] && dateTime=`date +%Y%m%d_%H%M%S`
   rm -f ${JSUB_SUMMARY_INCOMPLETE} # Clean out the summary.incomplete file so that it is ready to accept a new text from the start
@@ -110,8 +110,17 @@ function process_job {
       fi
     fi
   done < ${JSUB_PATH_TO_THIS_JOB}
-  [ ${JSUB_FLAG_FAIL} = true ] && kill_this_job ${JSUB_PATH_TO_THIS_JOB} # Kill the job if a checkpoint fail occured (but let this function do logging etc first)
+  [[ ${JSUB_FLAG_FAIL} = true ]] && kill_this_job ${JSUB_PATH_TO_THIS_JOB} # Kill the job if a checkpoint fail occured (but let this function do logging etc first)
   return 0
+}
+function check_completion { # Check that the input file ends a string indicating successful job completion
+  [[ $(tail -n1 "$1") != "$JSUB_SUCCESSFUL_COMPLETION"* ]] && kill_this_job ${JSUB_PATH_TO_THIS_JOB} 
+}
+function on_completion { # Writes a line indicating successful job completing to the .incomplete file.  This line is then used to determine if jobs which depend on this one should be run.
+  echo "$1" >> ${JSUB_LOG_FILE} # Optional first argument for appending notes to the log file
+  local dateTime=""
+  [[ ${JSUB_JOB_TIMESTAMP} = true ]] && dateTime=`date +%Y%m%d_%H%M%S`
+  [[ ${JSUB_FLAG_FAIL} == false ]] && echo ${JSUB_SUCCESSFUL_COMPLETION}${dateTime} >> ${JSUB_SUMMARY_COMPLETED}
 }
 # Function used to try to keep track of the versions of arbitrary software on the system by checking the which command and checking for the existance of git repositories.
 function version_control {

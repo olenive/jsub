@@ -47,5 +47,6 @@ echo "final executed command" >> ${JSUB_LOG_FILE}
 
 # Finalise job
 process_job
+on_completion
 
 # EOF 

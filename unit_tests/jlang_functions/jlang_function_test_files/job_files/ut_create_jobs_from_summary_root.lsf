@@ -56,3 +56,4 @@ bash echo "cmd 03"
 
 #JSUB<finish-job>
 process_job
+on_completion

@@ -14,3 +14,4 @@ dummy3
 #BSUB -e out.pj.error
 jcheck_resume
 echo "final executed command" >> ${JSUB_LOG_FILE}
+#JSUB Successfully ran job on:

@@ -137,6 +137,24 @@ assert "jcheck_file_not_empty ${EMPTY_FILE} ${WHITESPACE_FILE} ${NONWHITESPACE_F
 assert "diff ${JSUB_LOG_FILE} ${EXPECTED_MULTIPLE}" ""
 # 42
 
+## check_completion
+source "../../common_functions/job_processing.sh"
+JSUB_SUCCESSFUL_COMPLETION="This is a string saything that stuff worked: "
+TEST_STRING_PASS="This is a string saything that stuff worked: and then some"
+TEST_STRING_FAIL="#this is a string saything that stuff worked: "
+JSUB_PATH_TO_THIS_JOB="not used in this test but should be declared"
+function kill_this_job {
+  echo "executing mock kill_this_job"
+}
+assert "check_completion bash_function_test_files/check_completion/test_pass_01.txt" ""
+assert "check_completion bash_function_test_files/check_completion/test_fail_01.txt" "executing mock kill_this_job"
+assert "check_completion bash_function_test_files/check_completion/test_pass_02.txt" ""
+assert "check_completion bash_function_test_files/check_completion/test_fail_02.txt" "executing mock kill_this_job"
+assert "check_completion bash_function_test_files/check_completion/test_pass_03.txt" ""
+assert "check_completion bash_function_test_files/check_completion/test_fail_03.txt" "executing mock kill_this_job"
+assert "check_completion bash_function_test_files/check_completion/test_pass_04.txt" ""
+assert "check_completion bash_function_test_files/check_completion/test_fail_04.txt" "executing mock kill_this_job"
+
 ## Unit tests to make sure that process_job writes all the completed steps to the .completed file when jcheck_file_not_empty is used.
 DIR_EXPECTEDS="bash_function_test_files/job_mocks//based_on_integration_tests/jgroups/"
 FILE_EXPECTED_LOG=${DIR_EXPECTEDS}/"jobPrefix_summaryPrefix_sample0001A_first.log"
