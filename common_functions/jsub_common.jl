@@ -1056,11 +1056,12 @@ function get_groupparents(jobArray, jobID; root="root", tagSplit="#JGROUP", jobD
 end
 
 # Generate commands calling the bash function that checks for successful job completion
-function cmd_check_completed(outFilePath, ownGroup, parents; jobFileSuffix=".lsf")
+function cmd_check_completed(jobFilePrefix, parents)
   (parents == []) && (return "\n");
   out = "";
   for group in parents
-    fileCompleted = remove_suffix(outFilePath, string("_", ownGroup, jobFileSuffix)) * "_" * group * ".completed"; # Get the path to the *.completed file
+    # fileCompleted = remove_suffix(outFilePath, string("_", ownGroup, jobFileSuffix)) * "_" * group * ".completed"; # Get the path to the *.completed file
+    fileCompleted = string(jobFilePrefix, group, ".completed");
     (fileCompleted == "") && (error(" (in cmd_check_completed) a path to the completed file could not be obtained."));
     out = string(out, "\ncheck_completion \"$fileCompleted\"")
   end
@@ -1152,7 +1153,7 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict, path
     headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=(remove_suffix(basename(outFilePath), ".lsf")), jobDate="", appendOptions=true, rootSleepSeconds=nothing, verbose=false, doJsubVersionControl=true, 
     processTimestamp="true", tagSplit="#JGROUP",
     pathLogFile=(remove_suffix(outFilePath, ".lsf") * ".log"),
-    jobFileSuffix=".lsf",
+    jobFilePrefix="", jobFileSuffix=".lsf",
     # pathCompleted=(remove_suffix(outFilePath, ".lsf") * ".completed"),
     # pathIncomplete=(remove_suffix(outFilePath, ".lsf") * ".incomplete"),
   )
@@ -1186,7 +1187,8 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict, path
     # Append commands
     write(stream, "\n\n# Commands taken from summary file: $summaryFileOfOrigin\n");
     write(stream, string("\n", tagBegin));
-    write(stream, cmd_check_completed(outFilePath, groupName, get_groupparents(jobArray, jobID; root=root, tagSplit=tagSplit, jobDate=""); jobFileSuffix=jobFileSuffix)); # calls a command that checks if parent jobs have a line indicated successful job completion at the end of their *.completed files.
+    check_completion_command = cmd_check_completed(jobFilePrefix, get_groupparents(jobArray, jobID; root=root, tagSplit=tagSplit, jobDate=""));
+    write(stream, check_completion_command); # calls a command that checks if parent jobs have a line indicated successful job completion at the end of their *.completed files.
     map((x) -> write(stream, join(x), '\n'), jobArray);
     write(stream, string("\n", tagFinish));
     write(stream, string("\nprocess_job")); # Append call to process_job from job_processing.sh
@@ -1243,7 +1245,7 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
     create_job_file_(outFilePath, jobArray, dictCheckpoints, passedPathCompleted, passedPathIncomplete; summaryFileOfOrigin=summaryFilePath, root=thisRoot,
       tagBegin=tagBegin, tagFinish=tagFinish, tagHeader=tagHeader, tagCheckpoint=tagCheckpoint, headerPrefix=headerPrefix, headerSuffix=headerSuffix, summaryFile=summaryFile, 
       jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds, verbose=verbose, doJsubVersionControl=doJsubVersionControl, processTimestamp=processTimestamp,
-      pathLogFile=pathLogFile, jobFileSuffix=jobFileSuffix, #, pathCompleted=passedPathCompleted, pathIncomplete=passedPathIncomplete,
+      pathLogFile=pathLogFile, jobFilePrefix=jobFilePrefix, jobFileSuffix=jobFileSuffix, #, pathCompleted=passedPathCompleted, pathIncomplete=passedPathIncomplete,
     );
   end
   ## Check that summary file names are unique

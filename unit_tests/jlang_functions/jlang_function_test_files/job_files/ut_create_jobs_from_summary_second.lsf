@@ -45,8 +45,8 @@ contents of jcheck_resume.sh
 # Commands taken from summary file: dir/name/is/ignored/ut_create_jobs_from_summary.summary
 
 #JSUB<begin-job>
-check_completion "jlang_function_test_files/job_files/ut_create_jobs_from_summary_jobID0000_root.completed"
-check_completion "jlang_function_test_files/job_files/ut_create_jobs_from_summary_jobID0000_first.completed"
+check_completion "jlang_function_test_files/job_files/jobID0000_root.completed"
+check_completion "jlang_function_test_files/job_files/jobID0000_first.completed"
 #JGROUP second first
 bash echo "cmd 21"
 jcheck_resume

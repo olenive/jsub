@@ -106,6 +106,9 @@ for sample in "${SAMPELS[@]}"; do
 done
 assert "file_exists ${GENERATED_SUBMITTED_JOBS_LIST}" "yes"
 # 101
+
+
+
 # clear_generated # Remove existing output from previous tests
 
 # ## Create summary and job file(s) from protocol

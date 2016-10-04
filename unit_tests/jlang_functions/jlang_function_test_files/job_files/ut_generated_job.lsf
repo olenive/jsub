@@ -60,11 +60,11 @@ echo Running_dummy_function_3
 # Commands taken from summary file: 
 
 #JSUB<begin-job>
-check_completion "jlang_function_test_files/job_files/ut_generated_job.lsf_ID002_root.completed"
-check_completion "jlang_function_test_files/job_files/ut_generated_job.lsf_ID002_first.completed"
-check_completion "jlang_function_test_files/job_files/ut_generated_job.lsf_ID002_third.completed"
-check_completion "jlang_function_test_files/job_files/ut_generated_job.lsf_ID002_fourth.completed"
-check_completion "jlang_function_test_files/job_files/ut_generated_job.lsf_ID002_fifth.completed"
+check_completion "ID002_root.completed"
+check_completion "ID002_first.completed"
+check_completion "ID002_third.completed"
+check_completion "ID002_fourth.completed"
+check_completion "ID002_fifth.completed"
 #JGROUP second first third fourth fifth
 bash echo "cmd 21"
 #BSUB -J jobID
