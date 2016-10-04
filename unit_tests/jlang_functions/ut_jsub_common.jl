@@ -1772,13 +1772,13 @@ Test.with_handler(ut_handler) do
 
   ## cmd_check_completed
   parents0 = [];
-  @test cmd_check_completed("ab/cd/pre", parents0) == "\n";
+  @test cmd_check_completed("ab/cd/pre_thisGroup.lsf", "thisGroup", parents0) == "\n";
 
   parents1 = ["parent group name"];
-  @test cmd_check_completed("ab/cd/pre", parents1) == "\ncheck_completion \"ab/cd/pre_parent group name.completed\"\n";
+  @test cmd_check_completed("ab/cd/pre_thisGroup.lsf", "thisGroup", parents1) == "\ncheck_completion \"ab/cd/pre_parent group name.completed\"\n";
 
   parents5 = ["root", "first", "third", "fourth", "fifth"];
-  @test cmd_check_completed("ab/cd/pre", parents5) == "\ncheck_completion \"ab/cd/pre_root.completed\"\ncheck_completion \"ab/cd/pre_first.completed\"\ncheck_completion \"ab/cd/pre_third.completed\"\ncheck_completion \"ab/cd/pre_fourth.completed\"\ncheck_completion \"ab/cd/pre_fifth.completed\"\n";
+  @test cmd_check_completed("ab/cd/pre_thisGroup.lsf", "thisGroup", parents5) == "\ncheck_completion \"ab/cd/pre_root.completed\"\ncheck_completion \"ab/cd/pre_first.completed\"\ncheck_completion \"ab/cd/pre_third.completed\"\ncheck_completion \"ab/cd/pre_fourth.completed\"\ncheck_completion \"ab/cd/pre_fifth.completed\"\n";
 
   ## get_groupparents(jobArray, jobID; root="root", tagHeader="\n#BSUB", tagSplit="#JGROUP", jobDate="")
   ## cmd_await_jobs(jobArray; condition="ended", tagSplit="#JGROUP")
