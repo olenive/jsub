@@ -147,13 +147,14 @@ function kill_this_job {
   echo "executing mock function kill_this_job"
 }
 assert "check_completion bash_function_test_files/check_completion/test_pass_01.txt" ""
-assert "check_completion bash_function_test_files/check_completion/test_fail_01.txt" " jcheck_file_not_empty_jobID Terminating job due to lack of line indicating successful parent job completion the end of the file: bash_function_test_files/check_completion/test_fail_01.txt\nexecuting mock function kill_this_job"
+assert "check_completion bash_function_test_files/check_completion/test_fail_01.txt" " jcheck_file_not_empty_jobID Terminating job due to lack of line indicating successful parent job completion at the end of the file: bash_function_test_files/check_completion/test_fail_01.txt\nexecuting mock function kill_this_job"
 assert "check_completion bash_function_test_files/check_completion/test_pass_02.txt" ""
-assert "check_completion bash_function_test_files/check_completion/test_fail_02.txt" " jcheck_file_not_empty_jobID Terminating job due to lack of line indicating successful parent job completion the end of the file: bash_function_test_files/check_completion/test_fail_02.txt\nexecuting mock function kill_this_job"
+assert "check_completion bash_function_test_files/check_completion/test_fail_02.txt" " jcheck_file_not_empty_jobID Terminating job due to lack of line indicating successful parent job completion at the end of the file: bash_function_test_files/check_completion/test_fail_02.txt\nexecuting mock function kill_this_job"
 assert "check_completion bash_function_test_files/check_completion/test_pass_03.txt" ""
-assert "check_completion bash_function_test_files/check_completion/test_fail_03.txt" " jcheck_file_not_empty_jobID Terminating job due to lack of line indicating successful parent job completion the end of the file: bash_function_test_files/check_completion/test_fail_03.txt\nexecuting mock function kill_this_job"
+assert "check_completion bash_function_test_files/check_completion/test_fail_03.txt" " jcheck_file_not_empty_jobID Terminating job due to lack of line indicating successful parent job completion at the end of the file: bash_function_test_files/check_completion/test_fail_03.txt\nexecuting mock function kill_this_job"
 assert "check_completion bash_function_test_files/check_completion/test_pass_04.txt" ""
-assert "check_completion bash_function_test_files/check_completion/test_fail_04.txt" " jcheck_file_not_empty_jobID Terminating job due to lack of line indicating successful parent job completion the end of the file: bash_function_test_files/check_completion/test_fail_04.txt\nexecuting mock function kill_this_job"
+assert "check_completion bash_function_test_files/check_completion/test_fail_04.txt" " jcheck_file_not_empty_jobID Terminating job due to lack of line indicating successful parent job completion at the end of the file: bash_function_test_files/check_completion/test_fail_04.txt\nexecuting mock function kill_this_job"
+# 50
 
 ## Unit tests to make sure that process_job writes all the completed steps to the .completed file when jcheck_file_not_empty is used.
 DIR_EXPECTEDS="bash_function_test_files/job_mocks//based_on_integration_tests/jgroups/"
@@ -178,6 +179,15 @@ cat ${DIR_EXPECTEDS}/"jobPrefix_summaryPrefix_sample0001A_first.head" \
   ${DIR_EXPECTEDS}/"jobPrefix_summaryPrefix_sample0001A_first.tail" > ${FILE_TEST_JOB}
 # Change to the job directory and run the job
 bash ${FILE_TEST_JOB}
+# Check that files produced by the mock job match expected files.
+assert "file_exists ${FILE_LOG}" "yes"
+assert "file_exists ${FILE_EXPECTED_LOG}" "yes"
+assert "diff ${FILE_LOG} ${FILE_EXPECTED_LOG}" ""
+assert "file_exists ${FILE_COMPLETED}" "yes"
+assert "file_exists ${FILE_EXPECTED_COMPLETED}" "yes"
+assert "diff ${FILE_COMPLETED} ${FILE_EXPECTED_COMPLETED}" ""
+assert "file_exists ${FILE_INCOMPLETE}" "no"
+# 57
 
 ####################################################
 ## end of test suite

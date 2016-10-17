@@ -22,7 +22,7 @@ JSUB_JOB_ID="summaryPrefix_sample0001A_first"
 JSUB_LOG_FILE=${DIR_OUT}/"jobPrefix_summaryPrefix_sample0001A.log"
 JSUB_SUMMARY_COMPLETED=${DIR_OUT}/"jobPrefix_summaryPrefix_sample0001A_first.completed"
 JSUB_SUMMARY_INCOMPLETE=${DIR_OUT}/"jobPrefix_summaryPrefix_sample0001A_first.incomplete"
-JSUB_VERSION_CONTROL=true
-JSUB_JOB_TIMESTAMP=true
+JSUB_VERSION_CONTROL=false
+JSUB_JOB_TIMESTAMP=false
 
 # Contents inserted from other files (this section is intended to be used only for functions):

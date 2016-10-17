@@ -64,7 +64,7 @@ function process_job { # This function reads the job file line by line and write
 }
 function check_completion { # Check that the input file ends a string indicating successful job completion
   if [[ $(tail -n1 "$1") != "$JSUB_SUCCESSFUL_COMPLETION"* ]]; then 
-    echo "$dateTime ""$JSUB_JOB_ID"" Terminating job due to lack of line indicating successful parent job completion the end of the file: ""$1"""
+    echo "$dateTime ""$JSUB_JOB_ID"" Terminating job due to lack of line indicating successful parent job completion at the end of the file: ""$1"""
     kill_this_job ${JSUB_PATH_TO_THIS_JOB} 
   fi
 }
