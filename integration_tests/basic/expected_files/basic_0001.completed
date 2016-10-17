@@ -1,3 +1,4 @@
 # Basic integration test protocol involving only a call to a bash script that writes a single line to a text file.
 bash ../../bash_scripts/trivial.sh "it1_basic.txt"
 
+#JSUB Successfully ran job on: 
