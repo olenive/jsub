@@ -26,4 +26,3 @@ Running jcheck_resume
  unit_test_job completed - jcheck_resume
 final executed command
  unit_test_job completed - echo "final executed command" >> ${JSUB_LOG_FILE}
-

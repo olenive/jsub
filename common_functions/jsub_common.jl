@@ -535,9 +535,9 @@ function expandmanyafterdollars(inString, varNames, varVals; adapt_quotation=fal
     name = sanitizestring(string(varNames[idx]));
     value = sanitizestring(string(varVals[idx]));
     outString = expandnameafterdollar(outString, name, value, adapt_quotation=adapt_quotation, returnTF=returnTF);
-    if !keep_superfluous_quotes
-      outString = remove_superfluous_quotes(outString, '\"', 2, 1); # remove_superfluous_quotes(line, quoteChar::Char, intQuoteChar, intInsideQuotes)
-    end
+  end
+  if !keep_superfluous_quotes
+    outString = remove_superfluous_quotes(outString, '\"', 2, 1); # remove_superfluous_quotes(line, quoteChar::Char, intQuoteChar, intInsideQuotes)
   end
   return outString
 end
@@ -641,10 +641,10 @@ function parse_varsfile_(fileVars; dlmVars=nothing, tagsExpand=nothing)
 end
 
 # Read the .fvars file and expand variables row by row.
-function parse_expandvars_fvarsfile_(fileFvars, namesVars, valuesVars; dlmFvars=nothing, adapt_quotation=false, verbose=false, tagsExpand=nothing) # Read the .fvars file 
+function parse_expandvars_fvarsfile_(fileFvars, namesVars, valuesVars; dlmFvars=nothing, adapt_quotation=false, verbose=false, tagsExpand=nothing, keep_superfluous_quotes=true) # Read the .fvars file 
   arrFvars, cmdRowsFvars = file2arrayofarrays_(fileFvars, comStr; cols=3, delimiter=dlmFvars, tagsExpand=tagsExpand, expectedColumns=3);
   ## Use variables from .vars to expand values in .fvars
-  arrExpFvars = expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars; verbose = verbose, adapt_quotation=adapt_quotation);
+  arrExpFvars = expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars; verbose = verbose, adapt_quotation=adapt_quotation, keep_superfluous_quotes=keep_superfluous_quotes);
   # Extract arrays of variable names and variable values
   namesFvars = columnfrom_arrayofarrays(arrExpFvars, cmdRowsFvars, 1);
   infileColumnsFvars = columnfrom_arrayofarrays(arrExpFvars, cmdRowsFvars, 2);
@@ -656,15 +656,15 @@ function parse_expandvars_fvarsfile_(fileFvars, namesVars, valuesVars; dlmFvars=
   return namesFvars, infileColumnsFvars, filePathsFvars
 end
 
-function parse_expandvars_protocol_(fileProtocol, namesVars, valuesVars; adapt_quotation=false, verbose=false, tagsExpand=nothing)
+function parse_expandvars_protocol_(fileProtocol, namesVars, valuesVars; adapt_quotation=false, verbose=false, tagsExpand=nothing, keep_superfluous_quotes=true)
   arrProt, cmdRowsProt = file2arrayofarrays_(fileProtocol, comStr; cols=1, delimiter=nothing, tagsExpand=tagsExpand);
   ## Use variables from .vars to expand values in .protocol
-  arrProtExpVars = expand_inarrayofarrays(arrProt, cmdRowsProt, namesVars, valuesVars ; verbose = verbose, adapt_quotation=adapt_quotation)
+  arrProtExpVars = expand_inarrayofarrays(arrProt, cmdRowsProt, namesVars, valuesVars ; verbose = verbose, adapt_quotation=adapt_quotation, keep_superfluous_quotes=keep_superfluous_quotes)
   return arrProtExpVars, cmdRowsProt
 end
 
 # Expand variables in .fvars file using values from list files
-function parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, dlmFvars; verbose=false, adapt_quotation=false, tagsExpand=nothing)
+function parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, dlmFvars; verbose=false, adapt_quotation=false, tagsExpand=nothing, keep_superfluous_quotes=true)
   ## Read each list file
   dictListArr = Dict(); # Dictionary with file paths as keys and file contents (arrays of arrays) as values.
   dictCmdLineIdxs = Dict(); #previously: # arrCmdLineIdxs = Array(Array, length(filePathsFvars) ); # Array for storing line counts from input files
@@ -672,7 +672,7 @@ function parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, dlmF
   for file in filePathsFvars
     idx+=1;
     arrList, cmdRowsList = file2arrayofarrays_(file, comStr; cols=0, delimiter=dlmFvars, tagsExpand=tagsExpand);
-    arrListExpVars = expand_inarrayofarrays(arrList, cmdRowsList, namesVars, valuesVars ; verbose = verbose, adapt_quotation=adapt_quotation);
+    arrListExpVars = expand_inarrayofarrays(arrList, cmdRowsList, namesVars, valuesVars ; verbose = verbose, adapt_quotation=adapt_quotation, keep_superfluous_quotes=keep_superfluous_quotes);
     dictListArr[file] = deepcopy(arrListExpVars);
     dictCmdLineIdxs[file] = cmdRowsList; #previously: # arrCmdLineIdxs[idx] = cmdRowsList
   end
@@ -1056,12 +1056,11 @@ function get_groupparents(jobArray, jobID; root="root", tagSplit="#JGROUP", jobD
 end
 
 # Generate commands calling the bash function that checks for successful job completion
-function cmd_check_completed(jobFilePrefix, parents)
+function cmd_check_completed(prefix, suffix, parents)
   (parents == []) && (return "\n");
   out = "";
   for group in parents
-    # fileCompleted = remove_suffix(outFilePath, string("_", ownGroup, jobFileSuffix)) * "_" * group * ".completed"; # Get the path to the *.completed file
-    fileCompleted = string(jobFilePrefix, group, ".completed");
+    fileCompleted = string(prefix, group, suffix);
     (fileCompleted == "") && (error(" (in cmd_check_completed) a path to the completed file could not be obtained."));
     out = string(out, "\ncheck_completion \"$fileCompleted\"")
   end
@@ -1149,13 +1148,17 @@ end
 
 ## Create job file from array of instructions and a dictionary of functions
 # Use file2arrayofarrays_(x, "#", cols=1) to read summary file
-function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict, pathCompleted, pathIncomplete; summaryFileOfOrigin="", root="root", tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", 
+function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summaryFileOfOrigin="", root="root", tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", 
     headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=(remove_suffix(basename(outFilePath), ".lsf")), jobDate="", appendOptions=true, rootSleepSeconds=nothing, verbose=false, doJsubVersionControl=true, 
     processTimestamp="true", tagSplit="#JGROUP",
     pathLogFile=(remove_suffix(outFilePath, ".lsf") * ".log"),
-    jobFilePrefix="", jobFileSuffix=".lsf",
-    # pathCompleted=(remove_suffix(outFilePath, ".lsf") * ".completed"),
-    # pathIncomplete=(remove_suffix(outFilePath, ".lsf") * ".incomplete"),
+    jobFileSuffix=".lsf",
+    #jobFilePrefix="", 
+    ## The following options are used to set the prefix and suffix (group name goes in between) of files listing completed and incomplete steps of the job.  Jobs that depend on parent jobs to run will check the completed file to determine if the parent job finished successfully
+    prefixCompleted=remove_suffix(outFilePath, ".lsf"),
+    suffixCompleted=".completed",
+    prefixIncomplete=remove_suffix(outFilePath, ".lsf"),
+    suffixIncomplete=".incomplete",
   )
   # Check if jobArray is empty
   if jobArray == []
@@ -1174,8 +1177,8 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict, path
     (length(groupName) > 0 && length(jobID) > 0) ? (groupDelim = "_") : (groupDelim = "")
     write(stream, string("\nJSUB_JOB_ID=\"", jobID, groupDelim, groupName, "\""));
     write(stream, string("\nJSUB_LOG_FILE=\"", pathLogFile, "\""));
-    write(stream, string("\nJSUB_SUMMARY_COMPLETED=\"", pathCompleted, "\""));
-    write(stream, string("\nJSUB_SUMMARY_INCOMPLETE=\"", pathIncomplete, "\""));
+    write(stream, string("\nJSUB_SUMMARY_COMPLETED=\"", prefixCompleted, groupName, suffixCompleted, "\""));
+    write(stream, string("\nJSUB_SUMMARY_INCOMPLETE=\"", prefixIncomplete, groupName, suffixIncomplete, "\""));
     write(stream, string("\nJSUB_VERSION_CONTROL=", doJsubVersionControl));
     write(stream, string("\nJSUB_JOB_TIMESTAMP=", processTimestamp));
     # Append common functions
@@ -1187,7 +1190,7 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict, path
     # Append commands
     write(stream, "\n\n# Commands taken from summary file: $summaryFileOfOrigin\n");
     write(stream, string("\n", tagBegin));
-    check_completion_command = cmd_check_completed(jobFilePrefix, get_groupparents(jobArray, jobID; root=root, tagSplit=tagSplit, jobDate=""));
+    check_completion_command = cmd_check_completed(prefixCompleted, suffixCompleted, get_groupparents(jobArray, jobID; root=root, tagSplit=tagSplit, jobDate=""));
     write(stream, check_completion_command); # calls a command that checks if parent jobs have a line indicated successful job completion at the end of their *.completed files.
     map((x) -> write(stream, join(x), '\n'), jobArray);
     write(stream, string("\n", tagFinish));
@@ -1204,8 +1207,11 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
     jobID=nothing, jobDate="", appendOptions=true, rootSleepSeconds=nothing, verbose=false, bsubOptions=["-J"], doJsubVersionControl=true, processTimestamp="true",
     prefixLogFile=jobFilePrefix,
     pathLogFile=string(prefixLogFile, basename(remove_suffix(summaryFilePath, ".summary") * ".log")),
-    pathCompleted=nothing,#string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary") * ".completed")),
-    pathIncomplete=nothing#string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary") * ".incomplete")),
+    ## The following options are used to set the prefix and suffix (group name goes in between) of files listing completed and incomplete steps of the job.  Jobs that depend on parent jobs to run will check the completed file to determine if the parent job finished successfully
+    prefixCompleted=nothing,
+    suffixCompleted=".completed",
+    prefixIncomplete=nothing,
+    suffixIncomplete=".incomplete",
   )
   dictJobFilePaths = Dict(); 
   ## For each group in the summary file create a job file
@@ -1223,11 +1229,12 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
     );
     ## Get job file name from path and group
     outFilePath = "";
+    (length(group) > 0) ? (dlm = "_") : (dlm = "");
     if filePathOverride != nothing
       outFilePath = filePathOverride;
     else
-      (length(group) > 0) && (group = "_" * group);
-      outFilePath = string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary")), group, jobFileSuffix); # get longName from file path
+      
+      outFilePath = string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary")), dlm, group, jobFileSuffix); # get longName from file path
     end
     ## Check for conflicting #BSUB options
     for option in bsubOptions
@@ -1235,17 +1242,19 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
         SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_jobs_from_summary_) found conflicting instances of ", tagHeader, " ", option, " in the following array of commands:\n", jobArray);
       end
     end
-    ## Set paths for the .completed and .incomplete file
-    passedPathCompleted = "";
-    (pathCompleted == nothing) ? (passedPathCompleted = remove_suffix(outFilePath, ".lsf") * ".completed") : (passedPathCompleted = pathCompleted);
-    passedPathIncomplete = "";
-    (pathIncomplete == nothing) ? (passedPathIncomplete = remove_suffix(outFilePath, ".lsf") * ".incomplete") : (passedPathCompleted = pathIncomplete);
+    ## Set path-prefixes for the .completed and .incomplete files
+    (prefixCompleted == nothing) && (prefixCompleted = string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary")), dlm) );
+    (prefixIncomplete == nothing) && (prefixIncomplete  = string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary")), dlm) );
     ## Create job file
     dictJobFilePaths[pair[1]] = outFilePath; # push!(dictJobFilePaths, outFilePath)
-    create_job_file_(outFilePath, jobArray, dictCheckpoints, passedPathCompleted, passedPathIncomplete; summaryFileOfOrigin=summaryFilePath, root=thisRoot,
+    create_job_file_(outFilePath, jobArray, dictCheckpoints; summaryFileOfOrigin=summaryFilePath, root=thisRoot,
       tagBegin=tagBegin, tagFinish=tagFinish, tagHeader=tagHeader, tagCheckpoint=tagCheckpoint, headerPrefix=headerPrefix, headerSuffix=headerSuffix, summaryFile=summaryFile, 
       jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds, verbose=verbose, doJsubVersionControl=doJsubVersionControl, processTimestamp=processTimestamp,
-      pathLogFile=pathLogFile, jobFilePrefix=jobFilePrefix, jobFileSuffix=jobFileSuffix, #, pathCompleted=passedPathCompleted, pathIncomplete=passedPathIncomplete,
+      pathLogFile=pathLogFile,
+      prefixCompleted=prefixCompleted,
+      suffixCompleted=suffixCompleted,
+      prefixIncomplete=prefixIncomplete,
+      suffixIncomplete=suffixIncomplete,
     );
   end
   ## Check that summary file names are unique

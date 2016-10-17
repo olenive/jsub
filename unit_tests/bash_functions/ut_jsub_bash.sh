@@ -144,16 +144,16 @@ TEST_STRING_PASS="This is a string saything that stuff worked: and then some"
 TEST_STRING_FAIL="#this is a string saything that stuff worked: "
 JSUB_PATH_TO_THIS_JOB="not used in this test but should be declared"
 function kill_this_job {
-  echo "executing mock kill_this_job"
+  echo "executing mock function kill_this_job"
 }
 assert "check_completion bash_function_test_files/check_completion/test_pass_01.txt" ""
-assert "check_completion bash_function_test_files/check_completion/test_fail_01.txt" "executing mock kill_this_job"
+assert "check_completion bash_function_test_files/check_completion/test_fail_01.txt" " jcheck_file_not_empty_jobID Terminating job due to lack of line indicating successful parent job completion the end of the file: bash_function_test_files/check_completion/test_fail_01.txt\nexecuting mock function kill_this_job"
 assert "check_completion bash_function_test_files/check_completion/test_pass_02.txt" ""
-assert "check_completion bash_function_test_files/check_completion/test_fail_02.txt" "executing mock kill_this_job"
+assert "check_completion bash_function_test_files/check_completion/test_fail_02.txt" " jcheck_file_not_empty_jobID Terminating job due to lack of line indicating successful parent job completion the end of the file: bash_function_test_files/check_completion/test_fail_02.txt\nexecuting mock function kill_this_job"
 assert "check_completion bash_function_test_files/check_completion/test_pass_03.txt" ""
-assert "check_completion bash_function_test_files/check_completion/test_fail_03.txt" "executing mock kill_this_job"
+assert "check_completion bash_function_test_files/check_completion/test_fail_03.txt" " jcheck_file_not_empty_jobID Terminating job due to lack of line indicating successful parent job completion the end of the file: bash_function_test_files/check_completion/test_fail_03.txt\nexecuting mock function kill_this_job"
 assert "check_completion bash_function_test_files/check_completion/test_pass_04.txt" ""
-assert "check_completion bash_function_test_files/check_completion/test_fail_04.txt" "executing mock kill_this_job"
+assert "check_completion bash_function_test_files/check_completion/test_fail_04.txt" " jcheck_file_not_empty_jobID Terminating job due to lack of line indicating successful parent job completion the end of the file: bash_function_test_files/check_completion/test_fail_04.txt\nexecuting mock function kill_this_job"
 
 ## Unit tests to make sure that process_job writes all the completed steps to the .completed file when jcheck_file_not_empty is used.
 DIR_EXPECTEDS="bash_function_test_files/job_mocks//based_on_integration_tests/jgroups/"

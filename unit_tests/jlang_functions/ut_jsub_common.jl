@@ -1771,12 +1771,12 @@ Test.with_handler(ut_handler) do
   @test construct_conditions(suppliedNames; condition="ended", operator="&&") == expectedString
 
   ## cmd_check_completed
-  @test cmd_check_completed("ab/cd/pre_", []) == "\n"; # Test that a new line and nothing else is returned if the array of parent groups is empty
+  @test cmd_check_completed("ab/cd/pre_", ".completed", []) == "\n"; # Test that a new line and nothing else is returned if the array of parent groups is empty
   parents1 = ["parent group name"];
-  @test cmd_check_completed("ab/cd/pre_", parents1) == "\ncheck_completion \"ab/cd/pre_parent group name.completed\"\n";
+  @test cmd_check_completed("ab/cd/pre_", ".completed", parents1) == "\ncheck_completion \"ab/cd/pre_parent group name.completed\"\n";
   parents5 = ["root", "first", "third", "fourth", "fifth"];
-  @test cmd_check_completed("ab/cd/pre_", parents5) == "\ncheck_completion \"ab/cd/pre_root.completed\"\ncheck_completion \"ab/cd/pre_first.completed\"\ncheck_completion \"ab/cd/pre_third.completed\"\ncheck_completion \"ab/cd/pre_fourth.completed\"\ncheck_completion \"ab/cd/pre_fifth.completed\"\n";
-  @test cmd_check_completed("jobs/jobPrefix_", ["summaryPrefix_sample0011A_first"]) == "\ncheck_completion \"jobs/jobPrefix_summaryPrefix_sample0011A_first.completed\"\n";
+  @test cmd_check_completed("ab/cd/pre_", ".completed", parents5) == "\ncheck_completion \"ab/cd/pre_root.completed\"\ncheck_completion \"ab/cd/pre_first.completed\"\ncheck_completion \"ab/cd/pre_third.completed\"\ncheck_completion \"ab/cd/pre_fourth.completed\"\ncheck_completion \"ab/cd/pre_fifth.completed\"\n";
+  @test cmd_check_completed("jobs/jobPrefix_", ".completed", ["summaryPrefix_sample0011A_first"]) == "\ncheck_completion \"jobs/jobPrefix_summaryPrefix_sample0011A_first.completed\"\n";
 
   ## get_groupparents(jobArray, jobID; root="root", tagHeader="\n#BSUB", tagSplit="#JGROUP", jobDate="")
   ## cmd_await_jobs(jobArray; condition="ended", tagSplit="#JGROUP")
@@ -2008,7 +2008,7 @@ Test.with_handler(ut_handler) do
   # compare_arrays(kd, ko); 
   # compare_arrays(vd, vo);
 
-  ## create_job_file_(filePath, jobArray, bash_functions::Dict; tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="#BSUB", headerPrefix="#!/bin/bash\n" , headerSuffix="")
+  ## create_job_file_
   filePath = "jlang_function_test_files/job_files/ut_generated_job.lsf";
   try
     run(`rm $filePath`);
@@ -2027,7 +2027,13 @@ Test.with_handler(ut_handler) do
   push!(suppliedJobArray, ["#BSUB -P grantcode"]);
   push!(suppliedJobArray, ["#BSUB -w overriding"]);
   push!(suppliedJobArray, ["bash echo \"cmd 23\""]);
-  create_job_file_(filePath, suppliedJobArray, output_dict, "jlang_function_test_files/job_files/ut_generated_job.completed", "jlang_function_test_files/job_files/ut_generated_job.incomplete"; jobID="", jobDate="", appendOptions=false)
+  create_job_file_(filePath, suppliedJobArray, output_dict; 
+    prefixCompleted="jlang_function_test_files/job_files/ut_generated_job_",
+    suffixCompleted=".completed",
+    prefixIncomplete="jlang_function_test_files/job_files/ut_generated_job_",
+    suffixIncomplete=".incomplete",
+    jobID="", jobDate="", appendOptions=false
+  )
   expected_file_contents = string( 
     string( 
       "#!/bin/bash\n",
@@ -2040,8 +2046,8 @@ Test.with_handler(ut_handler) do
     "\nJSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>",
     "\nJSUB_JOB_ID=\"second\"",                                   
     "\nJSUB_LOG_FILE=\"jlang_function_test_files/job_files/ut_generated_job.log\"",
-    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_generated_job.completed\"",
-    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_generated_job.incomplete\"",
+    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_generated_job_second.completed\"",
+    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_generated_job_second.incomplete\"",
     "\nJSUB_VERSION_CONTROL=true",
     "\nJSUB_JOB_TIMESTAMP=true",                                                                         
     "\n",
@@ -2104,7 +2110,13 @@ Test.with_handler(ut_handler) do
   push!(suppliedJobArray, ["#BSUB -P grantcode"]);
   push!(suppliedJobArray, ["#BSUB -w overriding"]);
   push!(suppliedJobArray, ["bash echo \"cmd 23\""]);
-  create_job_file_(filePath, suppliedJobArray, output_dict, "jlang_function_test_files/job_files/ut_generated_job.completed", "jlang_function_test_files/job_files/ut_generated_job.incomplete"; jobID="ID002", jobDate="")
+  create_job_file_(filePath, suppliedJobArray, output_dict;
+    prefixCompleted="jlang_function_test_files/job_files/ut_generated_job_",
+    suffixCompleted=".completed",
+    prefixIncomplete="jlang_function_test_files/job_files/ut_generated_job_",
+    suffixIncomplete=".incomplete",
+    jobID="ID002", jobDate=""
+  )
   expected_file_contents = string( 
     string( 
       "#!/bin/bash\n",
@@ -2118,8 +2130,8 @@ Test.with_handler(ut_handler) do
     "\nJSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>",
     "\nJSUB_JOB_ID=\"ID002_second\"",                                   
     "\nJSUB_LOG_FILE=\"jlang_function_test_files/job_files/ut_generated_job.log\"",
-    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_generated_job.completed\"",
-    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_generated_job.incomplete\"",
+    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_generated_job_second.completed\"",
+    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_generated_job_second.incomplete\"",
     "\nJSUB_VERSION_CONTROL=true",
     "\nJSUB_JOB_TIMESTAMP=true",                                                                         
     "\n",
@@ -2156,9 +2168,9 @@ Test.with_handler(ut_handler) do
     "\n"
   )
   @test expected_file_contents == readall(filePath)
-  arr1 = split(readall(filePath), '\n')
-  arr2 = split(expected_file_contents, '\n')
-  compare_arrays(arr1, arr2)
+  # arr1 = split(readall(filePath), '\n')
+  # arr2 = split(expected_file_contents, '\n')
+  # compare_arrays(arr1, arr2)
 
   # Test to make sure create_job_file_ does not create a job file if the array of commands is empty
   filePath = "jlang_function_test_files/job_files/ut_generated_empty_job.lsf";
@@ -2172,7 +2184,12 @@ Test.with_handler(ut_handler) do
     "\nheader suffix string"
   );
   suppliedJobArray = [];
-  create_job_file_(filePath, suppliedJobArray, output_dict, "jlang_function_test_files/job_files/ut_generated_job.completed", "jlang_function_test_files/job_files/ut_generated_job.incomplete"; )
+  create_job_file_(filePath, suppliedJobArray, output_dict; 
+    prefixCompleted="jlang_function_test_files/job_files/ut_generated_job",
+    suffixCompleted=".completed",
+    prefixIncomplete="jlang_function_test_files/job_files/ut_generated_job",
+    suffixIncomplete=".incomplete",
+  )
   @test isfile(filePath) == false
 
   ## detect_option_conflicts(jobArray; tag="#BSUB", option="-J")
@@ -2424,7 +2441,7 @@ Test.with_handler(ut_handler) do
     "contents of jcheck_resume.sh", "\n",
     "\n\n# Commands taken from summary file: dir/name/is/ignored/ut_create_jobs_from_summary.summary""\n",
     "\n#JSUB<begin-job>\n",
-    "check_completion \"jlang_function_test_files/job_files/ut_create_jobs_from_summary_first_jobID0000_root.completed\"\n",
+    "check_completion \"jlang_function_test_files/job_files/ut_create_jobs_from_summary_jobID0000_root.completed\"\n",
     "#JGROUP first", "\n",
     "bash echo \"cmd 12\"", "\n",
     "jcheck_resume", "\n",
@@ -2467,8 +2484,8 @@ Test.with_handler(ut_handler) do
     "contents of jcheck_resume.sh", "\n",
     "\n\n# Commands taken from summary file: dir/name/is/ignored/ut_create_jobs_from_summary.summary""\n",
     "\n#JSUB<begin-job>",
-    "\ncheck_completion \"jlang_function_test_files/job_files/ut_create_jobs_from_summary_second_jobID0000_root.completed\"",
-    "\ncheck_completion \"jlang_function_test_files/job_files/ut_create_jobs_from_summary_second_jobID0000_first.completed\"",
+    "\ncheck_completion \"jlang_function_test_files/job_files/ut_create_jobs_from_summary_jobID0000_root.completed\"",
+    "\ncheck_completion \"jlang_function_test_files/job_files/ut_create_jobs_from_summary_jobID0000_first.completed\"",
     "\n#JGROUP second first", "\n",
     "bash echo \"cmd 21\"", "\n",
     "jcheck_resume", "\n",
@@ -2496,9 +2513,9 @@ Test.with_handler(ut_handler) do
   # E=split(expectedFileContents01, '\n');
   # compare_arrays(split(readall(expectedFilePath01), '\n'), split(expectedFileContents01, '\n'));
   @test expectedFileContents02 == readall(expectedFilePath02)
-  # O=split(readall(expectedFilePath02), '\n');
-  # E=split(expectedFileContents02, '\n');
-  # compare_arrays(split(readall(expectedFilePath02), '\n'), split(expectedFileContents02, '\n'));
+  O=split(readall(expectedFilePath02), '\n');
+  E=split(expectedFileContents02, '\n');
+  compare_arrays(split(readall(expectedFilePath02), '\n'), split(expectedFileContents02, '\n'));
   @test expectedFileContents03 == readall(expectedFilePath03)
   # Observed03=split(readall(expectedFilePath03), '\n');
   # Expected03=split(expectedFileContents03, '\n');

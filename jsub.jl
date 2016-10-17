@@ -350,17 +350,17 @@ function run_stage1_(pathProtocol, pathVars, pathFvars; flagVerbose=false, adapt
   namesFvars = []; infileColumnsFvars = []; filePathsFvars = [];
   if pathFvars != ""
     flagVerbose && println(string("Expanding variables in data from \"--fvars\" file using names and values from the \"--vars\" file: ", pathFvars));
-    namesFvars, infileColumnsFvars, filePathsFvars = parse_expandvars_fvarsfile_(pathFvars, namesVars, valuesVars; dlmFvars=delimiterFvars, adapt_quotation=adapt_quotation, tagsExpand=tagsExpand);
+    namesFvars, infileColumnsFvars, filePathsFvars = parse_expandvars_fvarsfile_(pathFvars, namesVars, valuesVars; dlmFvars=delimiterFvars, adapt_quotation=adapt_quotation, tagsExpand=tagsExpand, keep_superfluous_quotes=keep_superfluous_quotes);
   end
 
   # Read .protocol file (of 1 column ) and expand variables from .vars
   (flagVerbose && length(namesVars) > 0) && println("Expanding variables in protocol file using values from the --vars file.");
-  arrProtExpVars, cmdRowsProt = parse_expandvars_protocol_(pathProtocol, namesVars, valuesVars, adapt_quotation=adapt_quotation, tagsExpand=tagsExpand);
+  arrProtExpVars, cmdRowsProt = parse_expandvars_protocol_(pathProtocol, namesVars, valuesVars, adapt_quotation=adapt_quotation, tagsExpand=tagsExpand, keep_superfluous_quotes=keep_superfluous_quotes);
 
   dictListArr = Dict(); dictCmdLineIdxs = Dict();
   if pathFvars != ""
     println(string("Expanding variables from the --fvars file using values from the files listed in each row..."));
-    dictListArr, dictCmdLineIdxs = parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, delimiterFvars; verbose=false, adapt_quotation=adapt_quotation, tagsExpand=tagsExpand);
+    dictListArr, dictCmdLineIdxs = parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, delimiterFvars; verbose=false, adapt_quotation=adapt_quotation, tagsExpand=tagsExpand, keep_superfluous_quotes=keep_superfluous_quotes);
     if length(keys(dictListArr)) != length(keys(dictCmdLineIdxs))
       error("Numbers of command rows (", length(keys(dictListArr)), ") and command row indices (", length(keys(dictCmdLineIdxs)), ") in list file (", filePathsFvars, ") do not match.")
     end
