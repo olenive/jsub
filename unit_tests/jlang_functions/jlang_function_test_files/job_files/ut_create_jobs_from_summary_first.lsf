@@ -10,8 +10,8 @@
 JSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>
 JSUB_JOB_ID="jobID0000_first"
 JSUB_LOG_FILE="jlang_function_test_files/job_files/ut_create_jobs_from_summary.log"
-JSUB_SUMMARY_COMPLETED="jlang_function_test_files/job_files/ut_create_jobs_from_summary_first.completed"
-JSUB_SUMMARY_INCOMPLETE="jlang_function_test_files/job_files/ut_create_jobs_from_summary_first.incomplete"
+JSUB_SUMMARY_COMPLETED="jlang_function_test_files/job_files/ut_create_jobs_from_summary_JOBDATE0_000000_jobID0000_first.completed"
+JSUB_SUMMARY_INCOMPLETE="jlang_function_test_files/job_files/ut_create_jobs_from_summary_JOBDATE0_000000_jobID0000_first.incomplete"
 JSUB_VERSION_CONTROL=true
 JSUB_JOB_TIMESTAMP=true
 
@@ -45,7 +45,7 @@ contents of jcheck_resume.sh
 # Commands taken from summary file: dir/name/is/ignored/ut_create_jobs_from_summary.summary
 
 #JSUB<begin-job>
-check_completion "jlang_function_test_files/job_files/ut_create_jobs_from_summary_jobID0000_root.completed"
+check_completion "jlang_function_test_files/job_files/ut_create_jobs_from_summary_JOBDATE0_000000_jobID0000_root.completed"
 #JGROUP first
 bash echo "cmd 12"
 jcheck_resume

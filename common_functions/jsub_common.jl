@@ -1060,12 +1060,12 @@ function get_futureparent(jobArray, jobID; root="root", tagSplit="#JGROUP", jobD
   jobDate = get_timestamp_(jobDate);
   (length(jobDate) > 0 && length(jobID) > 0) ? dateDelim = "_" : dateDelim = "";
   jobDateAndID = string(jobDate, dateDelim, jobID);
+  length(jobDateAndID) > 0 ? delim = "_" : delim = "";
   if iscomment(join(jobArray[1]), tagSplit)
     groupName = get_groupname(jobArray; tagSplit=tagSplit, root=nothing); # No need to match against root group in this case
-    length(jobDateAndID) > 0 ? delim = "_" : delim = "";
     return string(jobDateAndID, delim, groupName);
   else
-    return root;
+    return string(jobDateAndID, delim, root);
   end
 end
 
@@ -1174,6 +1174,10 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summ
     prefixIncomplete=remove_suffix(outFilePath, ".lsf"),
     suffixIncomplete=".incomplete",
   )
+
+  println(" -----> in create_job_file_  jobID = ", jobID);
+
+
   # Check if jobArray is empty
   if jobArray == []
     SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_job_file_) Array of job contents is empty, no job file created.");
@@ -1191,8 +1195,16 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summ
     (length(groupName) > 0 && length(jobID) > 0) ? (groupDelim = "_") : (groupDelim = "")
     write(stream, string("\nJSUB_JOB_ID=\"", jobID, groupDelim, groupName, "\""));
     write(stream, string("\nJSUB_LOG_FILE=\"", pathLogFile, "\""));
-    write(stream, string("\nJSUB_SUMMARY_COMPLETED=\"", prefixCompleted, groupName, suffixCompleted, "\""));
-    write(stream, string("\nJSUB_SUMMARY_INCOMPLETE=\"", prefixIncomplete, groupName, suffixIncomplete, "\""));
+    groupAsParent = get_futureparent(jobArray, jobID; root=root, tagSplit=tagSplit, jobDate=jobDate)
+
+    println(" -----> 1 in create_job_file_  prefixCompleted = ", prefixCompleted);
+    println(" -----> 1 in create_job_file_  groupAsParent = ", groupAsParent);
+    println(" -----> 1 in create_job_file_  suffixCompleted = ", suffixCompleted);
+    println("JSUB_SUMMARY_COMPLETED=\"", prefixCompleted, groupAsParent, suffixCompleted, "\"");
+
+    
+    write(stream, string("\nJSUB_SUMMARY_COMPLETED=\"", prefixCompleted, groupAsParent, suffixCompleted, "\""));
+    write(stream, string("\nJSUB_SUMMARY_INCOMPLETE=\"", prefixIncomplete, groupAsParent, suffixIncomplete, "\""));
     write(stream, string("\nJSUB_VERSION_CONTROL=", doJsubVersionControl));
     write(stream, string("\nJSUB_JOB_TIMESTAMP=", processTimestamp));
     # Append common functions
@@ -1204,7 +1216,8 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summ
     # Append commands
     write(stream, "\n\n# Commands taken from summary file: $summaryFileOfOrigin\n");
     write(stream, string("\n", tagBegin));
-    check_completion_command = cmd_check_completed(prefixCompleted, suffixCompleted, get_groupparents(jobArray, jobID; root=root, tagSplit=tagSplit, jobDate=""));
+
+    check_completion_command = cmd_check_completed(prefixCompleted, suffixCompleted, get_groupparents(jobArray, jobID; root=root, tagSplit=tagSplit, jobDate=jobDate));
     write(stream, check_completion_command); # calls a command that checks if parent jobs have a line indicated successful job completion at the end of their *.completed files.
     map((x) -> write(stream, join(x), '\n'), jobArray);
     write(stream, string("\n", tagFinish));
@@ -1212,6 +1225,8 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summ
     write(stream, string("\non_completion"));
     write(stream, string("\n"));
     close(stream);
+
+    println("-----");
   end
 end
 
@@ -1261,6 +1276,11 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
     (prefixIncomplete == nothing) && (prefixIncomplete  = string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary")), dlm) );
     ## Create job file
     dictJobFilePaths[pair[1]] = outFilePath; # push!(dictJobFilePaths, outFilePath)
+
+    println(" ----> in create_jobs_from_summary_  prefixCompleted = ", prefixCompleted);
+    println(" ----> in create_jobs_from_summary_  prefixIncomplete = ", prefixIncomplete);
+
+
     create_job_file_(outFilePath, jobArray, dictCheckpoints; summaryFileOfOrigin=summaryFilePath, root=thisRoot,
       tagBegin=tagBegin, tagFinish=tagFinish, tagHeader=tagHeader, tagCheckpoint=tagCheckpoint, headerPrefix=headerPrefix, headerSuffix=headerSuffix, summaryFile=summaryFile, 
       jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds, verbose=verbose, doJsubVersionControl=doJsubVersionControl, processTimestamp=processTimestamp,
