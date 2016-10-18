@@ -114,14 +114,14 @@ function process_job { # This function reads the job file line by line and write
   return 0
 }
 function check_completion { # Check that the input file ends a string indicating successful job completion
+  [[ ${JSUB_JOB_TIMESTAMP} = true ]] && local dateTime=`date +%Y%m%d_%H%M%S` || local dateTime=""
   if [[ $(tail -n1 "$1") != "$JSUB_SUCCESSFUL_COMPLETION"* ]]; then 
     echo "$dateTime ""$JSUB_JOB_ID"" Terminating job due to lack of line indicating successful parent job completion at the end of the file: ""$1"""
     kill_this_job ${JSUB_PATH_TO_THIS_JOB} 
   fi
 }
 function on_completion { # Writes a line indicating successful job completing to the .incomplete file.  This line is then used to determine if jobs which depend on this one should be run.
-  local dateTime=""
-  [[ ${JSUB_JOB_TIMESTAMP} = true ]] && dateTime=`date +%Y%m%d_%H%M%S`
+  [[ ${JSUB_JOB_TIMESTAMP} = true ]] && local dateTime=`date +%Y%m%d_%H%M%S` || local dateTime=""
   [[ ${JSUB_FLAG_FAIL} == false ]] && echo ${JSUB_SUCCESSFUL_COMPLETION}" "${dateTime} >> ${JSUB_SUMMARY_COMPLETED}
 }
 # Function used to try to keep track of the versions of arbitrary software on the system by checking the which command and checking for the existance of git repositories.

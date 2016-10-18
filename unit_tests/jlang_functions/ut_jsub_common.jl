@@ -1783,7 +1783,8 @@ Test.with_handler(ut_handler) do
   suppliedJobArray00 = [];
   push!(suppliedJobArray00, ["bash echo \"cmd 21\""]);
   push!(suppliedJobArray00, ["bash echo \"cmd 22\""]);
-  @test get_groupparents(suppliedJobArray00, ""; root="root", jobDate="") == []
+  @test get_groupparents(suppliedJobArray00, ""; root="root", jobDate="") == [];
+  @test get_futureparent(suppliedJobArray00, ""; root="root", jobDate="") == "root";
   expectedCommand = "\n#BSUB -w \'ended(\"root\")&&ended(\"first\")&&ended(\"third\")&&ended(\"fourth\")&&ended(\"fifth\")\'";
   @test cmd_await_jobs(suppliedJobArray00, ""; option="-w", condition="ended", tagSplit="#JGROUP", jobDate="") == ""
 
@@ -1792,6 +1793,7 @@ Test.with_handler(ut_handler) do
   push!(suppliedJobArray00b, ["bash echo \"cmd 21\""]);
   push!(suppliedJobArray00b, ["bash echo \"cmd 22\""]);
   @test_throws ErrorException get_groupparents(suppliedJobArray00b, ""; root="root", jobDate="");
+  @test get_futureparent(suppliedJobArray00b, ""; root="root", jobDate="") == "root";
   @test_throws ErrorException cmd_await_jobs(suppliedJobArray00b, ""; option="-w", condition="ended", tagSplit="#JGROUP", jobDate="")
 
   suppliedJobArray00c = [];
@@ -1799,6 +1801,7 @@ Test.with_handler(ut_handler) do
   push!(suppliedJobArray00c, ["bash echo \"cmd 21\""]);
   push!(suppliedJobArray00c, ["bash echo \"cmd 22\""]);
   @test_throws ErrorException get_groupparents(suppliedJobArray00c, ""; root="root", jobDate="")
+  @test_throws ErrorException get_futureparent(suppliedJobArray00c, ""; root="root", jobDate="") == "root";
   @test_throws ErrorException cmd_await_jobs(suppliedJobArray00c, ""; option="-w", condition="ended", tagSplit="#JGROUP", jobDate="")
   
   suppliedJobArray01 = [];
@@ -1806,6 +1809,7 @@ Test.with_handler(ut_handler) do
   push!(suppliedJobArray01, ["bash echo \"cmd 21\""]);
   push!(suppliedJobArray01, ["bash echo \"cmd 22\""]);
   @test get_groupparents(suppliedJobArray01, ""; root="root", jobDate="") == ["root", "first", "third", "fourth", "fifth"]
+  @test get_futureparent(suppliedJobArray01, ""; root="root", jobDate="") == "second";
   expectedCommand = "\n#BSUB -w \'ended(\"root\")&&ended(\"first\")&&ended(\"third\")&&ended(\"fourth\")&&ended(\"fifth\")\'";
   @test cmd_await_jobs(suppliedJobArray01, ""; option="-w", condition="ended", tagSplit="#JGROUP", jobDate="") == expectedCommand
 
@@ -1814,6 +1818,7 @@ Test.with_handler(ut_handler) do
   push!(suppliedJobArray02, ["bash echo \"cmd 21\""]);
   push!(suppliedJobArray02, ["bash echo \"cmd 22\""]);
   @test get_groupparents(suppliedJobArray02, "11331234539506827047"; root="root", jobDate="") == ["11331234539506827047_root", "11331234539506827047_first", "11331234539506827047_third", "11331234539506827047_fourth", "11331234539506827047_fifth"]
+  @test get_futureparent(suppliedJobArray02, "11331234539506827047"; root="root", jobDate="") == "11331234539506827047_second";
   expectedCommand = "\n#BSUB -w \'ended(\"11331234539506827047_root\")&&ended(\"11331234539506827047_first\")&&ended(\"11331234539506827047_third\")&&ended(\"11331234539506827047_fourth\")&&ended(\"11331234539506827047_fifth\")\'";
   @test cmd_await_jobs(suppliedJobArray02, jobID_or_hash(suppliedJobArray02; jobID=nothing); option="-w", condition="ended", tagSplit="#JGROUP") == expectedCommand
 
@@ -1822,6 +1827,7 @@ Test.with_handler(ut_handler) do
   push!(suppliedJobArray03, ["bash echo \"cmd 21\""]);
   push!(suppliedJobArray03, ["bash echo \"cmd 22\""]);
   @test get_groupparents(suppliedJobArray02, "ID01"; root="root", jobDate="") == ["ID01_root", "ID01_first", "ID01_third", "ID01_fourth", "ID01_fifth"]
+  @test get_futureparent(suppliedJobArray02, "ID01"; root="root", jobDate="") == "ID01_second";
   expectedCommand = "\n#BSUB -w \'ended(\"ID01_root\")&&ended(\"ID01_first\")&&ended(\"ID01_third\")&&ended(\"ID01_fourth\")&&ended(\"ID01_fifth\")\'";
   @test cmd_await_jobs(suppliedJobArray03, "ID01"; option="-w", condition="ended", tagSplit="#JGROUP", jobDate="") == expectedCommand
   # Test with date
@@ -1829,7 +1835,8 @@ Test.with_handler(ut_handler) do
   push!(suppliedJobArray04, ["#JGROUP second first third fourth fifth"]);
   push!(suppliedJobArray04, ["bash echo \"cmd 21\""]);
   push!(suppliedJobArray04, ["bash echo \"cmd 22\""]);
-  @test get_groupparents(suppliedJobArray02, "ID01"; root="root", jobDate="YYYYMMDD_HHMMSS") == ["YYYYMMDD_HHMMSS_ID01_root", "YYYYMMDD_HHMMSS_ID01_first", "YYYYMMDD_HHMMSS_ID01_third", "YYYYMMDD_HHMMSS_ID01_fourth", "YYYYMMDD_HHMMSS_ID01_fifth"]
+  @test get_groupparents(suppliedJobArray02, "ID01"; root="root", jobDate="YYYYMMDD_HHMMSS") == ["YYYYMMDD_HHMMSS_ID01_root", "YYYYMMDD_HHMMSS_ID01_first", "YYYYMMDD_HHMMSS_ID01_third", "YYYYMMDD_HHMMSS_ID01_fourth", "YYYYMMDD_HHMMSS_ID01_fifth"];
+  @test get_futureparent(suppliedJobArray02, "ID01"; root="root", jobDate="YYYYMMDD_HHMMSS") == "YYYYMMDD_HHMMSS_ID01_second";
   expectedCommand = "\n#BSUB -w \'ended(\"YYYYMMDD_HHMMSS_ID01_root\")&&ended(\"YYYYMMDD_HHMMSS_ID01_first\")&&ended(\"YYYYMMDD_HHMMSS_ID01_third\")&&ended(\"YYYYMMDD_HHMMSS_ID01_fourth\")&&ended(\"YYYYMMDD_HHMMSS_ID01_fifth\")\'";
   @test cmd_await_jobs(suppliedJobArray04, "ID01"; option="-w", condition="ended", tagSplit="#JGROUP", jobDate="YYYYMMDD_HHMMSS") == expectedCommand
 
@@ -2168,9 +2175,9 @@ Test.with_handler(ut_handler) do
     "\n"
   )
   @test expected_file_contents == readall(filePath)
-  # arr1 = split(readall(filePath), '\n')
-  # arr2 = split(expected_file_contents, '\n')
-  # compare_arrays(arr1, arr2)
+  arr1 = split(readall(filePath), '\n')
+  arr2 = split(expected_file_contents, '\n')
+  compare_arrays(arr1, arr2)
 
   # Test to make sure create_job_file_ does not create a job file if the array of commands is empty
   filePath = "jlang_function_test_files/job_files/ut_generated_empty_job.lsf";
@@ -2513,9 +2520,9 @@ Test.with_handler(ut_handler) do
   # E=split(expectedFileContents01, '\n');
   # compare_arrays(split(readall(expectedFilePath01), '\n'), split(expectedFileContents01, '\n'));
   @test expectedFileContents02 == readall(expectedFilePath02)
-  O=split(readall(expectedFilePath02), '\n');
-  E=split(expectedFileContents02, '\n');
-  compare_arrays(split(readall(expectedFilePath02), '\n'), split(expectedFileContents02, '\n'));
+  # O=split(readall(expectedFilePath02), '\n');
+  # E=split(expectedFileContents02, '\n');
+  # compare_arrays(split(readall(expectedFilePath02), '\n'), split(expectedFileContents02, '\n'));
   @test expectedFileContents03 == readall(expectedFilePath03)
   # Observed03=split(readall(expectedFilePath03), '\n');
   # Expected03=split(expectedFileContents03, '\n');
@@ -2635,6 +2642,15 @@ Test.with_handler(ut_handler) do
   @test get_groupparents(group4, ""; root="root", tagSplit="#JGROUP", jobDate="") == ["root", "third"]
   @test get_groupparents(group5, ""; root="root", tagSplit="#JGROUP", jobDate="") == ["root", "fourth", "second"]
   @test get_groupparents(group6, ""; root="root", tagSplit="#JGROUP", jobDate="") == ["root", "first", "fifth"]
+
+  @test get_futureparent(root, ""; root="root", tagSplit="#JGROUP", jobDate="") == "root"
+  @test get_futureparent(group1, ""; root="root", tagSplit="#JGROUP", jobDate="") == "first"
+  @test get_futureparent(group2, ""; root="root", tagSplit="#JGROUP", jobDate="") == "second"
+  @test get_futureparent(group3, ""; root="root", tagSplit="#JGROUP", jobDate="") == "third"
+  @test get_futureparent(group4, ""; root="root", tagSplit="#JGROUP", jobDate="") == "fourth"
+  @test get_futureparent(group5, ""; root="root", tagSplit="#JGROUP", jobDate="") == "fifth"
+  @test get_futureparent(group6, ""; root="root", tagSplit="#JGROUP", jobDate="") == "sixths"
+
   expectedPriorities01 = Dict(
     "root" => 0,
     "first" => 1,

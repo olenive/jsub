@@ -1055,6 +1055,20 @@ function get_groupparents(jobArray, jobID; root="root", tagSplit="#JGROUP", jobD
   end
 end
 
+# Returns the group name using a similar procedure to get_groupparents.  The point of this is to make it easier to maintain a consistent format for file names, specifically the *.completed files which need to be accessed by child groups
+function get_futureparent(jobArray, jobID; root="root", tagSplit="#JGROUP", jobDate="")
+  jobDate = get_timestamp_(jobDate);
+  (length(jobDate) > 0 && length(jobID) > 0) ? dateDelim = "_" : dateDelim = "";
+  jobDateAndID = string(jobDate, dateDelim, jobID);
+  if iscomment(join(jobArray[1]), tagSplit)
+    groupName = get_groupname(jobArray; tagSplit=tagSplit, root=nothing); # No need to match against root group in this case
+    length(jobDateAndID) > 0 ? delim = "_" : delim = "";
+    return string(jobDateAndID, delim, groupName);
+  else
+    return root;
+  end
+end
+
 # Generate commands calling the bash function that checks for successful job completion
 function cmd_check_completed(prefix, suffix, parents)
   (parents == []) && (return "\n");
