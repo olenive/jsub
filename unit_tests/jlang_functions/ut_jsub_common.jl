@@ -1984,6 +1984,43 @@ Test.with_handler(ut_handler) do
   );
   @test identify_checkpoints(suppliedJobArray, checkpointsDict; tagCheckpoint="jcheck_") == expectedFileSet
 
+  ## get_taggedunique
+  suppliedJobArray = [];
+  push!(suppliedJobArray, ["#JGROUP second first third fourth fifth"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 21\""]);
+  push!(suppliedJobArray, ["jcheck_filesNotEmpty \"cmd 21\""]);
+  push!(suppliedJobArray, ["#BSUB -J jobID"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 22\""]);
+  push!(suppliedJobArray, ["jcheck_resume"]);
+  push!(suppliedJobArray, ["#JSUB<summary-name> There is separate function for this (for historical reasons)"]);
+  push!(suppliedJobArray, ["#JSUB<job-id1> ID001"]);
+  push!(suppliedJobArray, ["#JSUB<job-id2>ID002"]);
+  push!(suppliedJobArray, ["#JSUB<job-id2a>ID002 abc"]);
+  push!(suppliedJobArray, ["#JSUB<job-id2b>ID002 abc "]);
+  push!(suppliedJobArray, ["#JSUB<job-id3> \t \tID003"]);
+  push!(suppliedJobArray, ["#JSUB<job-id4> X"]);
+  push!(suppliedJobArray, ["#JSUB<job-id4> Y"]);
+  push!(suppliedJobArray, ["#JSUB<job-id5> "]);
+  push!(suppliedJobArray, ["#JSUB<job-id6>"]);
+  push!(suppliedJobArray, ["#BSUB -P grantcode"]);
+  push!(suppliedJobArray, ["#BSUB -w overriding"]);
+  push!(suppliedJobArray, ["bash echo \"cmd 23\""]);
+  push!(suppliedJobArray, ["jcheck_filesNotEmpty \"cmd 23\""]);
+  @test get_taggedunique(suppliedJobArray, "#JSUB<job-id1>") == "ID001";
+  @test get_taggedunique(suppliedJobArray, "#JSUB<job-id2a>") == "ID002 abc";
+  @test get_taggedunique(suppliedJobArray, "#JSUB<job-id2b>") == "ID002 abc ";
+  @test get_taggedunique(suppliedJobArray, "#JSUB<job-id3>") == "ID003";
+  @test_throws ErrorException get_taggedunique(suppliedJobArray, "#JSUB<job-id4>");
+  @test get_taggedunique(suppliedJobArray, "#JSUB<job-id5>") == "";
+  @test get_taggedunique(suppliedJobArray, "#JSUB<job-id6>") == "";
+
+  ## replace_empty_strings
+  @test replace_empty_strings(["", "", ""]) == ["1", "2", "3"])
+  @test replace_empty_strings(["", "", "", "", "", "", "", "", "", ""]) == ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10"])
+  @test replace_empty_strings(["", "", "", "", "", "", "", "", "", ""], prefix="pre_") == ["pre_01", "pre_02", "pre_03", "pre_04", "pre_05", "pre_06", "pre_07", "pre_08", "pre_09", "pre_10"])
+  @test replace_empty_strings(["", "x", ""]) == ["1", "x", "3"])
+  @test replace_empty_strings(["", "x", ""], prefix="pre_") == ["pre_1", "x", "pre_3"])
+
   ## function get_bash_functions(common_functions::Dict{Any,Any}, selected_functions::Dict{Any,Any})
   common_functions = Dict(
     "dummy1" => "jlang_function_test_files/dummy_bash_functions/dummy1.sh",

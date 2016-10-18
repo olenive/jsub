@@ -1027,7 +1027,7 @@ end
 
 # Returns the group parents.  For example, "tagHeader groupName parent1 parent2 ..." will return "parent1 parent2 ..."
 function get_groupparents(jobArray, jobID; root="root", tagSplit="#JGROUP", jobDate="")
-  jobDate = get_timestamp_(jobDate);
+  # jobDate = get_timestamp_(jobDate);
   # jobID = jobID_or_hash(jobArray; jobID=jobID); # Generate unique-ish job ID if one is not provided
   (length(jobDate) > 0 && length(jobID) > 0) ? dateDelim = "_" : dateDelim = "";
   jobDateAndID = string(jobDate, dateDelim, jobID);
@@ -1148,6 +1148,32 @@ function identify_checkpoints(jobArray, checkpointsDict; tagCheckpoint="jcheck_"
     end
   end
   return out
+end
+
+# Get string corresponding to contents of line after tag, making sure that there is only one instance of this tag in the input
+function get_taggedunique(jobArray, tag)
+  arrTaggedLines = jobArray[find((x)->iscomment(join(x), tag), jobArray)];
+  if length(arrTaggedLines) > 1
+    error(" in get_taggedunique: expecting only one instance of the tag \"$tag\" but found ", length(arrTaggedLines), ":\n", join(arrTaggedLines, '\n'));
+  elseif length(arrTaggedLines) == 0
+    return "";
+  elseif length(arrTaggedLines[1][1]) > length(tag)
+    return lstrip(arrTaggedLines[1][1][length(tag)+1:end]);
+  else
+    return "";
+  end
+end
+
+# Replace empty strings in array with index (and optional prefix)
+function replace_empty_strings(arr; prefix="")
+  out = deepcopy(arr);
+  pad = length(dec(length(out)))
+  for idx = 1:length(out)
+    if out[idx] == ""
+      out[idx] = string(prefix, dec(idx, pad));
+    end
+  end
+  return out;
 end
 
 # Read bash functions from files into Dict

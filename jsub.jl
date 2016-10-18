@@ -229,7 +229,7 @@ include("./common_functions/jsub_common.jl")
 
   "-t", "--timestamp"
     action = :store_true
-    help = "Add timestamps to summary files."
+    help = "Add timestamps to summary and job files."
 
   "-a", "--portable"
     help = "A directory to which copies of the job files as well as the submission script and relevant functions will be written.  This is do so that the jobs can be easily copied over to and run on a system where jsub.jl can not be run directly."
@@ -405,14 +405,24 @@ function run_stage2_(pathSummariesList, pathJobsList; flagVerbose=false, tagsExp
   flagVerbose && println("Splitting summary file contents into separate jobs...");
   summaryArrDicts = map((x) -> split_summary(x[1]; tagSplit=tagsExpand["tagSplit"]), summaryFilesData);
 
-  flagVerbose && println("Getting job file names from summary file basenames...");
-  arrJobIDs = map((x) -> basename(remove_suffix(x, ".summary")) , summaryPaths2);
-  
+  # flagVerbose && println("Getting job file names from summary file basenames...");
+  # arrJobIDs = map((x) -> basename(remove_suffix(x, ".summary")) , summaryPaths2);
+
+  ## Get job date
+  jobDate = parsed_args["timestamp"] ? get_timestamp_(nothing) : "";
+
+  ## Get job ID and check that the list is unique
+  jobIDTag = "#JSUB<job-id>";
+  flagVerbose && println("Getting job ID prefixes from summary file lines starting with: ", jobIDTag);
+  preArrJobIDs = map((x) -> get_taggedunique(x[1], jobIDTag), summaryFilesData );
+  arrJobIDs = replace_empty_strings(preArrJobIDs, prefix="jobID");
+  (length(arrJobIDs) != length(unique(arrJobIDs))) && error(" in run_stage2_ the array of job IDs contains non-qunique entries:\n", arrJobIDs);
+  println("arrJobIDs");
+  println(arrJobIDs);
+
   ## Write job files
   arrDictFilePaths = map((summaryFilePath, dictSummaries, jobID) -> create_jobs_from_summary_(summaryFilePath, dictSummaries, commonFunctions, checkpointsDict; 
-      jobFilePrefix=jobFilePrefix, jobID=jobID, jobDate=(
-        parsed_args["timestamp"] ? get_timestamp_(nothing) : "";
-      ),
+      jobFilePrefix=jobFilePrefix, jobID=jobID, jobDate=jobDate,
       doJsubVersionControl=doJsubVersionControl, processTimestamp=processTimestamp, headerSuffix=commonHeaderSuffix, verbose=flagVerbose, bsubOptions=bsubOptions, headerPrefix=jobFileHeader
     ),
     summaryPaths2, summaryArrDicts, arrJobIDs,
