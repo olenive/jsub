@@ -14,6 +14,7 @@ FVARS_FILE="$PROTOCOL_DIR"/"jgroupFV.fvars"
 LONG_NAME="jgroupP_jgroupV_jgroupFV"
 SUMMARY_PREFIX="summaries/summaryPrefix_"
 SUMMARY_BASE_PREFIX=$(basename $SUMMARY_PREFIX)
+LSF_OUTPUT_PREFIX="lsf_output/lsf_"
 
 declare -a SAMPELS=("sample0001A" "sample0002A" "sample0003A" "sample0004A" "sample0005A" "sample0006A" "sample0007A" "sample0008A" "sample0009A" "sample0010A" "sample0011A")
 JOBID_PREFIX="jgroupP_jgroupV_jgroupFV_"
@@ -87,15 +88,18 @@ assert "diff ${GENERATED_JOB_LIST} ${EXPECTED_JOB_LIST}" ""
 # 40
 # Run jsub - submit jobs from list to LSF queue
 ${CALL_JSUB} -b -o ${GENERATED_JOB_LIST}
+sleep 2 # to make sure the submissions have gone through
+bjobs
+idx=0
 for sample in "${SAMPELS[@]}"; do
   GENERATED_JOB_DATA_00="${OUT_PREFIX}${sample}.txt"
   GENERATED_JOB_DATA_01="${OUT_PREFIX}${sample}_first.txt"
   GENERATED_JOB_DATA_02="${OUT_PREFIX}${sample}_second.txt"
   GENERATED_JOB_DATA_03="${OUT_PREFIX}${sample}_third.txt"
   for jgroup in "${JGROUPS[@]}"; do
-    awaitJobNameCompletion ${SUMMARY_BASE_PREFIX}${sample}_${jgroup}
+    awaitJobNameCompletion ${SUMMARY_BASE_PREFIX}${JOBIDS[idx]}_${jgroup}
   done
-  sleep 1
+  sleep 2 # to make sure output files have been written
   assert "file_exists ${GENERATED_JOB_DATA_00}" "yes"
   assert "file_exists ${GENERATED_JOB_DATA_01}" "yes"
   assert "file_exists ${GENERATED_JOB_DATA_02}" "yes"
@@ -105,11 +109,12 @@ for sample in "${SAMPELS[@]}"; do
   assert "diff ${GENERATED_JOB_DATA_02} ../expected_files/${GENERATED_JOB_DATA_02}" ""
   assert "diff ${GENERATED_JOB_DATA_03} ../expected_files/${GENERATED_JOB_DATA_03}" ""
   for jgroup in "${JGROUPS[@]}"; do
-    GENERATED_JOB_OUTPUT="${SUMMARY_BASE_PREFIX}${sample}_${jgroup}.output"
-    GENERATED_JOB_ERROR="${SUMMARY_BASE_PREFIX}${sample}_${jgroup}.error"
+    GENERATED_JOB_OUTPUT="${LSF_OUTPUT_PREFIX}${SUMMARY_BASE_PREFIX}${JOBIDS[idx]}_${jgroup}.output"
+    GENERATED_JOB_ERROR="${LSF_OUTPUT_PREFIX}${SUMMARY_BASE_PREFIX}${JOBIDS[idx]}_${jgroup}.error"
     assert "file_exists ${GENERATED_JOB_OUTPUT}" "yes"
     assert "file_exists ${GENERATED_JOB_ERROR}" "yes"
   done
+  idx=$((idx+1))
 done
 assert "file_exists ${GENERATED_SUBMITTED_JOBS_LIST}" "yes"
 

@@ -1264,9 +1264,9 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
     prefixOutputError="", prefixLogFile=jobFilePrefix,
     pathLogFile=string(prefixLogFile, basename(remove_suffix(summaryFilePath, ".summary") * ".log")),
     ## The following options are used to set the prefix and suffix (group name goes in between) of files listing completed and incomplete steps of the job.  Jobs that depend on parent jobs to run will check the completed file to determine if the parent job finished successfully
-    prefixCompleted=nothing,
+    prefixCompleted=jobFilePrefix,
     suffixCompleted=".completed",
-    prefixIncomplete=nothing,
+    prefixIncomplete=jobFilePrefix,
     suffixIncomplete=".incomplete",
   )
   dictJobFilePaths = Dict(); 
@@ -1299,11 +1299,6 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
         SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn("(in create_jobs_from_summary_) found conflicting instances of ", tagHeader, " ", option, " in the following array of commands:\n", jobArray);
       end
     end
-    ## Set path-prefixes for the .completed and .incomplete files
-    # (prefixCompleted == nothing) && (prefixCompleted = string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary")), "_") );
-    # (prefixIncomplete == nothing) && (prefixIncomplete  = string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary")), "_") );
-    (prefixCompleted == nothing) && (prefixCompleted = string(jobFilePrefix) );
-    (prefixIncomplete == nothing) && (prefixIncomplete  = string(jobFilePrefix) );
 
     ## Create job file
     dictJobFilePaths[pair[1]] = outFilePath; # push!(dictJobFilePaths, outFilePath)
