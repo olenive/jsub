@@ -3,6 +3,7 @@ function file_exists {
   if [ -f "$1" ]; then echo "yes"; else echo "no"; fi
 }
 function clear_generated {
+  rm -rf "lsf_output"
   rm -rf "summaries"
   rm -rf "jobs"
   rm -rf "results"

@@ -1030,8 +1030,8 @@ end
 function get_groupparents(jobArray, jobID; root="root", tagSplit="#JGROUP", jobDate="")
   # jobDate = get_timestamp_(jobDate);
   # jobID = jobID_or_hash(jobArray; jobID=jobID); # Generate unique-ish job ID if one is not provided
-  (length(jobDate) > 0 && length(jobID) > 0) ? dateDelim = "_" : dateDelim = "";
-  jobDateAndID = string(jobDate, dateDelim, jobID);
+  # (length(jobDate) > 0 && length(jobID) > 0) ? dateDelim = "_" : dateDelim = "";
+  jobDateAndID = stick_together(jobDate, jobID, "_");
   groupName = get_groupname(jobArray; tagSplit=tagSplit, root=root);
   # Check if the first entry in the job array begins with a group tag (tagSplit) and use this tag to identify parent jobs
   if iscomment(join(jobArray[1]), tagSplit)
@@ -1058,15 +1058,15 @@ end
 
 # Returns the group name using a similar procedure to get_groupparents.  The point of this is to make it easier to maintain a consistent format for file names, specifically the *.completed files which need to be accessed by child groups
 function get_futureparent(jobArray, jobID; root="root", tagSplit="#JGROUP", jobDate="")
-  jobDate = get_timestamp_(jobDate);
-  (length(jobDate) > 0 && length(jobID) > 0) ? dateDelim = "_" : dateDelim = "";
-  jobDateAndID = string(jobDate, dateDelim, jobID);
-  length(jobDateAndID) > 0 ? delim = "_" : delim = "";
+  # jobDate = get_timestamp_(jobDate);
+  # (length(jobDate) > 0 && length(jobID) > 0) ? dateDelim = "_" : dateDelim = "";
+  jobDateAndID = stick_together(jobDate, jobID, "_");
+  # length(jobDateAndID) > 0 ? delim = "_" : delim = "";
   if iscomment(join(jobArray[1]), tagSplit)
     groupName = get_groupname(jobArray; tagSplit=tagSplit, root=nothing); # No need to match against root group in this case
-    return string(jobDateAndID, delim, groupName);
+    return stick_together(jobDateAndID, groupName, "_");
   else
-    return string(jobDateAndID, delim, root);
+    return stick_together(jobDateAndID, root, "_");
   end
 end
 
