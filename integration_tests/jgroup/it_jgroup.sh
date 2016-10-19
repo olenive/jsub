@@ -16,7 +16,8 @@ SUMMARY_PREFIX="summaries/summaryPrefix_"
 SUMMARY_BASE_PREFIX=$(basename $SUMMARY_PREFIX)
 
 declare -a SAMPELS=("sample0001A" "sample0002A" "sample0003A" "sample0004A" "sample0005A" "sample0006A" "sample0007A" "sample0008A" "sample0009A" "sample0010A" "sample0011A")
-declare -a JOBIDS=("jobID01" "jobID02" "jobID03" "jobID04" "jobID05" "jobID06" "jobID07" "jobID08" "jobID09" "jobID10" "jobID11")
+JOBID_PREFIX="jgroupP_jgroupV_jgroupFV_"
+declare -a JOBIDS=("$JOBID_PREFIX""01" "$JOBID_PREFIX""02" "$JOBID_PREFIX""03" "$JOBID_PREFIX""04" "$JOBID_PREFIX""05" "$JOBID_PREFIX""06" "$JOBID_PREFIX""07" "$JOBID_PREFIX""08" "$JOBID_PREFIX""09" "$JOBID_PREFIX""10" "$JOBID_PREFIX""11")
 declare -a JGROUPS=("root" "first" "second" "third" "last")
 
 EXPECTED_SUMMARY_LIST="../expected_files/""$SUMMARY_BASE_PREFIX""$LONG_NAME"".list-summaries"
@@ -71,7 +72,8 @@ ${CALL_JSUB} -j -u ${GENERATED_SUMMARY_LIST} $(getCommonHeaderOptionString "$JOB
 idx=0
 for sample in "${SAMPELS[@]}"; do
   for jgroup in "${JGROUPS[@]}"; do
-    GENERATED_JOB=${JOB_PREFIX}${SUMMARY_BASE_PREFIX}${sample}_${JOBIDS[idx]}_${jgroup}.lsf
+    # GENERATED_JOB=${JOB_PREFIX}${SUMMARY_BASE_PREFIX}${sample}_${JOBIDS[idx]}_${jgroup}.lsf
+    GENERATED_JOB=${JOB_PREFIX}${SUMMARY_BASE_PREFIX}$_${JOBIDS[idx]}_${jgroup}.lsf
     echo "it_jgroup.sh GENERATED_JOB = : "$GENERATED_JOB
     EXPECTED_JOB="../expected_files/"${GENERATED_JOB}
     assert "file_exists ${GENERATED_JOB}" "yes"

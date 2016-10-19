@@ -1300,8 +1300,11 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
       end
     end
     ## Set path-prefixes for the .completed and .incomplete files
-    (prefixCompleted == nothing) && (prefixCompleted = string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary")), "_") );
-    (prefixIncomplete == nothing) && (prefixIncomplete  = string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary")), "_") );
+    # (prefixCompleted == nothing) && (prefixCompleted = string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary")), "_") );
+    # (prefixIncomplete == nothing) && (prefixIncomplete  = string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary")), "_") );
+    (prefixCompleted == nothing) && (prefixCompleted = string(jobFilePrefix) );
+    (prefixIncomplete == nothing) && (prefixIncomplete  = string(jobFilePrefix) );
+
     ## Create job file
     dictJobFilePaths[pair[1]] = outFilePath; # push!(dictJobFilePaths, outFilePath)
 
