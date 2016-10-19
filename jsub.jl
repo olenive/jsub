@@ -257,8 +257,10 @@ include("./common_functions/jsub_common.jl")
     help = "Do not remove superfluous quotes.  For example, the string \"abc\"\"def\" will not be converted to \"abcdef\"."
 
   "-g", "--fvars-delimiter"
-  help = "Delimiter used in the .fvars file.  The default delmiter character is a tab ('\t').  The .fvars file is expected to contain three columns (1) variable name, (2) one-indexed column number, (3) path to a text file."
+    help = "Delimiter used in the .fvars file.  The default delmiter character is a tab ('\t').  The .fvars file is expected to contain three columns (1) variable name, (2) one-indexed column number, (3) path to a text file."
 
+  "-e", "--prefix-lsf-out"
+    help = "Prefix given to the output (*.output) and error (*.error) files produced when running an LSF job."
 end
 
 parsed_args = parse_args(argSettings) # the result is a Dict{String,Any}
@@ -296,7 +298,7 @@ jobFilePrefix = get_argument(parsed_args, "job-prefix", verbose=flagVerbose, opt
 ## Create directory for job files if it does not already exist
 mkpath(dirname(jobFilePrefix));
 
-## Determine string used in file names
+## Determine strings used in file names
 longName = get_argument(parsed_args, "name"; verbose=flagVerbose, optional=true, 
   default=get_longname(pathProtocol, pathVars, pathFvars,
     get_argument(parsed_args, "list-summaries"; optional=true, default=""),
@@ -411,11 +413,14 @@ function run_stage2_(pathSummariesList, pathJobsList; flagVerbose=false, tagsExp
   ## Get job date
   jobDate = parsed_args["timestamp"] ? get_timestamp_(nothing) : "";
 
+  ## Get prefix for *.error and *.output files (written by the LSF job)
+  prefixOutputError = get_argument(parsed_args, "prefix-lsf-out", verbose=flagVerbose, optional=true, default="");
+
   ## Get job ID and check that the list is unique
   jobIDTag = "#JSUB<job-id>";
   flagVerbose && println("Getting job ID prefixes from summary file lines starting with: ", jobIDTag);
   preArrJobIDs = map((x) -> get_taggedunique(x[1], jobIDTag), summaryFilesData );
-  arrJobIDs = replace_empty_strings(preArrJobIDs, prefix="jobID");
+  arrJobIDs = replace_empty_strings(preArrJobIDs, prefix=string(longName, "_") );
   (length(arrJobIDs) != length(unique(arrJobIDs))) && error(" in run_stage2_ the array of job IDs contains non-qunique entries:\n", arrJobIDs);
   println("arrJobIDs");
   println(arrJobIDs);
@@ -423,7 +428,7 @@ function run_stage2_(pathSummariesList, pathJobsList; flagVerbose=false, tagsExp
   ## Write job files
   arrDictFilePaths = map((summaryFilePath, dictSummaries, jobID) -> create_jobs_from_summary_(summaryFilePath, dictSummaries, commonFunctions, checkpointsDict; 
       jobFilePrefix=jobFilePrefix, jobID=jobID, jobDate=jobDate,
-      doJsubVersionControl=doJsubVersionControl, processTimestamp=processTimestamp, headerSuffix=commonHeaderSuffix, verbose=flagVerbose, bsubOptions=bsubOptions, headerPrefix=jobFileHeader
+      doJsubVersionControl=doJsubVersionControl, processTimestamp=processTimestamp, headerSuffix=commonHeaderSuffix, verbose=flagVerbose, bsubOptions=bsubOptions, headerPrefix=jobFileHeader, prefixOutputError=prefixOutputError
     ),
     summaryPaths2, summaryArrDicts, arrJobIDs,
   );

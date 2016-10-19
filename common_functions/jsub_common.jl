@@ -792,10 +792,11 @@ function get_summary_names(arrProt; prefix=nothing, suffix=".summary", timestamp
     end
     if !foundName
       length(timestamp) > 0 ? delim = "_" : delim = "";
+      pad = length(dec(length(arrProt)));
       if longName == nothing
-        push!(summaryNames, string(prefix, "summary", dec(idx, 4), delim, timestamp, suffix)); # Use default name
+        push!(summaryNames, string(prefix, "summary", dec(idx, pad), delim, timestamp, suffix)); # Use default name
       else
-        push!(summaryNames, string(prefix, longName, "_", dec(idx, 4), delim, timestamp, suffix)); # Use longName
+        push!(summaryNames, string(prefix, longName, "_", dec(idx, pad), delim, timestamp, suffix)); # Use longName
       end
     end
   end
@@ -1108,7 +1109,7 @@ function stick_together(str1::AbstractString, str2::AbstractString, delim::Abstr
 end
 
 # Read job dictionary and return job header
-function create_job_header_string(jobArray, jobID; root="root", tagHeader="\n#BSUB", prefix="#!/bin/bash\n", suffix="", tagSplit="#JGROUP", jobDate="", appendOptions=true, rootSleepSeconds=nothing)
+function create_job_header_string(jobArray, jobID; root="root", tagHeader="\n#BSUB", prefix="#!/bin/bash\n", suffix="", tagSplit="#JGROUP", jobDate="", appendOptions=true, rootSleepSeconds=nothing, prefixOutputError="")
   jobDateAndID = stick_together(jobDate, jobID, "_");
   groupName = get_groupname(jobArray, tagSplit=tagSplit, root=root);
   length(groupName) > 0 ? idDelim = "_" : idDelim = "";
@@ -1116,7 +1117,7 @@ function create_job_header_string(jobArray, jobID; root="root", tagHeader="\n#BS
   options = "";
   if appendOptions
     ## Determine group ID (first entry after group tag (e.g #JGROUP groupID otherGroupID ...))
-    options = string(tagHeader, " -J $jobDateAndID", idDelim, groupName, tagHeader, " -e $jobDateAndID", idDelim, groupName, ".error", tagHeader, " -o $jobDateAndID", idDelim, groupName, ".output", "\n");
+    options = string(tagHeader, " -J $jobDateAndID", idDelim, groupName, tagHeader, " -e $prefixOutputError$jobDateAndID", idDelim, groupName, ".error", tagHeader, " -o $prefixOutputError$jobDateAndID", idDelim, groupName, ".output", "\n");
   end
   # If this is a root job, add a wait (sleep) command to give enough time for jobs which depend on this one to be submitted.  This may not be strictly necessary or may need to be made more robust depending on how LSF actually handles these things and the response times of the system in question.
   waitInstructions = "";
@@ -1192,7 +1193,7 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summ
     headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=(remove_suffix(basename(outFilePath), ".lsf")), jobDate="", appendOptions=true, rootSleepSeconds=nothing, verbose=false, doJsubVersionControl=true, 
     processTimestamp="true", tagSplit="#JGROUP",
     pathLogFile=(remove_suffix(outFilePath, ".lsf") * ".log"),
-    jobFileSuffix=".lsf",
+    prefixOutputError="", jobFileSuffix=".lsf",
     #jobFilePrefix="", 
     ## The following options are used to set the prefix and suffix (group name goes in between) of files listing completed and incomplete steps of the job.  Jobs that depend on parent jobs to run will check the completed file to determine if the parent job finished successfully
     prefixCompleted=remove_suffix(outFilePath, ".lsf"),
@@ -1211,7 +1212,7 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summ
     # Overwrite with header
     verbose && println("Writing to job file: ", outFilePath);
     stream = open(outFilePath, "w");
-    write(stream, create_job_header_string(jobArray, jobID; root=root, tagHeader=tagHeader, prefix=headerPrefix, suffix=headerSuffix, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds));
+    write(stream, create_job_header_string(jobArray, jobID; root=root, tagHeader=tagHeader, prefix=headerPrefix, suffix=headerSuffix, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds, prefixOutputError=prefixOutputError));
     # Append log file variable declarations (Note that the variable names used here need to match those expected by the process_job function in job_processing.sh)
     write(stream, "\n\n# Job file variables:");
     # write(stream, string("\n#<The next line will be deleted and replaced by the submit_lsf_jobs.sh script.>"));
@@ -1260,7 +1261,7 @@ end
 function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonFunctions::Dict, checkpointsDict::Dict; jobFilePrefix="", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
     tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n", headerSuffix="", summaryFile="", 
     jobID=nothing, jobDate="", appendOptions=true, rootSleepSeconds=nothing, verbose=false, bsubOptions=["-J"], doJsubVersionControl=true, processTimestamp="true",
-    prefixLogFile=jobFilePrefix,
+    prefixOutputError="", prefixLogFile=jobFilePrefix,
     pathLogFile=string(prefixLogFile, basename(remove_suffix(summaryFilePath, ".summary") * ".log")),
     ## The following options are used to set the prefix and suffix (group name goes in between) of files listing completed and incomplete steps of the job.  Jobs that depend on parent jobs to run will check the completed file to determine if the parent job finished successfully
     prefixCompleted=nothing,
@@ -1284,12 +1285,13 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
     );
     ## Get job file name from path and group
     outFilePath = "";
-    (length(group) > 0) ? (dlm = "_") : (dlm = "");
+    # (length(basename(jobFilePrefix)) > 0) ? (dlm0 = "_") : (dlm0 = "");
+    (length(group) > 0) ? (dlm1 = "_") : (dlm1 = "");
     if filePathOverride != nothing
       outFilePath = filePathOverride;
     else
-      
-      outFilePath = string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary")), dlm, group, jobFileSuffix); # get longName from file path
+      #outFilePath = string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary")), dlm0, jobID, dlm1, group, jobFileSuffix); # get longName from file path
+      outFilePath = string(jobFilePrefix, jobID, dlm1, group, jobFileSuffix); # get longName from file path
     end
     ## Check for conflicting #BSUB options
     for option in bsubOptions
@@ -1298,8 +1300,8 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
       end
     end
     ## Set path-prefixes for the .completed and .incomplete files
-    (prefixCompleted == nothing) && (prefixCompleted = string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary")), dlm) );
-    (prefixIncomplete == nothing) && (prefixIncomplete  = string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary")), dlm) );
+    (prefixCompleted == nothing) && (prefixCompleted = string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary")), "_") );
+    (prefixIncomplete == nothing) && (prefixIncomplete  = string(jobFilePrefix, basename(remove_suffix(summaryFilePath, ".summary")), "_") );
     ## Create job file
     dictJobFilePaths[pair[1]] = outFilePath; # push!(dictJobFilePaths, outFilePath)
 
@@ -1310,7 +1312,7 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
     create_job_file_(outFilePath, jobArray, dictCheckpoints; summaryFileOfOrigin=summaryFilePath, root=thisRoot,
       tagBegin=tagBegin, tagFinish=tagFinish, tagHeader=tagHeader, tagCheckpoint=tagCheckpoint, headerPrefix=headerPrefix, headerSuffix=headerSuffix, summaryFile=summaryFile, 
       jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds, verbose=verbose, doJsubVersionControl=doJsubVersionControl, processTimestamp=processTimestamp,
-      pathLogFile=pathLogFile,
+      prefixOutputError=prefixOutputError, pathLogFile=pathLogFile,
       prefixCompleted=prefixCompleted,
       suffixCompleted=suffixCompleted,
       prefixIncomplete=prefixIncomplete,

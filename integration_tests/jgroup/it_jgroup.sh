@@ -16,6 +16,7 @@ SUMMARY_PREFIX="summaries/summaryPrefix_"
 SUMMARY_BASE_PREFIX=$(basename $SUMMARY_PREFIX)
 
 declare -a SAMPELS=("sample0001A" "sample0002A" "sample0003A" "sample0004A" "sample0005A" "sample0006A" "sample0007A" "sample0008A" "sample0009A" "sample0010A" "sample0011A")
+declare -a JOBIDS=("jobID01" "jobID02" "jobID03" "jobID04" "jobID05" "jobID06" "jobID07" "jobID08" "jobID09" "jobID10" "jobID11")
 declare -a JGROUPS=("root" "first" "second" "third" "last")
 
 EXPECTED_SUMMARY_LIST="../expected_files/""$SUMMARY_BASE_PREFIX""$LONG_NAME"".list-summaries"
@@ -51,6 +52,7 @@ cd ${GENERATED_DIR}
 
 clear_generated # Remove existing output from previous tests
 mkdir -p results
+mkdir -p lsf_output
 
 # Run jsub - only create summary file
 ${CALL_JSUB} -s -p ${PROTOCOL_FILE} --vars ${VARS_FILE} --fvars ${FVARS_FILE} --summary-prefix ${SUMMARY_PREFIX}
@@ -64,15 +66,18 @@ assert "file_exists ${GENERATED_SUMMARY_LIST}" "yes"
 assert "diff ${GENERATED_SUMMARY_LIST} ${EXPECTED_SUMMARY_LIST}" ""
 #8
 # Run jsub - create job file from previously generated summary
-${CALL_JSUB} -j -u ${GENERATED_SUMMARY_LIST} $(getCommonHeaderOptionString "$JOB_HEADER") --job-prefix ${JOB_PREFIX}
+${CALL_JSUB} -j -u ${GENERATED_SUMMARY_LIST} $(getCommonHeaderOptionString "$JOB_HEADER") --job-prefix ${JOB_PREFIX} -e "lsf_output/lsf_"
 # Check that a job file is generated from the summary file
+idx=0
 for sample in "${SAMPELS[@]}"; do
   for jgroup in "${JGROUPS[@]}"; do
-    GENERATED_JOB=${JOB_PREFIX}${SUMMARY_BASE_PREFIX}${sample}_${jgroup}.lsf
+    GENERATED_JOB=${JOB_PREFIX}${SUMMARY_BASE_PREFIX}${sample}_${JOBIDS[idx]}_${jgroup}.lsf
+    echo "it_jgroup.sh GENERATED_JOB = : "$GENERATED_JOB
     EXPECTED_JOB="../expected_files/"${GENERATED_JOB}
     assert "file_exists ${GENERATED_JOB}" "yes"
     assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB} ${EXPECTED_JOB}" "" # Ignore the line that contain absolute paths or the job header prefix
   done
+  idx=$((idx+1))
 done
 # 38
 assert "file_exists ${GENERATED_JOB_LIST}" "yes"
@@ -105,7 +110,7 @@ for sample in "${SAMPELS[@]}"; do
   done
 done
 assert "file_exists ${GENERATED_SUBMITTED_JOBS_LIST}" "yes"
-# 101
+
 
 
 

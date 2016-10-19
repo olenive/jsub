@@ -2015,11 +2015,11 @@ Test.with_handler(ut_handler) do
   @test get_taggedunique(suppliedJobArray, "#JSUB<job-id6>") == "";
 
   ## replace_empty_strings
-  @test replace_empty_strings(["", "", ""]) == ["1", "2", "3"])
-  @test replace_empty_strings(["", "", "", "", "", "", "", "", "", ""]) == ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10"])
-  @test replace_empty_strings(["", "", "", "", "", "", "", "", "", ""], prefix="pre_") == ["pre_01", "pre_02", "pre_03", "pre_04", "pre_05", "pre_06", "pre_07", "pre_08", "pre_09", "pre_10"])
-  @test replace_empty_strings(["", "x", ""]) == ["1", "x", "3"])
-  @test replace_empty_strings(["", "x", ""], prefix="pre_") == ["pre_1", "x", "pre_3"])
+  @test replace_empty_strings(["", "", ""]) == ["1", "2", "3"];
+  @test replace_empty_strings(["", "", "", "", "", "", "", "", "", ""]) == ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10"];
+  @test replace_empty_strings(["", "", "", "", "", "", "", "", "", ""], prefix="pre_") == ["pre_01", "pre_02", "pre_03", "pre_04", "pre_05", "pre_06", "pre_07", "pre_08", "pre_09", "pre_10"];
+  @test replace_empty_strings(["", "x", ""]) == ["1", "x", "3"];
+  @test replace_empty_strings(["", "x", ""], prefix="pre_") == ["pre_1", "x", "pre_3"];
 
   ## function get_bash_functions(common_functions::Dict{Any,Any}, selected_functions::Dict{Any,Any})
   common_functions = Dict(

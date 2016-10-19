@@ -4,8 +4,6 @@
 #BSUB -e JOBDATE0_000000_jobID0000_root.error
 #BSUB -o JOBDATE0_000000_jobID0000_root.output
 
-sleep 7.7
-
 
 # Job file variables:
 JSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>
