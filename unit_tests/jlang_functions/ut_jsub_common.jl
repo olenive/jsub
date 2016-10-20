@@ -1367,7 +1367,7 @@ Test.with_handler(ut_handler) do
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script_dot_sh} Lane41 Lane42 Lane43 Lane44 Sample004 fileA_Sample004"])
   push!(supSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample004  fileB_Sample004"])
-  push!(supSubArray, ["  #JSUB<summary-name> \tthe fourth job"]);
+  push!(supSubArray, ["  #JSUB<summary-name> \tthe fourth job\t"]);
   push!(supSubArray, ["./path/to/binary.exe  fileB_Sample004  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
@@ -2008,7 +2008,7 @@ Test.with_handler(ut_handler) do
   push!(suppliedJobArray, ["jcheck_filesNotEmpty \"cmd 23\""]);
   @test get_taggedunique(suppliedJobArray, "#JSUB<job-id1>") == "ID001";
   @test get_taggedunique(suppliedJobArray, "#JSUB<job-id2a>") == "ID002 abc";
-  @test get_taggedunique(suppliedJobArray, "#JSUB<job-id2b>") == "ID002 abc ";
+  @test get_taggedunique(suppliedJobArray, "#JSUB<job-id2b>") == "ID002 abc";
   @test get_taggedunique(suppliedJobArray, "#JSUB<job-id3>") == "ID003";
   @test_throws ErrorException get_taggedunique(suppliedJobArray, "#JSUB<job-id4>");
   @test get_taggedunique(suppliedJobArray, "#JSUB<job-id5>") == "";

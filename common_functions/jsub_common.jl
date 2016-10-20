@@ -785,7 +785,7 @@ function get_summary_names(arrProt; prefix=nothing, suffix=".summary", timestamp
     for subarr in arr
       line = lstrip(join(subarr));
       if iscomment(line, tag)
-        push!(summaryNames, string(prefix, lstrip(line[lenTag+1:end]), suffix)); # Use name from file
+        push!(summaryNames, string(prefix, rstrip(lstrip(line[lenTag+1:end])), suffix)); # Use name from file
         foundName = true;
         break        
       end
@@ -1159,7 +1159,7 @@ function get_taggedunique(jobArray, tag)
   elseif length(arrTaggedLines) == 0
     return "";
   elseif length(arrTaggedLines[1][1]) > length(tag)
-    return lstrip(arrTaggedLines[1][1][length(tag)+1:end]);
+    return rstrip(lstrip(arrTaggedLines[1][1][length(tag)+1:end]));
   else
     return "";
   end
