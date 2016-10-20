@@ -7,28 +7,28 @@ set -e
 JOB_HEADER="$1"
 
 PROTOCOL_FILE="../basic.protocol"
-LSF_JOB_NAME="basic_0001"
+LSF_JOB_NAME="basic_1"
 
-EXPECTED_SUMMARY="../expected_files/basic_0001.summary"
+EXPECTED_SUMMARY="../expected_files/basic_1.summary"
 EXPECTED_SUMMARY_LIST="../expected_files/basic.list-summaries"
-EXPECTED_JOB_IN="../expected_files/basic_0001.lsf"
+EXPECTED_JOB_IN="../expected_files/basic_1.lsf"
 EXPECTED_JOB_LIST="../expected/basic.list-jobs"
 EXPECTED_JOB_DATA="../expected_files/it1_basic.txt"
-EXPECTED_COMPLETED="../expected_files/basic_0001.completed"
+EXPECTED_COMPLETED="../expected_files/basic_1.completed"
 EXPECTED_PROTABLE_DIR="../expected_files/portable"
 EXPECTED_PORTABLE_ZIP="$EXPECTED_PROTABLE_DIR".tar.gz
 
 GENERATED_DIR="generated_files_zip"
-GENERATED_SUMMARY="basic_0001.summary"
+GENERATED_SUMMARY="basic_1.summary"
 GENERATED_SUMMARY_LIST="basic.list-summaries"
-GENERATED_JOB_IN="basic_0001.lsf"
+GENERATED_JOB_IN="basic_1.lsf"
 GENERATED_JOB_LIST="basic.list-jobs"
 GENERATED_JOB_DATA="it1_basic.txt"
-GENERATED_JOB_OUTPUT="basic_0001.error"
-GENERATED_JOB_ERROR="basic_0001.output"
+GENERATED_JOB_OUTPUT="basic_1.error"
+GENERATED_JOB_ERROR="basic_1.output"
 GENERATED_SUBMITTED_JOBS_LIST="basic.list-jobs.submitted"
-GENERATED_COMPLETED="basic_0001.completed"
-GENERATED_INCOMPLETE="basic_0001.incomplete"
+GENERATED_COMPLETED="basic_1.completed"
+GENERATED_INCOMPLETE="basic_1.incomplete"
 GENERATED_PROTABLE_DIR="portable"
 GENERATED_PORTABLE_ZIP="$GENERATED_PROTABLE_DIR".tar.gz
 

@@ -424,8 +424,9 @@ function run_stage2_(pathSummariesList, pathJobsList; flagVerbose=false, tagsExp
   jobIDTag = "#JSUB<job-id>";
   flagVerbose && println("Getting job ID prefixes from summary file lines starting with: ", jobIDTag);
   preArrJobIDs = map((x) -> get_taggedunique(x[1], jobIDTag), summaryFilesData );
-  arrJobIDs = replace_empty_strings(preArrJobIDs, prefix=string(longName, "_") );
+  arrJobIDs = replace_empty_strings(preArrJobIDs, prefix=string(longName) );
   (length(arrJobIDs) != length(unique(arrJobIDs))) && error(" in run_stage2_ the array of job IDs contains non-qunique entries:\n", arrJobIDs);
+  println("longName = ", longName);
   println("arrJobIDs");
   println(arrJobIDs);
 
