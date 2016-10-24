@@ -525,7 +525,7 @@ function enforce_quote_consistency(inString, subString, inclusive_start, inclusi
 end
 
 ## Expand many variables in a string
-function expandmanyafterdollars(inString, varNames, varVals; adapt_quotation=false, returnTF=false, keep_superfluous_quotes=true)
+function expandmanyafterdollars(inString, varNames, varVals; adapt_quotation=false, returnTF=false, keepSuperfluousQuotes=true)
   # Check that varNames is the same size as varVals
   if size(varNames) != size(varVals)
     ArgumentError(" in ExpandVariablesAtDollars size($varNames) != size($varVals).  Each input variable name should have exactly one corresponding value.  Is the .vars file correctly formated?")
@@ -536,7 +536,7 @@ function expandmanyafterdollars(inString, varNames, varVals; adapt_quotation=fal
     value = sanitizestring(string(varVals[idx]));
     outString = expandnameafterdollar(outString, name, value, adapt_quotation=adapt_quotation, returnTF=returnTF);
   end
-  if !keep_superfluous_quotes
+  if !keepSuperfluousQuotes
     outString = remove_superfluous_quotes(outString, '\"', 2, 1); # remove_superfluous_quotes(line, quoteChar::Char, intQuoteChar, intInsideQuotes)
   end
   return outString
@@ -560,7 +560,7 @@ function enforce_closingquote(inString, charQuote::Char)
 end
 
 # Expand variables in array of arrays containing commands (ignoring comment lines)
-function expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=false, adapt_quotation=false, returnTF=false, keep_superfluous_quotes=true) 
+function expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=false, adapt_quotation=false, returnTF=false, keepSuperfluousQuotes=true) 
   # Check that varNames is the same size as varVals
   if size(varNames) != size(varVals)
     ArgumentError(" in expand_inarrayofarrays size($varNames) != size($varVals).  Each input variable name should have exactly one corresponding value.  Is the .vars or .fvars file correctly formated?")
@@ -580,7 +580,7 @@ function expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=false, 
     icol = 0;
     for col in arrRow
       icol += 1;
-      expanded = expandmanyafterdollars(col, varNames, varVals, adapt_quotation=adapt_quotation, returnTF=returnTF, keep_superfluous_quotes=keep_superfluous_quotes)
+      expanded = expandmanyafterdollars(col, varNames, varVals, adapt_quotation=adapt_quotation, returnTF=returnTF, keepSuperfluousQuotes=keepSuperfluousQuotes)
       if adapt_quotation # Add closing quote to string
         expanded = enforce_closingquote(expanded, '\"');
       end
@@ -613,7 +613,7 @@ function sanitizepath(raw)
 end
 
 # Expand variable values one row at a time as though they are being assigned at a shell command line
-function expandinorder(namesVarsRaw, valuesVarsRaw; adapt_quotation=false, returnTF=false, keep_superfluous_quotes=true)
+function expandinorder(namesVarsRaw, valuesVarsRaw; adapt_quotation=false, returnTF=false, keepSuperfluousQuotes=true)
   ## Check that in put vector lengths match
   if (length(namesVarsRaw) != length(valuesVarsRaw)) 
     SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn(" (in expandinorder) variable name and values arguments should be vectors of equal lengths but appear to be of different lengths.");
@@ -624,7 +624,7 @@ function expandinorder(namesVarsRaw, valuesVarsRaw; adapt_quotation=false, retur
     if irow == 1
       valuesVars[irow] = valuesVarsRaw[irow];
     else 
-      valuesVars[irow] = expandmanyafterdollars(valuesVarsRaw[irow], namesVarsRaw[1:irow-1], valuesVarsRaw[1:irow-1], adapt_quotation=adapt_quotation, returnTF=returnTF, keep_superfluous_quotes=keep_superfluous_quotes); ## length comparison done inside expandmanyafterdollars
+      valuesVars[irow] = expandmanyafterdollars(valuesVarsRaw[irow], namesVarsRaw[1:irow-1], valuesVarsRaw[1:irow-1], adapt_quotation=adapt_quotation, returnTF=returnTF, keepSuperfluousQuotes=keepSuperfluousQuotes); ## length comparison done inside expandmanyafterdollars
       valuesVarsRaw[irow] = valuesVars[irow]; # Update the values to be used for subsequent expansions
     end
   end
@@ -641,10 +641,10 @@ function parse_varsfile_(fileVars; dlmVars=nothing, tagsExpand=nothing)
 end
 
 # Read the .fvars file and expand variables row by row.
-function parse_expandvars_fvarsfile_(fileFvars, namesVars, valuesVars; dlmFvars=nothing, adapt_quotation=false, verbose=false, tagsExpand=nothing, keep_superfluous_quotes=true) # Read the .fvars file 
+function parse_expandvars_fvarsfile_(fileFvars, namesVars, valuesVars; dlmFvars=nothing, adapt_quotation=false, verbose=false, tagsExpand=nothing, keepSuperfluousQuotes=true) # Read the .fvars file 
   arrFvars, cmdRowsFvars = file2arrayofarrays_(fileFvars, comStr; cols=3, delimiter=dlmFvars, tagsExpand=tagsExpand, expectedColumns=3);
   ## Use variables from .vars to expand values in .fvars
-  arrExpFvars = expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars; verbose = verbose, adapt_quotation=adapt_quotation, keep_superfluous_quotes=keep_superfluous_quotes);
+  arrExpFvars = expand_inarrayofarrays(arrFvars, cmdRowsFvars, namesVars, valuesVars; verbose = verbose, adapt_quotation=adapt_quotation, keepSuperfluousQuotes=keepSuperfluousQuotes);
   # Extract arrays of variable names and variable values
   namesFvars = columnfrom_arrayofarrays(arrExpFvars, cmdRowsFvars, 1);
   infileColumnsFvars = columnfrom_arrayofarrays(arrExpFvars, cmdRowsFvars, 2);
@@ -656,15 +656,15 @@ function parse_expandvars_fvarsfile_(fileFvars, namesVars, valuesVars; dlmFvars=
   return namesFvars, infileColumnsFvars, filePathsFvars
 end
 
-function parse_expandvars_protocol_(fileProtocol, namesVars, valuesVars; adapt_quotation=false, verbose=false, tagsExpand=nothing, keep_superfluous_quotes=true)
+function parse_expandvars_protocol_(fileProtocol, namesVars, valuesVars; adapt_quotation=false, verbose=false, tagsExpand=nothing, keepSuperfluousQuotes=true)
   arrProt, cmdRowsProt = file2arrayofarrays_(fileProtocol, comStr; cols=1, delimiter=nothing, tagsExpand=tagsExpand);
   ## Use variables from .vars to expand values in .protocol
-  arrProtExpVars = expand_inarrayofarrays(arrProt, cmdRowsProt, namesVars, valuesVars ; verbose = verbose, adapt_quotation=adapt_quotation, keep_superfluous_quotes=keep_superfluous_quotes)
+  arrProtExpVars = expand_inarrayofarrays(arrProt, cmdRowsProt, namesVars, valuesVars ; verbose = verbose, adapt_quotation=adapt_quotation, keepSuperfluousQuotes=keepSuperfluousQuotes)
   return arrProtExpVars, cmdRowsProt
 end
 
 # Expand variables in .fvars file using values from list files
-function parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, dlmFvars; verbose=false, adapt_quotation=false, tagsExpand=nothing, keep_superfluous_quotes=true)
+function parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, dlmFvars; verbose=false, adapt_quotation=false, tagsExpand=nothing, keepSuperfluousQuotes=true)
   ## Read each list file
   dictListArr = Dict(); # Dictionary with file paths as keys and file contents (arrays of arrays) as values.
   dictCmdLineIdxs = Dict(); #previously: # arrCmdLineIdxs = Array(Array, length(filePathsFvars) ); # Array for storing line counts from input files
@@ -672,7 +672,7 @@ function parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, dlmF
   for file in filePathsFvars
     idx+=1;
     arrList, cmdRowsList = file2arrayofarrays_(file, comStr; cols=0, delimiter=dlmFvars, tagsExpand=tagsExpand);
-    arrListExpVars = expand_inarrayofarrays(arrList, cmdRowsList, namesVars, valuesVars ; verbose = verbose, adapt_quotation=adapt_quotation, keep_superfluous_quotes=keep_superfluous_quotes);
+    arrListExpVars = expand_inarrayofarrays(arrList, cmdRowsList, namesVars, valuesVars ; verbose = verbose, adapt_quotation=adapt_quotation, keepSuperfluousQuotes=keepSuperfluousQuotes);
     dictListArr[file] = deepcopy(arrListExpVars);
     dictCmdLineIdxs[file] = cmdRowsList; #previously: # arrCmdLineIdxs[idx] = cmdRowsList
   end
@@ -706,7 +706,7 @@ function parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, dlmF
 end
 
 # Expand varaibles in .protocol using values from .fvars.  This necessarily results in one output summary file per list entry (list files indicated in .fvars)
-function protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose=false, adapt_quotation=false, keep_superfluous_quotes=true)
+function protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose=false, adapt_quotation=false, keepSuperfluousQuotes=true)
   arrArrExpFvars = []; ## Initialise array for holding summary file data in the form of an arrays-of-arrays
   ## Loop over length of list files (currently assuming that all lists are of the same length but this may need to change in the future)
   for iln in 1:maximum( map(x->length(x), values(dictCmdLineIdxs)) )
@@ -730,7 +730,7 @@ function protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars,
       println("namesFvars = ", namesFvars);
       println("valuesFvars = ", valuesFvars);
     end
-    push!(arrArrExpFvars, expand_inarrayofarrays(arrProt, cmdRowsProt, namesFvars, valuesFvars; verbose=verbose, adapt_quotation=adapt_quotation, keep_superfluous_quotes=keep_superfluous_quotes))
+    push!(arrArrExpFvars, expand_inarrayofarrays(arrProt, cmdRowsProt, namesFvars, valuesFvars; verbose=verbose, adapt_quotation=adapt_quotation, keepSuperfluousQuotes=keepSuperfluousQuotes))
   end
   return arrArrExpFvars
 end
@@ -1166,15 +1166,29 @@ function get_taggedunique(jobArray, tag)
 end
 
 # Replace empty strings in array with index (and optional prefix)
-function replace_empty_strings(arr; prefix="")
-  out = deepcopy(arr);
-  pad = length(dec(length(out)))
-  for idx = 1:length(out)
+# function replace_empty_strings(arr; prefix="")
+#   out = deepcopy(arr);
+#   pad = length(dec(length(out)))
+#   for idx = 1:length(out)
+#     if out[idx] == ""
+#       out[idx] = string(prefix, dec(idx, pad));
+#     end
+#   end
+#   return out;
+# end
+
+# Replace empty strings in first array with corresponding value from second array
+function replace_empty_strings(arr1, arr2)
+  out = deepcopy(arr1);
+  if length(arr1) != length(arr2)
+    error(string(" in replace_empty_strings: Input arrays need to be of the same length but are of lengths ", length(arr1), " and ", length(arr2) ));
+  end
+  for idx = 1:length(arr1)
     if out[idx] == ""
-      out[idx] = string(prefix, dec(idx, pad));
+      out[idx] = arr2[idx];
     end
   end
-  return out;
+  return out;      
 end
 
 # Read bash functions from files into Dict

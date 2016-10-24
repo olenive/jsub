@@ -67,6 +67,8 @@ assert "diff ${GENERATED_SUMMARY} ${EXPECTED_SUMMARY}" ""
 assert "file_exists ${GENERATED_SUMMARY_LIST}" "yes"
 assert "diff ${GENERATED_SUMMARY_LIST} ${EXPECTED_SUMMARY_LIST}" ""
 
+echo "##################################################"
+echo ""
 # Run jsub - create job file from previously generated summary
 # OPTION_HEADER=$(getCommonHeaderOptionString "$JOB_HEADER")
 ${CALL_JSUB} -j -u ${GENERATED_SUMMARY_LIST} $(getCommonHeaderOptionString "$JOB_HEADER")
@@ -76,6 +78,8 @@ assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN} ${EXP
 assert "file_exists ${GENERATED_JOB_LIST}" "yes"
 assert "diff ${GENERATED_JOB_LIST} ${EXPECTED_JOB_LIST}" ""
 
+echo "##################################################"
+echo ""
 # Run jsub - submit jobs from list to LSF queue
 ${CALL_JSUB} -b -o ${GENERATED_JOB_LIST}
 bjobs
@@ -88,6 +92,8 @@ assert "file_exists ${GENERATED_SUBMITTED_JOBS_LIST}" "yes"
 #13
 clear_generated # Remove existing output from previous tests
 
+echo "##################################################"
+echo ""
 ## Create summary file(s) from protocol
 ${CALL_JSUB} -sj -p ${PROTOCOL_FILE}
 # Check that a summary file and a summary listing file are generated from the protocol

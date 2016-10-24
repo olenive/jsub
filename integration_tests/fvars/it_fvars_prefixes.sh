@@ -91,6 +91,9 @@ function clear_generated {
   rm -rf "results"
   rm -f *".error"
   rm -f *".output"
+  rm -f ${GENERATED_JOB_DATA_01}
+  rm -f ${GENERATED_JOB_DATA_02}
+  rm -f ${GENERATED_JOB_DATA_03}
 }
 #################
 

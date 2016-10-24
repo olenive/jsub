@@ -19,3 +19,66 @@ Protocol File
 Whitespace delimited file with an arbitrary number of entries in each row.
 # Can contain comment lines starting with "#" or " 	#".  Comment lines and comments after data will be inserted into the job file so it is up to the user to maintain syntax that shell can process.  When in doubt do not put comments on the same line as the data (protocol instrucitons).
 
+
+Outline:
+
+
+STAGE 1 INPUTS
+  
+  The following options are used to generate a "process name"
+    --protocol "dir/protocolFile"
+    --vars     "dir/varsFile"
+    --fvars    "dir/fvarsFile"
+      OR
+    --process-name "processName"
+  
+  --summary-prefix "dir/sp_"
+
+
+STAGE 1 OUTPUTS
+  
+  File listing summary files: "dir/sp_processName.list-summaries"
+      
+  The *.list-summaries file contains a list of paths:
+                      "dir/sp_processName_1.summary"
+                      "dir/sp_processName_2.summary"
+                      .
+                      .
+                      .
+    OR
+    if "#JSUB<summary-name> summaryName" is declared in the protocol file "dir/sp_summaryName.summary"
+                      "dir/sp_summaryName_1.summary"
+                      "dir/sp_summaryName_2.summary"
+                      .
+                      .
+                      .
+
+STAGE 2 INPUTS
+
+  --list-summaries "dir/sp_processName.list-summaries"
+
+  --job-prefix "dir/jp_"
+
+  Prefixes for *.output, *.error, *.completed and *.incomplete files.
+
+STAGE 2 OUTPUTS
+
+  File listing job files: "dir/jp_sp_processName.list-jobs"
+
+  Paths to job files: 
+    "dir/jp_sp_summaryName_1_groupA.lsf"
+    "dir/jp_sp_summaryName_1_groupB.lsf"
+    ...
+    "dir/jp_sp_summaryName_2_groupA.lsf"
+    "dir/jp_sp_summaryName_2_groupB.lsf"
+    ...
+    .
+    .
+    .
+
+STAGE 3 INPUTS
+
+  --list-jobs "dir/jp_sp_processName.list-jobs"
+
+
+
