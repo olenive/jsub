@@ -107,6 +107,10 @@ assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN} ${EXP
 assert "file_exists ${GENERATED_JOB_LIST}" "yes"
 assert "diff ${GENERATED_JOB_LIST} ${EXPECTED_JOB_LIST}" ""
 #21
+
+echo "##################################################"
+echo ""
+
 clear_generated # Remove existing output from previous tests
 ${CALL_JSUB} -s -p ${PROTOCOL_FILE} # Create summary files
 
@@ -127,6 +131,11 @@ assert "file_exists ${GENERATED_JOB_OUTPUT}" "yes"
 assert "file_exists ${GENERATED_JOB_ERROR}" "yes"
 assert "file_exists ${GENERATED_SUBMITTED_JOBS_LIST}" "yes"
 # 30
+
+echo "##################################################"
+echo ""
+
+
 clear_generated # Remove existing output from previous tests
 
 ## Start with a protocol and end by submitting job(s)
@@ -151,7 +160,12 @@ assert "file_exists ${GENERATED_SUBMITTED_JOBS_LIST}" "yes"
 assert "file_exists ${GENERATED_COMPLETED}" "yes"
 assert "diff ${GENERATED_COMPLETED} ${EXPECTED_COMPLETED}" ""
 
+echo "##################################################"
+echo ""
+
 ## end of test suite
 assert_end
+
+
 
 # EOF

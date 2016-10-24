@@ -229,7 +229,7 @@ include("./common_functions/jsub_common.jl")
   "-q", "--job-prefix"
     help = "Prefix to job file paths."
 
-  "-t", "--timestamp"
+  "-t", "--timestamp-files"
     action = :store_true
     help = "Add timestamps to summary and job files."
 
@@ -250,9 +250,9 @@ include("./common_functions/jsub_common.jl")
     action = :store_false
     help = "Do not call the bash function which does version control inside these jobs."
 
-  "-d", "--no-process-timestamp"
+  "-d", "--no-logging-timestamp"
     action = :store_false
-    help = "When this flag is not present, timestamps of the format \"YYYYMMDD_HHMMSS\" are added to the log file by job files running the process_job function."
+    help = "When this flag is not present, timestamps of the format \"YYYYMMDD_HHMMSS\" are not added to the log file by job files running the process_job function."
 
   "-k", "--keep-superfluous-quotes"
     action = :store_true
@@ -293,7 +293,7 @@ pathSubmissionFunctions = string(sourcePath, "/common_functions/job_submission_f
 
 ## Declare functions used to run the three stages of summary file generation (1), job file generation (2) and job submission (3).
 ## STAGE 1
-function run_stage1_(pathProtocol, pathVars, pathFvars; processName="", summaryPrefix="", pathSummariesList="", flagVerbose=false, adapt_quotation=true, delimiterFvars='\t', tagsExpand=Dict(), keepSuperfluousQuotes=false, timestamp1="")
+function run_stage1_(pathProtocol, pathVars, pathFvars; processName="", summaryPrefix="", pathSummariesList="", flagVerbose=false, adapt_quotation=true, delimiterFvars='\t', tagsExpand=Dict(), keepSuperfluousQuotes=false, timestampString="")
   flagVerbose && println("\n - STAGE 1: Generating summary files using data from files supplied to the --protocol, --vars and --fvars options.");
   
   ## Determine what names to use for output summary files
@@ -358,7 +358,7 @@ function run_stage1_(pathProtocol, pathVars, pathFvars; processName="", summaryP
     longName=processName, # Otherwise the string passed to longName will be used as the basis of the summary file name
     prefix=summaryPrefix,
     suffix=".summary",
-    timestamp=timestamp1    
+    timestamp=timestampString    
   );
   # Take an expanded protocol in the form of an array of arrays and produce a summary file for each entry
   outputSummaryPaths = create_summary_files_(arrArrExpFvars, summaryPaths; verbose=flagVerbose);
@@ -369,7 +369,7 @@ function run_stage1_(pathProtocol, pathVars, pathFvars; processName="", summaryP
 end
 
 ## STAGE 2
-function run_stage2_(pathSummariesList, pathJobsList; jobFilePrefix="", flagVerbose=false, tagsExpand=Dict(), checkpointsDict=Dict(), commonFunctions=Dict(), tagCheckpoint="jcheck_", doJsubVersionControl=true, processTimestamp=true, headerPrefix="#!/bin/bash", headerSuffix="")
+function run_stage2_(pathSummariesList, pathJobsList; jobFilePrefix="", flagVerbose=false, tagsExpand=Dict(), checkpointsDict=Dict(), commonFunctions=Dict(), tagCheckpoint="jcheck_", doJsubVersionControl=true, stringBoolFlagLoggingTimestamp=true, headerPrefix="#!/bin/bash", headerSuffix="", prefixOutputError="", timestampString="")
   flagVerbose && println("\n - STAGE 2: Using summary files to generate LSF job files.");
   summaryPaths2 = readdlm(pathSummariesList); # Read paths to summary files from list file
   summaryFilesData = map((x) -> file2arrayofarrays_(x, "#", cols=1, tagsExpand=tagsExpand), summaryPaths2 ); # Note: file2arrayofarrays_ returns a tuple of file contents (in an array) and line number indices (in an array)
@@ -381,24 +381,13 @@ function run_stage2_(pathSummariesList, pathJobsList; jobFilePrefix="", flagVerb
   flagVerbose && println("Splitting summary file contents into separate jobs...");
   summaryArrDicts = map((x) -> split_summary(x[1]; tagSplit=tagsExpand["tagSplit"]), summaryFilesData);
 
-  # flagVerbose && println("Getting job file names from summary file basenames...");
-  # arrJobIDs = map((x) -> basename(remove_suffix(x, ".summary")) , summaryPaths2);
-
-  ## Get job date
-  jobDate = parsed_args["timestamp"] ? get_timestamp_(nothing) : "";
-
-  ## Get prefix for *.error and *.output files (written by the LSF job)
-  prefixOutputError = get_argument(parsed_args, "prefix-lsf-out", verbose=flagVerbose, optional=true, default="");
-
+  ## The job file name and the job ID passed to lsf's bsub command are determined by the contents of the array arrJobIDs from which values are passed to the create_jobs_from_summary_ function.
   ## Get job ID and check that the list is unique
   jobIDTag = "#JSUB<job-id>";
   flagVerbose && println("Getting job ID prefixes from summary file lines starting with: ", jobIDTag);
   preArrJobIDs = map((x) -> get_taggedunique(x[1], jobIDTag), summaryFilesData );
   # Create an array of summary file basenames concatenated with a padded index
-  replaceWith = map((x, y) -> stick_together(
-      basename(remove_suffix(x, ".summary")), 
-      dec(y, length(dec(length(summaryPaths2)))),
-      "_"), 
+  replaceWith = map((x, y) -> stick_together(basename(remove_suffix(x, ".summary")), dec(y, length(dec(length(summaryPaths2)))), "_"), 
     summaryPaths2, collect(1:length(summaryPaths2))
   );
   flagDebug && (println("Replaceing blank jobID entries with the values from array replaceWith:"); println(replaceWith);)
@@ -412,8 +401,8 @@ function run_stage2_(pathSummariesList, pathJobsList; jobFilePrefix="", flagVerb
 
   ## Write job files
   arrDictFilePaths = map((summaryFilePath, dictSummaries, jobID) -> create_jobs_from_summary_(summaryFilePath, dictSummaries, commonFunctions, checkpointsDict; 
-      jobFilePrefix=jobFilePrefix, jobID=jobID, jobDate=jobDate,
-      doJsubVersionControl=doJsubVersionControl, processTimestamp=processTimestamp, headerPrefix=headerPrefix, headerSuffix=headerPrefix, verbose=flagVerbose, bsubOptions=bsubOptions, prefixOutputError=prefixOutputError
+      jobFilePrefix=jobFilePrefix, jobID=jobID, jobDate=timestampString,
+      doJsubVersionControl=doJsubVersionControl, stringBoolFlagLoggingTimestamp=stringBoolFlagLoggingTimestamp, headerPrefix=headerPrefix, headerSuffix=headerPrefix, verbose=flagVerbose, bsubOptions=bsubOptions, prefixOutputError=prefixOutputError
     ),
     summaryPaths2, summaryArrDicts, arrJobIDs,
   );
@@ -508,7 +497,7 @@ if requiredStages[1] == '1'
     pathSummariesList=get_argument(parsed_args, "list-summaries"; verbose=flagVerbose, optional=true, default=""), 
     keepSuperfluousQuotes=get_argument(parsed_args, "keep-superfluous-quotes", verbose=flagVerbose, optional=true, default=false),
     flagVerbose=flagVerbose, adapt_quotation=adapt_quotation, delimiterFvars=delimiterFvars, tagsExpand=tagsExpand, 
-    timestamp1=(parsed_args["timestamp"] ? get_timestamp_(nothing) : ""),
+    timestampString=( (get_argument(parsed_args, "timestamp-files", verbose=flagVerbose, optional=true, default=false) ? get_timestamp_(nothing) : "") ), # Get summary timestamp string,
   );
   flagDebug && println(" --- Completed STAGE 1.\n")
 elseif requiredStages[2] == '1'
@@ -523,8 +512,10 @@ if requiredStages[2] == '1'
     flagVerbose=flagVerbose, tagsExpand=tagsExpand, checkpointsDict=checkpointsDict, commonFunctions=commonFunctions, 
     jobFilePrefix=get_argument(parsed_args, "job-prefix", verbose=flagVerbose, optional=true, default=""),
     doJsubVersionControl=get_argument(parsed_args, "no-version-control"; verbose=flagVerbose, optional=true, default=true), 
-    processTimestamp=get_argument(parsed_args, "no-process-timestamp"; verbose=flagVerbose, optional=true, default=true),
+    stringBoolFlagLoggingTimestamp=( get_argument(parsed_args, "no-logging-timestamp"; verbose=flagVerbose, optional=true, default=true) ? "false" : "true" ), # Indicates if bash scripts should create a timestamp in the logging file, default is "true" (this is a string because it is written into a bash script)
     headerPrefix=get_argument(parsed_args, "common-header"; verbose=flagVerbose, optional=true, default="#!/bin/bash\nset -eu\n"),
+    prefixOutputError=get_argument(parsed_args, "prefix-lsf-out", verbose=flagVerbose, optional=true, default=""), # Get prefix for *.error and *.output files (written by the LSF job)
+    timestampString=(get_argument(parsed_args, "timestamp-files", verbose=flagVerbose, optional=true, default=false) ? get_timestamp_(nothing) : ""), # Get job timestamp string
   )
   flagDebug && println(" --- Completed STAGE 2.\n")
 elseif requiredStages[3] == '1'
@@ -536,7 +527,10 @@ if requiredStages[3] == '1'
   run_stage3_(
     pathExistingJobsList, 
     get_argument(parsed_args, "portable", verbose=flagVerbose, optional=true, default=""),
-    pathSubmissionScript, pathSubmissionFunctions; flagVerbose=flagVerbose, flagZip=parsed_args["zip-jobs"]
+    pathSubmissionScript, 
+    pathSubmissionFunctions;
+    flagVerbose=flagVerbose,
+    flagZip=get_argument(parsed_args, "zip-jobs"; verbose=flagVerbose, optional=true, default=false),
   )
   flagDebug && println(" --- Completed STAGE 3.\n")
 end

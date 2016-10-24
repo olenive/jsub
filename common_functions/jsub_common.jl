@@ -1205,7 +1205,7 @@ end
 # Use file2arrayofarrays_(x, "#", cols=1) to read summary file
 function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summaryFileOfOrigin="", root="root", tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", 
     headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=(remove_suffix(basename(outFilePath), ".lsf")), jobDate="", appendOptions=true, rootSleepSeconds=nothing, verbose=false, doJsubVersionControl=true, 
-    processTimestamp="true", tagSplit="#JGROUP",
+    stringBoolFlagLoggingTimestamp="true", tagSplit="#JGROUP",
     pathLogFile=(remove_suffix(outFilePath, ".lsf") * ".log"),
     prefixOutputError="", jobFileSuffix=".lsf",
     #jobFilePrefix="", 
@@ -1247,7 +1247,7 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summ
     write(stream, string("\nJSUB_SUMMARY_COMPLETED=\"", prefixCompleted, groupAsParent, suffixCompleted, "\""));
     write(stream, string("\nJSUB_SUMMARY_INCOMPLETE=\"", prefixIncomplete, groupAsParent, suffixIncomplete, "\""));
     write(stream, string("\nJSUB_VERSION_CONTROL=", doJsubVersionControl));
-    write(stream, string("\nJSUB_JOB_TIMESTAMP=", processTimestamp));
+    write(stream, string("\nJSUB_JOB_TIMESTAMP=", stringBoolFlagLoggingTimestamp));
     # Append common functions
     write(stream, "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n");
     for key in sort(collect(keys(functionsDictionary)))
@@ -1274,7 +1274,7 @@ end
 ## Create all the job files associated with a particular summary file (Note that using the option filePathOverride means input to the jobFilePrefix and jobFileSuffix options will be ignored)
 function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonFunctions::Dict, checkpointsDict::Dict; jobFilePrefix="", filePathOverride=nothing, root="root", jobFileSuffix=".lsf",
     tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagHeader="\n#BSUB", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n", headerSuffix="", summaryFile="", 
-    jobID=nothing, jobDate="", appendOptions=true, rootSleepSeconds=nothing, verbose=false, bsubOptions=["-J"], doJsubVersionControl=true, processTimestamp="true",
+    jobID=nothing, jobDate="", appendOptions=true, rootSleepSeconds=nothing, verbose=false, bsubOptions=["-J"], doJsubVersionControl=true, stringBoolFlagLoggingTimestamp="true",
     prefixOutputError="", prefixLogFile=jobFilePrefix,
     pathLogFile=string(prefixLogFile, basename(remove_suffix(summaryFilePath, ".summary") * ".log")),
     ## The following options are used to set the prefix and suffix (group name goes in between) of files listing completed and incomplete steps of the job.  Jobs that depend on parent jobs to run will check the completed file to determine if the parent job finished successfully
@@ -1323,7 +1323,7 @@ function create_jobs_from_summary_(summaryFilePath, dictSummaries::Dict, commonF
 
     create_job_file_(outFilePath, jobArray, dictCheckpoints; summaryFileOfOrigin=summaryFilePath, root=thisRoot,
       tagBegin=tagBegin, tagFinish=tagFinish, tagHeader=tagHeader, tagCheckpoint=tagCheckpoint, headerPrefix=headerPrefix, headerSuffix=headerSuffix, summaryFile=summaryFile, 
-      jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds, verbose=verbose, doJsubVersionControl=doJsubVersionControl, processTimestamp=processTimestamp,
+      jobID=jobID, jobDate=jobDate, appendOptions=appendOptions, rootSleepSeconds=rootSleepSeconds, verbose=verbose, doJsubVersionControl=doJsubVersionControl, stringBoolFlagLoggingTimestamp=stringBoolFlagLoggingTimestamp,
       prefixOutputError=prefixOutputError, pathLogFile=pathLogFile,
       prefixCompleted=prefixCompleted,
       suffixCompleted=suffixCompleted,
