@@ -1,0 +1,37 @@
+Running trivial.sh
+called version_control
+called version_control
+called version_control
+
+------------------------------------------------------------
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/bash
+set -eu
+
+#BSUB -J basic_1_1
+#BSUB -e basic_1_1.error
+#BSUB -o basic_1_1.output
+
+(... more ...)
+------------------------------------------------------------
+
+Successfully completed.
+
+Resource usage summary:
+
+    CPU time :                                   0.06 sec.
+    Total Requested Memory :                     -
+    Delta Memory :                               -
+
+The output (if any) is above this job summary.
+
+
+
+PS:
+
+Read file <basic_1_1.error> for stderr output of this job.
+

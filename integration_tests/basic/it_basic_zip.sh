@@ -84,7 +84,7 @@ echo "${CALL_JSUB} -j -u ${GENERATED_SUMMARY_LIST} $(getCommonHeaderOptionString
 ${CALL_JSUB} -j -u ${GENERATED_SUMMARY_LIST} $(getCommonHeaderOptionString "$JOB_HEADER")
 # Check that a job file is generated from the summary file
 assert "file_exists ${GENERATED_JOB_IN}" "yes"
-assert "compare_contents ${GENERATED_JOB_IN} ${EXPECTED_JOB_IN} -I '^# --- From file:' -I '^#BSUB -P' -I '^JSUB_PATH_TO_THIS_JOB=' " "" # Ignore the line that contain absolute paths or the job header prefix -P option.
+assert "compare_contents ${GENERATED_JOB_IN} ${EXPECTED_JOB_IN} -I '^# --- From file:*' -I '^#BSUB -P*' -I '^#BSUB -q*' -I '^JSUB_PATH_TO_THIS_JOB=*' " "" # Ignore the line that contain absolute paths or the job header prefix -P option.
 assert "file_exists ${GENERATED_JOB_LIST}" "yes"
 assert "compare_contents ${GENERATED_JOB_LIST} ${EXPECTED_JOB_LIST}" ""
 echo ""
