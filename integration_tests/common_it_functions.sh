@@ -35,9 +35,9 @@ function getCommonHeaderOptionString {
   if [ "$1" == "" ]; then
     echo ""
   elif [ $(isAbsolutePath "$1") == "relative" ]; then
-    echo " -c ../""$1"
+    echo " --header-from-file ../""$1"
   else
-    echo " -c ""$1"
+    echo " --header-from-file ""$1"
   fi
 }
 function forcePathAbsolute {

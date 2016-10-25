@@ -243,8 +243,8 @@ include("./common_functions/jsub_common.jl")
   "-c", "--common-header"
     help = "String to be included at the start of every job file.  Default value is \"#!/bin/bash\nset -eu\n\"."
 
-  # "-l", "--common-lsf-options"
-  #   help = "Path to a file containing text to be included in every job file header.  This is intended to be used for common lsf options"
+  "-l", "--header-from-file"
+    help = "Path to a file containing text to be included in every job file header.  This is included after any string specified in the --common-header option."
 
   "-y", "--no-version-control"
     action = :store_false
@@ -285,8 +285,6 @@ flagVerbose && print("\n\n")
 pathSubmissionScript = string(sourcePath, "/common_functions/submit_lsf_jobs.sh");
 pathSubmissionFunctions = string(sourcePath, "/common_functions/job_submission_functions.sh");
 
-# String from file to be added to the header of every job file
-# pathCommonHeader = get_argument(parsed_args, "common-lsf-options"; verbose=flagVerbose, optional=true, default=nothing);
 
 ## TODO: Check input file format
 # Check that pathFvars contains 3 delmiterFvars separated columns
@@ -402,7 +400,7 @@ function run_stage2_(pathSummariesList, pathJobsList; jobFilePrefix="", flagVerb
   ## Write job files
   arrDictFilePaths = map((summaryFilePath, dictSummaries, jobID) -> create_jobs_from_summary_(summaryFilePath, dictSummaries, commonFunctions, checkpointsDict; 
       jobFilePrefix=jobFilePrefix, jobID=jobID, jobDate=timestampString,
-      doJsubVersionControl=doJsubVersionControl, stringBoolFlagLoggingTimestamp=stringBoolFlagLoggingTimestamp, headerPrefix=headerPrefix, headerSuffix=headerPrefix, verbose=flagVerbose, bsubOptions=bsubOptions, prefixOutputError=prefixOutputError
+      doJsubVersionControl=doJsubVersionControl, stringBoolFlagLoggingTimestamp=stringBoolFlagLoggingTimestamp, headerPrefix=headerPrefix, headerSuffix=headerSuffix, verbose=flagVerbose, bsubOptions=bsubOptions, prefixOutputError=prefixOutputError
     ),
     summaryPaths2, summaryArrDicts, arrJobIDs,
   );
@@ -505,6 +503,7 @@ elseif requiredStages[2] == '1'
   pathExistingSummariesList = get_argument(parsed_args, "list-summaries"; verbose=flagVerbose, optional=(requiredStages[2] != '1'), default=""); # Optional if jobs are not being generated from summaries
 end
 if requiredStages[2] == '1'
+  pathCommonHeader = get_argument(parsed_args, "header-from-file"; verbose=flagVerbose, optional=true, default="");
   flagDebug && println(" --- Starting STAGE 2.\n")
   pathExistingJobsList = run_stage2_(
     pathExistingSummariesList, 
@@ -516,6 +515,7 @@ if requiredStages[2] == '1'
     headerPrefix=get_argument(parsed_args, "common-header"; verbose=flagVerbose, optional=true, default="#!/bin/bash\nset -eu\n"),
     prefixOutputError=get_argument(parsed_args, "prefix-lsf-out", verbose=flagVerbose, optional=true, default=""), # Get prefix for *.error and *.output files (written by the LSF job)
     timestampString=(get_argument(parsed_args, "timestamp-files", verbose=flagVerbose, optional=true, default=false) ? get_timestamp_(nothing) : ""), # Get job timestamp string
+    headerSuffix=(pathCommonHeader == "" ? "" : readall(pathCommonHeader)), # String from file to be added to the header (after common-header string) of every job file
   )
   flagDebug && println(" --- Completed STAGE 2.\n")
 elseif requiredStages[3] == '1'
