@@ -497,19 +497,20 @@ if requiredStages[1] == '1'
     flagVerbose=flagVerbose, adapt_quotation=adapt_quotation, delimiterFvars=delimiterFvars, tagsExpand=tagsExpand, 
     timestampString=( (get_argument(parsed_args, "timestamp-files", verbose=flagVerbose, optional=true, default=false) ? get_timestamp_(nothing) : "") ), # Get summary timestamp string,
   );
-  flagDebug && println(" --- Completed STAGE 1.\n")
+  flagDebug && println(" --- Completed STAGE 1.  Produced summary list file: $pathExistingSummariesList\n")
 elseif requiredStages[2] == '1'
   flagDebug && println("Not running stage 1, so the path to *.list-summaries has to come from an argument.")
   pathExistingSummariesList = get_argument(parsed_args, "list-summaries"; verbose=flagVerbose, optional=(requiredStages[2] != '1'), default=""); # Optional if jobs are not being generated from summaries
 end
 if requiredStages[2] == '1'
   pathCommonHeader = get_argument(parsed_args, "header-from-file"; verbose=flagVerbose, optional=true, default="");
+  inputJobsPrefix = get_argument(parsed_args, "job-prefix", verbose=flagVerbose, optional=true, default="")
   flagDebug && println(" --- Starting STAGE 2.\n")
   pathExistingJobsList = run_stage2_(
     pathExistingSummariesList, 
-    string(get_argument(parsed_args, "job-prefix", verbose=flagVerbose, optional=true, default=""), ".list-jobs");
+    string(stick_together(inputJobsPrefix, basename(remove_suffix(pathExistingSummariesList, ".list-summaries")), "_"), ".list-jobs"); # Determine path to the *.list-jobs file
     flagVerbose=flagVerbose, tagsExpand=tagsExpand, checkpointsDict=checkpointsDict, commonFunctions=commonFunctions, 
-    jobFilePrefix=get_argument(parsed_args, "job-prefix", verbose=flagVerbose, optional=true, default=""),
+    jobFilePrefix=inputJobsPrefix,
     doJsubVersionControl=get_argument(parsed_args, "no-version-control"; verbose=flagVerbose, optional=true, default=true), 
     stringBoolFlagLoggingTimestamp=( get_argument(parsed_args, "no-logging-timestamp"; verbose=flagVerbose, optional=true, default=true) ? "false" : "true" ), # Indicates if bash scripts should create a timestamp in the logging file, default is "true" (this is a string because it is written into a bash script)
     headerPrefix=get_argument(parsed_args, "common-header"; verbose=flagVerbose, optional=true, default="#!/bin/bash\nset -eu\n"),
@@ -517,7 +518,7 @@ if requiredStages[2] == '1'
     timestampString=(get_argument(parsed_args, "timestamp-files", verbose=flagVerbose, optional=true, default=false) ? get_timestamp_(nothing) : ""), # Get job timestamp string
     headerSuffix=(pathCommonHeader == "" ? "" : readall(pathCommonHeader)), # String from file to be added to the header (after common-header string) of every job file
   )
-  flagDebug && println(" --- Completed STAGE 2.\n")
+  flagDebug && println(" --- Completed STAGE 2. Produced jobs list file: $pathExistingJobsList\n")
 elseif requiredStages[3] == '1'
   flagDebug && println("Not running stage 2, so the path to *.list-jobs has to come from an argument.")
   pathExistingJobsList = get_argument(parsed_args, "list-jobs"; verbose=flagVerbose, optional=(requiredStages[3] != '1'), default=""); # Optional if jobs are not being submitted
