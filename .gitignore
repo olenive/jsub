@@ -11,3 +11,5 @@ TEST
 TRASH
 commit_notes.txt
 unit_tests/bash_functions/bash_function_test_files/test_outputs
+integration_tests/grep_for_private_info.sh
+

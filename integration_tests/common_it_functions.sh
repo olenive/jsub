@@ -49,3 +49,11 @@ function forcePathAbsolute {
     echo "$1"
   fi
 }
+function compare_contents { # Calls diff but if one of the input files does not exit returns an error string
+  if ! [ -f "$1" ] || ! [ -f "$2" ] ; then
+    ! [ -f "$1" ] && echo "Failed contents comparison due to missing file: $1"
+    ! [ -f "$2" ] && echo "Failed contents comparison due to missing file: $2"
+  else # pass remaining arguments as options to diff
+    diff "$1" "$2" "${@:3}"
+  fi
+}
