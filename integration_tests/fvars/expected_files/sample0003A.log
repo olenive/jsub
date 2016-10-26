@@ -1,0 +1,4 @@
+20161026_113607 sample0003A_3 completed - # Basic integration test protocol involving only a call to a bash script that writes a single line to a text file.
+20161026_113607 sample0003A_3 completed - #JSUB<summary-name> sample0003A
+20161026_113607 sample0003A_3 completed - bash ../../bash_scripts/trivial.sh sample0003A".txt"
+20161026_113607 sample0003A_3 completed - 

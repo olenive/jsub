@@ -119,6 +119,7 @@ else
   echo "  GENERATED_JOB_IN = "${GENERATED_JOB_IN}
 fi
 bash submit_lsf_jobs.sh ${GENERATED_JOB_LIST}
+bjobs
 awaitJobNameCompletion "$LSF_JOB_NAME"
 sleep 2 # To let the system catch up with the job output being created
 assert "file_exists ${GENERATED_JOB_DATA}" "yes"

@@ -15,8 +15,8 @@ EXPECTED_JOB_IN="../expected_files/${LSF_JOB_NAME}.lsf"
 EXPECTED_JOB_LIST="../expected_files/basic.list-jobs"
 EXPECTED_JOB_DATA="../expected_files/it1_basic.txt"
 EXPECTED_COMPLETED="../expected_files/basic_1.completed"
-EXPECTED_PROTABLE_DIR="../expected_files/portable"
-EXPECTED_PORTABLE_ZIP="$EXPECTED_PROTABLE_DIR".tar.gz
+EXPECTED_PORTABLE_DIR="../expected_files/portable"
+EXPECTED_PORTABLE_ZIP="$EXPECTED_PORTABLE_DIR".tar.gz
 
 GENERATED_DIR="generated_files_zip"
 GENERATED_SUMMARY="basic_1.summary"
@@ -29,8 +29,8 @@ GENERATED_JOB_ERROR="${LSF_JOB_NAME}.output"
 GENERATED_SUBMITTED_JOBS_LIST="basic.list-jobs.submitted"
 GENERATED_COMPLETED="${LSF_JOB_NAME}.completed"
 GENERATED_INCOMPLETE="${LSF_JOB_NAME}.incomplete"
-GENERATED_PROTABLE_DIR="portable"
-GENERATED_PORTABLE_ZIP="$GENERATED_PROTABLE_DIR".tar.gz
+GENERATED_PORTABLE_DIR="portable"
+GENERATED_PORTABLE_ZIP="$GENERATED_PORTABLE_DIR".tar.gz
 
 CALL_JSUB="julia ../../../jsub.jl -d -v "
 
@@ -54,12 +54,8 @@ function clear_generated {
   rm -f ${GENERATED_SUBMITTED_JOBS_LIST}
   rm -f ${GENERATED_COMPLETED}
   rm -f ${GENERATED_INCOMPLETE}
-  rm -fr ${GENERATED_PROTABLE_DIR}
+  rm -fr ${GENERATED_PORTABLE_DIR}
   rm -fr ${GENERATED_PORTABLE_ZIP}
-}
-function isAbsolutePath {
-  local DIR="$1"
-  [[ ${DIR:0:1} == '/' ]] && echo "absolute" || echo "relative"
 }
 #################
 
@@ -93,12 +89,12 @@ echo "##################################################"
 echo ""
 # Run jsub - stage 3 but instead of submitting copy jobs to a directory and zip it
 rm -fr ${GENERATED_PORTABLE_ZIP}
-${CALL_JSUB} -b -z -a ${GENERATED_PROTABLE_DIR} -o ${GENERATED_JOB_LIST}
+${CALL_JSUB} -b -z -a ${GENERATED_PORTABLE_DIR} -o ${GENERATED_JOB_LIST}
 awaitJobNameCompletion "$LSF_JOB_NAME"
-assert "file_exists ${GENERATED_PROTABLE_DIR}/${GENERATED_JOB_IN}" "yes"
-assert "file_exists ${GENERATED_PROTABLE_DIR}/${GENERATED_JOB_LIST}" "yes"
-assert "file_exists ${GENERATED_PROTABLE_DIR}/submit_lsf_jobs.sh" "yes"
-assert "file_exists ${GENERATED_PROTABLE_DIR}/job_submission_functions.sh" "yes"
+assert "file_exists ${GENERATED_PORTABLE_DIR}/${GENERATED_JOB_IN}" "yes"
+assert "file_exists ${GENERATED_PORTABLE_DIR}/${GENERATED_JOB_LIST}" "yes"
+assert "file_exists ${GENERATED_PORTABLE_DIR}/submit_lsf_jobs.sh" "yes"
+assert "file_exists ${GENERATED_PORTABLE_DIR}/job_submission_functions.sh" "yes"
 assert "file_exists ${GENERATED_PORTABLE_ZIP}" "yes"
 echo ""
 echo "##################################################"

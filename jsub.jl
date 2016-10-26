@@ -307,7 +307,7 @@ function run_stage1_(pathProtocol, pathVars, pathFvars; processName="", summaryP
     stringFvars = remove_suffix(basename(pathFvars), ".fvars");
     processName = stick_together(stick_together(stringProtocol, stringVars, "_"), stringFvars, "_");
   end
-  flagVerbose && println("Using \"$processName\" as the recurring name.");
+  flagDebug && println("Using \"$processName\" as the default recurring name but this may be overwritten by specific inputs or tags in the summary files.");
 
   ## Get path to summaries list file
   if pathSummariesList == ""
