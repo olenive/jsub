@@ -15,21 +15,22 @@ LONG_NAME="jgroupP_jgroupV_jgroupFV"
 SUMMARY_PREFIX="summaries/summaryPrefix_"
 SUMMARY_BASE_PREFIX=$(basename $SUMMARY_PREFIX)
 LSF_OUTPUT_PREFIX="lsf_output/lsf_"
+DIR_EXPECTED_FILES="../expected_files/"
 
 declare -a SAMPELS=("sample0001A" "sample0002A" "sample0003A" "sample0004A" "sample0005A" "sample0006A" "sample0007A" "sample0008A" "sample0009A" "sample0010A" "sample0011A")
 JOBID_PREFIX="jgroupP_jgroupV_jgroupFV_"
 declare -a JOBIDS=("$JOBID_PREFIX""01" "$JOBID_PREFIX""02" "$JOBID_PREFIX""03" "$JOBID_PREFIX""04" "$JOBID_PREFIX""05" "$JOBID_PREFIX""06" "$JOBID_PREFIX""07" "$JOBID_PREFIX""08" "$JOBID_PREFIX""09" "$JOBID_PREFIX""10" "$JOBID_PREFIX""11")
 declare -a JGROUPS=("root" "first" "second" "third" "last")
 
-EXPECTED_SUMMARY_LIST="../expected_files/""$SUMMARY_BASE_PREFIX""$LONG_NAME"".list-summaries"
-EXPECTED_JOB_LIST="../expected/""$LONG_NAME"".list-jobs"
-EXPECTED_JOB_DATA="../expected_files/it1_fvars.txt"
-
 JOB_PREFIX="jobs/jobPrefix_"
 OUT_PREFIX="results/outPrefix_"
 GENERATED_SUMMARY_LIST="$SUMMARY_PREFIX""$LONG_NAME"".list-summaries"
 GENERATED_JOB_LIST="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""$LONG_NAME"".list-jobs"
 GENERATED_SUBMITTED_JOBS_LIST="$GENERATED_JOB_LIST".submitted
+
+EXPECTED_SUMMARY_LIST=${DIR_EXPECTED_FILES}/${GENERATED_SUMMARY_LIST}
+EXPECTED_JOB_LIST=${DIR_EXPECTED_FILES}/${GENERATED_JOB_LIST}
+EXPECTED_JOB_DATA=${DIR_EXPECTED_FILES}/"it1_fvars.txt"
 
 LSF_JOB_NAME_01="summaryPrefix_sample0001A"
 LSF_JOB_NAME_02="summaryPrefix_sample0002A"

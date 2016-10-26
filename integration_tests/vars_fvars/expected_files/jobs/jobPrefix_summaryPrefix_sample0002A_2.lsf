@@ -1,23 +1,25 @@
 #!/bin/bash
-set -e
+set -eu
 
-#BSUB -J sample0003A
-#BSUB -e sample0003A.error
-#BSUB -o sample0003A.output
+#BSUB -J summaryPrefix_sample0002A_2
+#BSUB -e summaryPrefix_sample0002A_2.error
+#BSUB -o summaryPrefix_sample0002A_2.output
+#BSUB -P grant-code
+#BSUB -q short
 
 
 # Job file variables:
-JSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>
-JSUB_JOB_ID="sample0003A"
-JSUB_LOG_FILE="sample0003A.log"
-JSUB_SUMMARY_COMPLETED="sample0003A.summary.completed"
-JSUB_SUMMARY_INCOMPLETE="sample0003A.summary.incomplete"
+JSUB_PATH_TO_THIS_JOB="jsub/integration_tests/fvars/generated_files/jobs/jobPrefix_summaryPrefix_sample0001A_1.lsf"
+JSUB_JOB_ID="summaryPrefix_sample0002A_2"
+JSUB_LOG_FILE="jobs/jobPrefix_summaryPrefix_sample0002A.log"
+JSUB_SUMMARY_COMPLETED="jobs/jobPrefix_summaryPrefix_sample0002A_2.completed"
+JSUB_SUMMARY_INCOMPLETE="jobs/jobPrefix_summaryPrefix_sample0002A_2.incomplete"
 JSUB_VERSION_CONTROL=true
-JSUB_JOB_TIMESTAMP=false
+JSUB_JOB_TIMESTAMP=true
 
 # Contents inserted from other files (this section is intended to be used only for functions):
 
-# --- From file: /Users/olenive/work/jsub_pipeliner/common_functions/job_processing.sh
+# --- From file: jsub/common_functions/job_processing.sh
 ## job_processing parses the job file, writes to log and summary files, and calls version control functions.
 # Function allowing job script termination
 trap "exit 1" TERM
@@ -30,11 +32,11 @@ function kill_this_job {
 JSUB_BEGIN_JOB_TAG="#JSUB<begin-job>"
 JSUB_CHECKPOINT_TAG="jcheck_"
 JSUB_FINISH_JOB_TAG="#JSUB<finish-job>"
+JSUB_SUCCESSFUL_COMPLETION="#JSUB Successfully ran job on:"
 # Job processing variables
 JSUB_PREVIOUS_END=0
 JSUB_FLAG_FAIL=false
-# Writes to log and summray (completed and incomplete) files
-function process_job {
+function process_job { # This function reads the job file line by line and writes to log and summray (completed and incomplete) files.
   local dateTime=""
   [[ ${JSUB_JOB_TIMESTAMP} = true ]] && dateTime=`date +%Y%m%d_%H%M%S`
   rm -f ${JSUB_SUMMARY_INCOMPLETE} # Clean out the summary.incomplete file so that it is ready to accept a new text from the start
@@ -79,22 +81,34 @@ function process_job {
       fi
     fi
   done < ${JSUB_PATH_TO_THIS_JOB}
-  [ ${JSUB_FLAG_FAIL} = true ] && kill_this_job ${JSUB_PATH_TO_THIS_JOB} # Kill the job if a checkpoint fail occured (but let this function do logging etc first)
+  [[ ${JSUB_FLAG_FAIL} = true ]] && kill_this_job ${JSUB_PATH_TO_THIS_JOB} # Kill the job if a checkpoint fail occured (but let this function do logging etc first)
   return 0
 }
+function check_completion { # Check that the input file ends a string indicating successful job completion
+  [[ ${JSUB_JOB_TIMESTAMP} = true ]] && local dateTime=`date +%Y%m%d_%H%M%S` || local dateTime=""
+  if [[ $(tail -n1 "$1") != "$JSUB_SUCCESSFUL_COMPLETION"* ]]; then 
+    echo "$dateTime ""$JSUB_JOB_ID"" Terminating job due to lack of line indicating successful parent job completion at the end of the file: ""$1"""
+    kill_this_job ${JSUB_PATH_TO_THIS_JOB} 
+  fi
+}
+function on_completion { # Writes a line indicating successful job completing to the .incomplete file.  This line is then used to determine if jobs which depend on this one should be run.
+  [[ ${JSUB_JOB_TIMESTAMP} = true ]] && local dateTime=`date +%Y%m%d_%H%M%S` || local dateTime=""
+  [[ ${JSUB_FLAG_FAIL} == false ]] && echo ${JSUB_SUCCESSFUL_COMPLETION}" "${dateTime} >> ${JSUB_SUMMARY_COMPLETED}
+}
 
-# --- From file: /Users/olenive/work/jsub_pipeliner/common_functions/version_control.sh
+# --- From file: jsub/common_functions/version_control.sh
 # Function used to try to keep track of the versions of arbitrary software on the system by checking the which command and checking for the existance of git repositories.
 function version_control {
   echo "called version_control"
 }
 
-# Commands taken from summary file: sample0003A.summary
+# Commands taken from summary file: summaries/summaryPrefix_sample0002A.summary
 
 #JSUB<begin-job>
 # Basic integration test protocol involving only a call to a bash script that writes a single line to a text file.
-#JSUB<summary-name> sample0003A
-bash ../../bash_scripts/trivial.sh ""sample0003A".txt"
+#JSUB<summary-name> sample0002A
+bash ../../bash_scripts/trivial.sh "outPrefix_"sample0002A".txt"
 
 #JSUB<finish-job>
 process_job
+on_completion
