@@ -311,7 +311,7 @@ function run_stage1_(pathProtocol, pathVars, pathFvars; processName="", summaryP
 
   ## Get path to summaries list file
   if pathSummariesList == ""
-    pathSummariesList = string(stick_together(summaryPrefix, processName, "_"), ".list-summaries");
+    pathSummariesList = string(summaryPrefix, processName, ".list-summaries");
   end
 
   ## Read protocol, vars and fvars files and expand variables
@@ -508,7 +508,7 @@ if requiredStages[2] == '1'
   flagDebug && println(" --- Starting STAGE 2.\n")
   pathExistingJobsList = run_stage2_(
     pathExistingSummariesList, 
-    string(stick_together(inputJobsPrefix, basename(remove_suffix(pathExistingSummariesList, ".list-summaries")), "_"), ".list-jobs"); # Determine path to the *.list-jobs file
+    string(inputJobsPrefix, basename(remove_suffix(pathExistingSummariesList, ".list-summaries")), ".list-jobs"); # Determine path to the *.list-jobs file
     flagVerbose=flagVerbose, tagsExpand=tagsExpand, checkpointsDict=checkpointsDict, commonFunctions=commonFunctions, 
     jobFilePrefix=inputJobsPrefix,
     doJsubVersionControl=get_argument(parsed_args, "no-version-control"; verbose=flagVerbose, optional=true, default=true), 

@@ -10,56 +10,73 @@ PROTOCOL_DIR="../../"
 PROTOCOL_FILE="$PROTOCOL_DIR"/"fvars_prefixes.protocol"
 VARS_FILE=""
 FVARS_FILE="$PROTOCOL_DIR"/"fvars_prefixes.fvars"
-LONG_NAME="fvars_prefixes__fvars_prefixes"
-
-EXPECTED_SUMMARY_01="../expected_files/sample0001A.summary"
-EXPECTED_SUMMARY_02="../expected_files/sample0002A.summary"
-EXPECTED_SUMMARY_03="../expected_files/sample0003A.summary"
-EXPECTED_SUMMARY_LIST="../expected_files/""$LONG_NAME"".list-summaries"
-EXPECTED_JOB_IN_01="../expected_files/fvars_prefixes__fvars_prefixes_1.lsf"
-EXPECTED_JOB_IN_02="../expected_files/fvars_prefixes__fvars_prefixes_2.lsf"
-EXPECTED_JOB_IN_03="../expected_files/fvars_prefixes__fvars_prefixes_3.lsf"
-EXPECTED_JOB_LIST="../expected/""$LONG_NAME"".list-jobs"
-EXPECTED_JOB_DATA="../expected_files/it1_fvars.txt"
-EXPECTED_COMPLETED_01="../expected_files/sample001A.summary.completed"
-EXPECTED_COMPLETED_02="../expected_files/sample002A.summary.completed"
-EXPECTED_COMPLETED_03="../expected_files/sample003A.summary.completed"
+LONG_NAME="fvars_prefixes_fvars_prefixes"
+DIR_EXPECTED_FILES="../../expected_files/prefixes"
 
 GENERATED_DIR="generated_files/prefixes/"
 SUMMARY_PREFIX="summaries/summaryPrefix_"
 SUMMARY_BASE_PREFIX=$(basename $SUMMARY_PREFIX)
 JOB_PREFIX="jobs/jobPrefix_"
+
 GENERATED_SUMMARY_01="$SUMMARY_PREFIX""sample0001A.summary"
 GENERATED_SUMMARY_02="$SUMMARY_PREFIX""sample0002A.summary"
 GENERATED_SUMMARY_03="$SUMMARY_PREFIX""sample0003A.summary"
 GENERATED_SUMMARY_LIST="$SUMMARY_PREFIX""$LONG_NAME"".list-summaries"
-GENERATED_JOB_IN_01="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""fvars_prefixes__fvars_prefixes_1.lsf"
-GENERATED_JOB_IN_02="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""fvars_prefixes__fvars_prefixes_2.lsf"
-GENERATED_JOB_IN_03="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""fvars_prefixes__fvars_prefixes_3.lsf"
+GENERATED_JOB_IN_01="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""sample0001A_1.lsf"
+GENERATED_JOB_IN_02="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""sample0002A_2.lsf"
+GENERATED_JOB_IN_03="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""sample0003A_3.lsf"
 GENERATED_JOB_LIST="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""$LONG_NAME"".list-jobs"
 GENERATED_JOB_DATA_01="sample0001A.txt"
 GENERATED_JOB_DATA_02="sample0002A.txt"
 GENERATED_JOB_DATA_03="sample0003A.txt"
-GENERATED_JOB_OUTPUT_01="$SUMMARY_BASE_PREFIX""fvars_prefixes__fvars_prefixes_1.error"
-GENERATED_JOB_OUTPUT_02="$SUMMARY_BASE_PREFIX""fvars_prefixes__fvars_prefixes_2.error"
-GENERATED_JOB_OUTPUT_03="$SUMMARY_BASE_PREFIX""fvars_prefixes__fvars_prefixes_3.error"
-GENERATED_JOB_ERROR_01="$SUMMARY_BASE_PREFIX""fvars_prefixes__fvars_prefixes_1.output"
-GENERATED_JOB_ERROR_02="$SUMMARY_BASE_PREFIX""fvars_prefixes__fvars_prefixes_2.output"
-GENERATED_JOB_ERROR_03="$SUMMARY_BASE_PREFIX""fvars_prefixes__fvars_prefixes_3.output"
-GENERATED_JOB_LOG_01="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""fvars_prefixes__fvars_prefixes_1.log"
-GENERATED_JOB_LOG_02="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""fvars_prefixes__fvars_prefixes_2.log"
-GENERATED_JOB_LOG_03="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""sample0003A.log"
-GENERATED_SUBMITTED_JOBS_LIST="$GENERATED_JOB_LIST".submitted
-GENERATED_COMPLETED_01="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""fvars_prefixes__fvars_prefixes_1.summary.completed"
-GENERATED_COMPLETED_02="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""fvars_prefixes__fvars_prefixes_2.summary.completed"
-GENERATED_COMPLETED_03="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""fvars_prefixes__fvars_prefixes_3.summary.completed"
-GENERATED_INCOMPLETE_01="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""fvars_prefixes__fvars_prefixes_1.summary.incomplete"
-GENERATED_INCOMPLETE_02="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""fvars_prefixes__fvars_prefixes_2.summary.incomplete"
-GENERATED_INCOMPLETE_03="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""fvars_prefixes__fvars_prefixes_3.summary.incomplete"
+GENERATED_JOB_OUTPUT_01="$SUMMARY_BASE_PREFIX""sample0001A_1.error"
+GENERATED_JOB_OUTPUT_02="$SUMMARY_BASE_PREFIX""sample0002A_2.error"
+GENERATED_JOB_OUTPUT_03="$SUMMARY_BASE_PREFIX""sample0003A_3.error"
+GENERATED_JOB_ERROR_01="$SUMMARY_BASE_PREFIX""sample0001A_1.output"
+GENERATED_JOB_ERROR_02="$SUMMARY_BASE_PREFIX""sample0002A_2.output"
+GENERATED_JOB_ERROR_03="$SUMMARY_BASE_PREFIX""sample0003A_3.output"
+GENERATED_JOB_LOG_01="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""sample0001A_1.log"
+GENERATED_JOB_LOG_02="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""sample0002A_2.log"
+GENERATED_JOB_LOG_03="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""sample0003A_3.log"
+GENERATED_SUBMITTED_JOBS_LIST="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""$LONG_NAME"".list-jobs.submitted"
+GENERATED_COMPLETED_01="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""sample0001A_1.summary.completed"
+GENERATED_COMPLETED_02="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""sample0002A_2.summary.completed"
+GENERATED_COMPLETED_03="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""sample0003A_3.summary.completed"
+GENERATED_INCOMPLETE_01="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""sample0001A_1.summary.incomplete"
+GENERATED_INCOMPLETE_02="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""sample0002A_2.summary.incomplete"
+GENERATED_INCOMPLETE_03="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""sample0003A_3.summary.incomplete"
 
-LSF_JOB_NAME_01="fvars_prefixes__fvars_prefixes_1"
-LSF_JOB_NAME_02="fvars_prefixes__fvars_prefixes_2"
-LSF_JOB_NAME_03="fvars_prefixes__fvars_prefixes_3"
+EXPECTED_SUMMARY_01=${DIR_EXPECTED_FILES}/${GENERATED_SUMMARY_01}
+EXPECTED_SUMMARY_02=${DIR_EXPECTED_FILES}/${GENERATED_SUMMARY_02}
+EXPECTED_SUMMARY_03=${DIR_EXPECTED_FILES}/${GENERATED_SUMMARY_03}
+EXPECTED_SUMMARY_LIST=${DIR_EXPECTED_FILES}/${GENERATED_SUMMARY_LIST}
+EXPECTED_JOB_IN_01=${DIR_EXPECTED_FILES}/${GENERATED_JOB_IN_01}
+EXPECTED_JOB_IN_02=${DIR_EXPECTED_FILES}/${GENERATED_JOB_IN_02}
+EXPECTED_JOB_IN_03=${DIR_EXPECTED_FILES}/${GENERATED_JOB_IN_03}
+EXPECTED_JOB_LIST=${DIR_EXPECTED_FILES}/${GENERATED_JOB_LIST}
+EXPECTED_JOB_DATA_01=${DIR_EXPECTED_FILES}/${GENERATED_JOB_DATA_01}
+EXPECTED_JOB_DATA_02=${DIR_EXPECTED_FILES}/${GENERATED_JOB_DATA_02}
+EXPECTED_JOB_DATA_03=${DIR_EXPECTED_FILES}/${GENERATED_JOB_DATA_03}
+EXPECTED_JOB_OUTPUT_01=${DIR_EXPECTED_FILES}/${GENERATED_JOB_OUTPUT_01}
+EXPECTED_JOB_OUTPUT_02=${DIR_EXPECTED_FILES}/${GENERATED_JOB_OUTPUT_02}
+EXPECTED_JOB_OUTPUT_03=${DIR_EXPECTED_FILES}/${GENERATED_JOB_OUTPUT_03}
+EXPECTED_JOB_ERROR_01=${DIR_EXPECTED_FILES}/${GENERATED_JOB_ERROR_01}
+EXPECTED_JOB_ERROR_02=${DIR_EXPECTED_FILES}/${GENERATED_JOB_ERROR_02}
+EXPECTED_JOB_ERROR_03=${DIR_EXPECTED_FILES}/${GENERATED_JOB_ERROR_03}
+EXPECTED_JOB_LOG_01=${DIR_EXPECTED_FILES}/${GENERATED_JOB_LOG_01}
+EXPECTED_JOB_LOG_02=${DIR_EXPECTED_FILES}/${GENERATED_JOB_LOG_02}
+EXPECTED_JOB_LOG_03=${DIR_EXPECTED_FILES}/${GENERATED_JOB_LOG_03}
+EXPECTED_SUBMITTED_JOBS_LIST=${DIR_EXPECTED_FILES}/${GENERATED_SUBMITTED_JOBS_LIST}
+EXPECTED_COMPLETED_01=${DIR_EXPECTED_FILES}/${GENERATED_COMPLETED_01}
+EXPECTED_COMPLETED_02=${DIR_EXPECTED_FILES}/${GENERATED_COMPLETED_02}
+EXPECTED_COMPLETED_03=${DIR_EXPECTED_FILES}/${GENERATED_COMPLETED_03}
+EXPECTED_INCOMPLETE_01=${DIR_EXPECTED_FILES}/${GENERATED_INCOMPLETE_01}
+EXPECTED_INCOMPLETE_02=${DIR_EXPECTED_FILES}/${GENERATED_INCOMPLETE_02}
+EXPECTED_INCOMPLETE_03=${DIR_EXPECTED_FILES}/${GENERATED_INCOMPLETE_03}
+
+LSF_JOB_NAME_01="summaryPrefix_sample0001A_1"
+LSF_JOB_NAME_02="summaryPrefix_sample0002A_2"
+LSF_JOB_NAME_03="summaryPrefix_sample0003A_3"
 
 CALL_JSUB="julia ../../../../jsub.jl -d -v "
 
@@ -122,12 +139,12 @@ sleep 1
 assert "file_exists ${GENERATED_JOB_IN_01}" "yes"
 assert "file_exists ${GENERATED_JOB_IN_02}" "yes"
 assert "file_exists ${GENERATED_JOB_IN_03}" "yes"
-assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_01} ${EXPECTED_JOB_IN_01}" "" # Ignore the line that contain absolute paths or the job header prefix
-assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_02} ${EXPECTED_JOB_IN_02}" "" # Ignore the line that contain absolute paths or the job header prefix
-assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_03} ${EXPECTED_JOB_IN_03}" "" # Ignore the line that contain absolute paths or the job header prefix
+assert "compare_contents  ${GENERATED_JOB_IN_01} ${EXPECTED_JOB_IN_01} -I '^# --- From file:*' -I '^#BSUB -P*' -I '^JSUB_PATH_TO_THIS_JOB=*' " "" # Ignore the line that contain absolute paths or the job header prefix
+assert "compare_contents  ${GENERATED_JOB_IN_02} ${EXPECTED_JOB_IN_02} -I '^# --- From file:*' -I '^#BSUB -P*' -I '^JSUB_PATH_TO_THIS_JOB=*' " "" # Ignore the line that contain absolute paths or the job header prefix
+assert "compare_contents  ${GENERATED_JOB_IN_03} ${EXPECTED_JOB_IN_03} -I '^# --- From file:*' -I '^#BSUB -P*' -I '^JSUB_PATH_TO_THIS_JOB=*' " "" # Ignore the line that contain absolute paths or the job header prefix
 assert "file_exists ${GENERATED_JOB_LIST}" "yes"
 assert "diff ${GENERATED_JOB_LIST} ${EXPECTED_JOB_LIST}" ""
-# 16
+# # 16
 # Run jsub - submit jobs from list to LSF queue
 ${CALL_JSUB} -b -o ${GENERATED_JOB_LIST}
 bjobs
@@ -165,14 +182,15 @@ assert "diff ${GENERATED_SUMMARY_LIST} ${EXPECTED_SUMMARY_LIST}" ""
 assert "file_exists ${GENERATED_JOB_IN_01}" "yes"
 assert "file_exists ${GENERATED_JOB_IN_02}" "yes"
 assert "file_exists ${GENERATED_JOB_IN_03}" "yes"
-assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_01} ${EXPECTED_JOB_IN_01}" "" # Ignore the line that contain absolute paths or the job header prefix
-assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_02} ${EXPECTED_JOB_IN_02}" "" # Ignore the line that contain absolute paths or the job header prefix
-assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_03} ${EXPECTED_JOB_IN_03}" "" # Ignore the line that contain absolute paths or the job header prefix
+assert "compare_contents  ${GENERATED_JOB_IN_01} ${EXPECTED_JOB_IN_01} -I '^# --- From file:*' -I '^#BSUB -P*' -I '^JSUB_PATH_TO_THIS_JOB=*' " "" # Ignore the line that contain absolute paths or the job header prefix
+assert "compare_contents  ${GENERATED_JOB_IN_02} ${EXPECTED_JOB_IN_02} -I '^# --- From file:*' -I '^#BSUB -P*' -I '^JSUB_PATH_TO_THIS_JOB=*' " "" # Ignore the line that contain absolute paths or the job header prefix
+assert "compare_contents  ${GENERATED_JOB_IN_03} ${EXPECTED_JOB_IN_03} -I '^# --- From file:*' -I '^#BSUB -P*' -I '^JSUB_PATH_TO_THIS_JOB=*' " "" # Ignore the line that contain absolute paths or the job header prefix
 assert "file_exists ${GENERATED_JOB_LIST}" "yes"
 assert "diff ${GENERATED_JOB_LIST} ${EXPECTED_JOB_LIST}" ""
 # 45
-clear_generated # Remove existing output from previous tests
-${CALL_JSUB} -s -p ${PROTOCOL_FILE} --fvars ${FVARS_FILE} --summary-prefix ${SUMMARY_PREFIX} # Create summary files
+
+# clear_generated # Remove existing output from previous tests
+# ${CALL_JSUB} -s -p ${PROTOCOL_FILE} --fvars ${FVARS_FILE} --summary-prefix ${SUMMARY_PREFIX} # Create summary files
 
 ## Create job file(s) from summary and submit
 # Run jsub - create job file from previously generated summary
@@ -183,9 +201,9 @@ bjobs
 assert "file_exists ${GENERATED_JOB_IN_01}" "yes"
 assert "file_exists ${GENERATED_JOB_IN_02}" "yes"
 assert "file_exists ${GENERATED_JOB_IN_03}" "yes"
-assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_01} ${EXPECTED_JOB_IN_01}" "" # Ignore the line that contain absolute paths or the job header prefix
-assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_02} ${EXPECTED_JOB_IN_02}" "" # Ignore the line that contain absolute paths or the job header prefix
-assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_03} ${EXPECTED_JOB_IN_03}" "" # Ignore the line that contain absolute paths or the job header prefix
+assert "compare_contents  ${GENERATED_JOB_IN_01} ${EXPECTED_JOB_IN_01} -I '^# --- From file:*' -I '^#BSUB -P*' -I '^JSUB_PATH_TO_THIS_JOB=*' " "" # Ignore the line that contain absolute paths or the job header prefix
+assert "compare_contents  ${GENERATED_JOB_IN_02} ${EXPECTED_JOB_IN_02} -I '^# --- From file:*' -I '^#BSUB -P*' -I '^JSUB_PATH_TO_THIS_JOB=*' " "" # Ignore the line that contain absolute paths or the job header prefix
+assert "compare_contents  ${GENERATED_JOB_IN_03} ${EXPECTED_JOB_IN_03} -I '^# --- From file:*' -I '^#BSUB -P*' -I '^JSUB_PATH_TO_THIS_JOB=*' " "" # Ignore the line that contain absolute paths or the job header prefix
 assert "file_exists ${GENERATED_JOB_LIST}" "yes"
 assert "diff ${GENERATED_JOB_LIST} ${EXPECTED_JOB_LIST}" ""
 awaitJobNameCompletion "$LSF_JOB_NAME_01"
@@ -223,9 +241,9 @@ assert "diff ${GENERATED_SUMMARY_LIST} ${EXPECTED_SUMMARY_LIST}" ""
 assert "file_exists ${GENERATED_JOB_IN_01}" "yes"
 assert "file_exists ${GENERATED_JOB_IN_02}" "yes"
 assert "file_exists ${GENERATED_JOB_IN_03}" "yes"
-assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_01} ${EXPECTED_JOB_IN_01}" "" # Ignore the line that contain absolute paths or the job header prefix
-assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_02} ${EXPECTED_JOB_IN_02}" "" # Ignore the line that contain absolute paths or the job header prefix
-assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_03} ${EXPECTED_JOB_IN_03}" "" # Ignore the line that contain absolute paths or the job header prefix
+assert "compare_contents  ${GENERATED_JOB_IN_01} ${EXPECTED_JOB_IN_01} -I '^# --- From file:*' -I '^#BSUB -P*' -I '^JSUB_PATH_TO_THIS_JOB=*' " "" # Ignore the line that contain absolute paths or the job header prefix
+assert "compare_contents  ${GENERATED_JOB_IN_02} ${EXPECTED_JOB_IN_02} -I '^# --- From file:*' -I '^#BSUB -P*' -I '^JSUB_PATH_TO_THIS_JOB=*' " "" # Ignore the line that contain absolute paths or the job header prefix
+assert "compare_contents  ${GENERATED_JOB_IN_03} ${EXPECTED_JOB_IN_03} -I '^# --- From file:*' -I '^#BSUB -P*' -I '^JSUB_PATH_TO_THIS_JOB=*' " "" # Ignore the line that contain absolute paths or the job header prefix
 assert "file_exists ${GENERATED_JOB_LIST}" "yes"
 assert "diff ${GENERATED_JOB_LIST} ${EXPECTED_JOB_LIST}" ""
 awaitJobNameCompletion "$LSF_JOB_NAME_01"

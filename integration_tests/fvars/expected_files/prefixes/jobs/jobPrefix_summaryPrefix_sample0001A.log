@@ -1,0 +1,4 @@
+20161026_155255 summaryPrefix_sample0001A_1 completed - # Basic integration test protocol involving only a call to a bash script that writes a single line to a text file.
+20161026_155255 summaryPrefix_sample0001A_1 completed - #JSUB<summary-name> sample0001A
+20161026_155255 summaryPrefix_sample0001A_1 completed - bash ../../../bash_scripts/trivial.sh sample0001A".txt"
+20161026_155255 summaryPrefix_sample0001A_1 completed - 
