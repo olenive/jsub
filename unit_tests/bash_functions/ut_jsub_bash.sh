@@ -54,10 +54,10 @@ cat ${DIR_EXPECTEDS}/"ut_job_processing_head.sh" \
 bash ${FILE_TEST_JOB} ${FILE_LOG} ${FILE_COMPLETED} ${FILE_INCOMPLETE}
 assert "file_exists ${FILE_LOG}" "yes"
 assert "file_exists ${FILE_EXPECTED_LOG}" "yes"
-assert "diff ${FILE_LOG} ${FILE_EXPECTED_LOG}" ""
+assert "compare_contents ${FILE_LOG} ${FILE_EXPECTED_LOG}" ""
 assert "file_exists ${FILE_COMPLETED}" "yes"
 assert "file_exists ${FILE_EXPECTED_COMPLETED}" "yes"
-assert "diff ${FILE_COMPLETED} ${FILE_EXPECTED_COMPLETED}" ""
+assert "compare_contents ${FILE_COMPLETED} ${FILE_EXPECTED_COMPLETED}" ""
 assert "file_exists ${FILE_INCOMPLETE}" "no" # assert $(diff ${FILE_INCOMPLETE} ${FILE_EXPECTED_INCOMPLETE}) "" # The incomplete file should not exist for this example
 # 7
 ## A job that is terminated in the middle leaving a summary.incomplete file
@@ -81,10 +81,10 @@ cat ${DIR_EXPECTEDS}/"ut_job_processing_head.sh" \
 bash ${FILE_TEST_JOB} ${FILE_LOG} ${FILE_COMPLETED} ${FILE_INCOMPLETE}
 assert "file_exists ${FILE_LOG}" "yes"
 assert "file_exists ${FILE_EXPECTED_LOG}" "yes"
-assert "diff ${FILE_LOG} ${FILE_EXPECTED_LOG}" ""
+assert "compare_contents ${FILE_LOG} ${FILE_EXPECTED_LOG}" ""
 assert "file_exists ${FILE_COMPLETED}" "yes"
 assert "file_exists ${FILE_EXPECTED_COMPLETED}" "yes"
-assert "diff ${FILE_COMPLETED} ${FILE_EXPECTED_COMPLETED}" ""
+assert "compare_contents ${FILE_COMPLETED} ${FILE_EXPECTED_COMPLETED}" ""
 assert "file_exists ${FILE_INCOMPLETE}" "yes" # assert $(diff ${FILE_INCOMPLETE} ${FILE_EXPECTED_INCOMPLETE}) "" # The incomplete file should not exist for this example
 # 14
 ####################################################
@@ -128,21 +128,21 @@ assert "file_contains_nonwhitespace ${NONWHITESPACE_FILE}" "yes"
 rm "$JSUB_LOG_FILE" # Clear log file
 assert "file_exists ${JSUB_LOG_FILE}" "no"
 assert "jcheck_file_not_empty ${EMPTY_FILE}" " jcheck_file_not_empty_jobID - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: ""$EMPTY_FILE"
-assert "diff ${JSUB_LOG_FILE} ${EXPECTED_EMPTY_FAIL}" ""
+assert "compare_contents ${JSUB_LOG_FILE} ${EXPECTED_EMPTY_FAIL}" ""
 rm "$JSUB_LOG_FILE" # Clear log file
 assert "file_exists ${JSUB_LOG_FILE}" "no"
 assert "jcheck_file_not_empty ${WHITESPACE_FILE}" " jcheck_file_not_empty_jobID - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: ""$WHITESPACE_FILE"
-assert "diff ${JSUB_LOG_FILE} ${EXPECTED_WHITESPACE_FAIL}" ""
+assert "compare_contents ${JSUB_LOG_FILE} ${EXPECTED_WHITESPACE_FAIL}" ""
 rm "$JSUB_LOG_FILE" # Clear log file
 assert "file_exists ${JSUB_LOG_FILE}" "no"
 assert "jcheck_file_not_empty ${NONWHITESPACE_FILE}" ""
-assert "diff ${JSUB_LOG_FILE} ${EXPECTED_SUCCESS}" ""
+assert "compare_contents ${JSUB_LOG_FILE} ${EXPECTED_SUCCESS}" ""
 # 39
 # Test cases with multiple arguments
 rm "$JSUB_LOG_FILE" # Clear log file
 assert "file_exists ${JSUB_LOG_FILE}" "no"
 assert "jcheck_file_not_empty ${EMPTY_FILE} ${WHITESPACE_FILE} ${NONWHITESPACE_FILE}" " jcheck_file_not_empty_jobID - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: ""$EMPTY_FILE""\n"" jcheck_file_not_empty_jobID - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: ""$WHITESPACE_FILE"
-assert "diff ${JSUB_LOG_FILE} ${EXPECTED_MULTIPLE}" ""
+assert "compare_contents ${JSUB_LOG_FILE} ${EXPECTED_MULTIPLE}" ""
 # 42
 
 ## check_completion
@@ -190,10 +190,10 @@ bash ${FILE_TEST_JOB}
 # Check that files produced by the mock job match expected files.
 assert "file_exists ${FILE_LOG}" "yes"
 assert "file_exists ${FILE_EXPECTED_LOG}" "yes"
-assert "diff ${FILE_LOG} ${FILE_EXPECTED_LOG}" ""
+assert "compare_contents ${FILE_LOG} ${FILE_EXPECTED_LOG}" ""
 assert "file_exists ${FILE_COMPLETED}" "yes"
 assert "file_exists ${FILE_EXPECTED_COMPLETED}" "yes"
-assert "diff ${FILE_COMPLETED} ${FILE_EXPECTED_COMPLETED}" ""
+assert "compare_contents ${FILE_COMPLETED} ${FILE_EXPECTED_COMPLETED}" ""
 assert "file_exists ${FILE_INCOMPLETE}" "no"
 # 57
 
