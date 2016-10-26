@@ -12,13 +12,13 @@ LSF_JOB_NAME="basic_1_1"
 EXPECTED_SUMMARY="../expected_files/basic_1.summary"
 EXPECTED_SUMMARY_LIST="../expected_files/basic.list-summaries"
 EXPECTED_JOB_IN="../expected_files/${LSF_JOB_NAME}.lsf"
-EXPECTED_JOB_LIST="../expected/basic.list-jobs"
+EXPECTED_JOB_LIST="../expected_files/basic.list-jobs"
 EXPECTED_JOB_DATA="../expected_files/it1_basic.txt"
 EXPECTED_COMPLETED="../expected_files/basic_1.completed"
 EXPECTED_PROTABLE_DIR="../expected_files/portable"
 EXPECTED_PORTABLE_ZIP="$EXPECTED_PROTABLE_DIR".tar.gz
 
-GENERATED_DIR="generated_files"
+GENERATED_DIR="generated_files_zip"
 GENERATED_SUMMARY="basic_1.summary"
 GENERATED_SUMMARY_LIST="basic.list-summaries"
 GENERATED_JOB_IN="${LSF_JOB_NAME}.lsf"
@@ -55,6 +55,7 @@ function clear_generated {
   rm -f ${GENERATED_COMPLETED}
   rm -f ${GENERATED_INCOMPLETE}
   rm -fr ${GENERATED_PROTABLE_DIR}
+  rm -fr ${GENERATED_PORTABLE_ZIP}
 }
 function isAbsolutePath {
   local DIR="$1"
