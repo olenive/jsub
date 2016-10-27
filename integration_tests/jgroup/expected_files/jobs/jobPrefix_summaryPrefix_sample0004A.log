@@ -1,27 +1,33 @@
- summaryPrefix_sample0004A completed - # Basic integration test protocol involving only a call to a bash script that writes a single line to a text file.
- summaryPrefix_sample0004A completed - #JSUB<summary-name> sample0004A
- summaryPrefix_sample0004A completed - echo "Processing summary data from: "sample0004A
- summaryPrefix_sample0004A completed - # root group
- summaryPrefix_sample0004A completed - OUTFILE="results/outPrefix_"sample0004A # Note: this is an example of what not to do! After the protocol is split OUTFILE will be undeclared in subsequent groups unless it is declared there again using variables from vars and fvars but NOT variables from the top of the script.
- summaryPrefix_sample0004A completed - bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
- summaryPrefix_sample0004A completed - bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
- summaryPrefix_sample0004A completed - 
- summaryPrefix_sample0004A completed - #JGROUP first
- summaryPrefix_sample0004A completed - #JGROUP third
- summaryPrefix_sample0004A completed - OUTFILE="results/outPrefix_"sample0004A
- summaryPrefix_sample0004A completed - OUTFILE="results/outPrefix_"sample0004A
- summaryPrefix_sample0004A completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub04X sub04Y
- summaryPrefix_sample0004A completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub04Z sub04X
- summaryPrefix_sample0004A completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub04Y sub04Z
- summaryPrefix_sample0004A completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub04X sub04Y
- summaryPrefix_sample0004A completed - #JGROUP second
- summaryPrefix_sample0004A completed - 
- summaryPrefix_sample0004A completed - 
- summaryPrefix_sample0004A completed - OUTFILE="results/outPrefix_"sample0004A
- summaryPrefix_sample0004A completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub04Y sub04Z
- summaryPrefix_sample0004A completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub04Z sub04X
- summaryPrefix_sample0004A completed - 
- summaryPrefix_sample0004A completed - #JGROUP last first second third
- summaryPrefix_sample0004A completed - OUTFILE="results/outPrefix_"sample0004A
- summaryPrefix_sample0004A completed - bash ../../bash_scripts/catfiles.sh "$OUTFILE".txt "$OUTFILE"_first.txt "$OUTFILE"_second.txt "$OUTFILE"_third.txt
- summaryPrefix_sample0004A completed - 
+20161027_140106 summaryPrefix_sample0004A_04_root completed - #JSUB<summary-name> sample0004A
+20161027_140106 summaryPrefix_sample0004A_04_root completed - echo "Processing summary data from: "sample0004A
+20161027_140106 summaryPrefix_sample0004A_04_root completed - # root group
+20161027_140106 summaryPrefix_sample0004A_04_root completed - OUTFILE="results/outPrefix_"sample0004A # Note: this is an example of what not to do! After the protocol is split OUTFILE will be undeclared in subsequent groups unless it is declared there again using variables from vars and fvars but NOT variables from the top of the script.
+20161027_140106 summaryPrefix_sample0004A_04_root completed - bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
+20161027_140106 summaryPrefix_sample0004A_04_root completed - bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
+20161027_140106 summaryPrefix_sample0004A_04_root completed - 
+20161027_140122 summaryPrefix_sample0004A_04_third completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0004A_04_root.completed"
+20161027_140122 summaryPrefix_sample0004A_04_first completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0004A_04_root.completed"
+20161027_140122 summaryPrefix_sample0004A_04_second completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0004A_04_root.completed"
+20161027_140122 summaryPrefix_sample0004A_04_first completed - #JGROUP first
+20161027_140122 summaryPrefix_sample0004A_04_second completed - #JGROUP second
+20161027_140122 summaryPrefix_sample0004A_04_third completed - #JGROUP third
+20161027_140122 summaryPrefix_sample0004A_04_first completed - OUTFILE="results/outPrefix_"sample0004A
+20161027_140122 summaryPrefix_sample0004A_04_second completed - OUTFILE="results/outPrefix_"sample0004A
+20161027_140122 summaryPrefix_sample0004A_04_third completed - OUTFILE="results/outPrefix_"sample0004A
+20161027_140122 summaryPrefix_sample0004A_04_first completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub04X sub04Y
+20161027_140122 summaryPrefix_sample0004A_04_second completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub04Y sub04Z
+20161027_140122 summaryPrefix_sample0004A_04_third completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub04Z sub04X
+20161027_140122 summaryPrefix_sample0004A_04_first completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub04Y sub04Z
+20161027_140122 summaryPrefix_sample0004A_04_second completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub04Z sub04X
+20161027_140122 summaryPrefix_sample0004A_04_third completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub04X sub04Y
+20161027_140122 summaryPrefix_sample0004A_04_first completed - 
+20161027_140122 summaryPrefix_sample0004A_04_second completed - 
+20161027_140122 summaryPrefix_sample0004A_04_third completed - 
+20161027_140148 summaryPrefix_sample0004A_04_last completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0004A_04_root.completed"
+20161027_140148 summaryPrefix_sample0004A_04_last completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0004A_04_first.completed"
+20161027_140148 summaryPrefix_sample0004A_04_last completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0004A_04_second.completed"
+20161027_140148 summaryPrefix_sample0004A_04_last completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0004A_04_third.completed"
+20161027_140148 summaryPrefix_sample0004A_04_last completed - #JGROUP last first second third
+20161027_140148 summaryPrefix_sample0004A_04_last completed - OUTFILE="results/outPrefix_"sample0004A
+20161027_140148 summaryPrefix_sample0004A_04_last completed - bash ../../bash_scripts/catfiles.sh "$OUTFILE".txt "$OUTFILE"_first.txt "$OUTFILE"_second.txt "$OUTFILE"_third.txt
+20161027_140148 summaryPrefix_sample0004A_04_last completed - 

@@ -1,0 +1,7 @@
+check_completion "jobs/jobPrefix_summaryPrefix_sample0003A_03_root.completed"
+#JGROUP first
+OUTFILE="results/outPrefix_"sample0003A
+bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub03X sub03Y
+bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub03Y sub03Z
+
+#JSUB Successfully ran job on: 20161027_140106

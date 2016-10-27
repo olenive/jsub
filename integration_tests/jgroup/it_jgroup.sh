@@ -17,8 +17,8 @@ SUMMARY_BASE_PREFIX=$(basename $SUMMARY_PREFIX)
 LSF_OUTPUT_PREFIX="lsf_output/lsf_"
 DIR_EXPECTED_FILES="../expected_files/"
 
-declare -a SAMPELS=("sample0001A" "sample0002A" "sample0003A" "sample0004A" "sample0005A" "sample0006A" "sample0007A" "sample0008A" "sample0009A" "sample0010A" "sample0011A")
-JOBID_PREFIX="jgroupP_jgroupV_jgroupFV_"
+declare -a SAMPLES=("sample0001A" "sample0002A" "sample0003A" "sample0004A" "sample0005A" "sample0006A" "sample0007A" "sample0008A" "sample0009A" "sample0010A" "sample0011A")
+JOBID_PREFIX=""
 declare -a JOBIDS=("$JOBID_PREFIX""01" "$JOBID_PREFIX""02" "$JOBID_PREFIX""03" "$JOBID_PREFIX""04" "$JOBID_PREFIX""05" "$JOBID_PREFIX""06" "$JOBID_PREFIX""07" "$JOBID_PREFIX""08" "$JOBID_PREFIX""09" "$JOBID_PREFIX""10" "$JOBID_PREFIX""11")
 declare -a JGROUPS=("root" "first" "second" "third" "last")
 
@@ -31,10 +31,6 @@ GENERATED_SUBMITTED_JOBS_LIST="$GENERATED_JOB_LIST".submitted
 EXPECTED_SUMMARY_LIST=${DIR_EXPECTED_FILES}/${GENERATED_SUMMARY_LIST}
 EXPECTED_JOB_LIST=${DIR_EXPECTED_FILES}/${GENERATED_JOB_LIST}
 EXPECTED_JOB_DATA=${DIR_EXPECTED_FILES}/"it1_fvars.txt"
-
-LSF_JOB_NAME_01="summaryPrefix_sample0001A"
-LSF_JOB_NAME_02="summaryPrefix_sample0002A"
-LSF_JOB_NAME_03="summaryPrefix_sample0003A"
 
 CALL_JSUB="julia ../../../jsub.jl -d -v "
 
@@ -60,163 +56,62 @@ mkdir -p lsf_output
 # Run jsub - only create summary file
 ${CALL_JSUB} -s -p ${PROTOCOL_FILE} --vars ${VARS_FILE} --fvars ${FVARS_FILE} --summary-prefix ${SUMMARY_PREFIX}
 # Check that a summary file and a summary listing file are generated from the protocol
-for sample in "${SAMPELS[@]}"; do
+for sample in "${SAMPLES[@]}"; do
   assert "file_exists $SUMMARY_PREFIX""$sample"".summary" "yes"
-  assert "diff ${SUMMARY_PREFIX}${sample}.summary ../expected_files/${SUMMARY_PREFIX}${sample}.summary" ""
+  assert "compare_contents ${SUMMARY_PREFIX}${sample}.summary $DIR_EXPECTED_FILES${SUMMARY_PREFIX}${sample}.summary" ""
 done
 #6
 assert "file_exists ${GENERATED_SUMMARY_LIST}" "yes"
-assert "diff ${GENERATED_SUMMARY_LIST} ${EXPECTED_SUMMARY_LIST}" ""
+assert "compare_contents ${GENERATED_SUMMARY_LIST} ${EXPECTED_SUMMARY_LIST}" ""
 #8
 # Run jsub - create job file from previously generated summary
 ${CALL_JSUB} -j -u ${GENERATED_SUMMARY_LIST} $(getCommonHeaderOptionString "$JOB_HEADER") --job-prefix ${JOB_PREFIX} -e "lsf_output/lsf_"
 # Check that a job file is generated from the summary file
 idx=0
-for sample in "${SAMPELS[@]}"; do
+for sample in "${SAMPLES[@]}"; do
   for jgroup in "${JGROUPS[@]}"; do
-    # GENERATED_JOB=${JOB_PREFIX}${SUMMARY_BASE_PREFIX}${sample}_${JOBIDS[idx]}_${jgroup}.lsf
-    GENERATED_JOB=${JOB_PREFIX}${SUMMARY_BASE_PREFIX}$_${JOBIDS[idx]}_${jgroup}.lsf
+    GENERATED_JOB=${JOB_PREFIX}${SUMMARY_BASE_PREFIX}$_${sample}_${JOBIDS[idx]}_${jgroup}".lsf"
     echo "it_jgroup.sh GENERATED_JOB = : "$GENERATED_JOB
-    EXPECTED_JOB="../expected_files/"${GENERATED_JOB}
+    EXPECTED_JOB="$DIR_EXPECTED_FILES"${GENERATED_JOB}
     assert "file_exists ${GENERATED_JOB}" "yes"
-    assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB} ${EXPECTED_JOB}" "" # Ignore the line that contain absolute paths or the job header prefix
+    assert "compare_contents  ${GENERATED_JOB} ${EXPECTED_JOB} -I '^# --- From file:*' -I '^#BSUB -P*' -I '^JSUB_PATH_TO_THIS_JOB=*' " "" # Ignore the line that contain absolute paths or the job header prefix
   done
   idx=$((idx+1))
 done
 # 38
 assert "file_exists ${GENERATED_JOB_LIST}" "yes"
-assert "diff ${GENERATED_JOB_LIST} ${EXPECTED_JOB_LIST}" ""
+assert "compare_contents ${GENERATED_JOB_LIST} ${EXPECTED_JOB_LIST}" ""
 # 40
 # Run jsub - submit jobs from list to LSF queue
 ${CALL_JSUB} -b -o ${GENERATED_JOB_LIST}
-sleep 2 # to make sure the submissions have gone through
 bjobs
 idx=0
-for sample in "${SAMPELS[@]}"; do
+for sample in "${SAMPLES[@]}"; do
   GENERATED_JOB_DATA_00="${OUT_PREFIX}${sample}.txt"
   GENERATED_JOB_DATA_01="${OUT_PREFIX}${sample}_first.txt"
   GENERATED_JOB_DATA_02="${OUT_PREFIX}${sample}_second.txt"
   GENERATED_JOB_DATA_03="${OUT_PREFIX}${sample}_third.txt"
   for jgroup in "${JGROUPS[@]}"; do
-    awaitJobNameCompletion ${SUMMARY_BASE_PREFIX}${JOBIDS[idx]}_${jgroup}
+    awaitJobNameCompletion ${SUMMARY_BASE_PREFIX}${sample}_${JOBIDS[idx]}_${jgroup}
   done
   sleep 2 # to make sure output files have been written
   assert "file_exists ${GENERATED_JOB_DATA_00}" "yes"
   assert "file_exists ${GENERATED_JOB_DATA_01}" "yes"
   assert "file_exists ${GENERATED_JOB_DATA_02}" "yes"
   assert "file_exists ${GENERATED_JOB_DATA_03}" "yes"
-  assert "diff ${GENERATED_JOB_DATA_00} ../expected_files/${GENERATED_JOB_DATA_00}" ""
-  assert "diff ${GENERATED_JOB_DATA_01} ../expected_files/${GENERATED_JOB_DATA_01}" ""
-  assert "diff ${GENERATED_JOB_DATA_02} ../expected_files/${GENERATED_JOB_DATA_02}" ""
-  assert "diff ${GENERATED_JOB_DATA_03} ../expected_files/${GENERATED_JOB_DATA_03}" ""
+  assert "compare_contents ${GENERATED_JOB_DATA_00} $DIR_EXPECTED_FILES${GENERATED_JOB_DATA_00}" ""
+  assert "compare_contents ${GENERATED_JOB_DATA_01} $DIR_EXPECTED_FILES${GENERATED_JOB_DATA_01}" ""
+  assert "compare_contents ${GENERATED_JOB_DATA_02} $DIR_EXPECTED_FILES${GENERATED_JOB_DATA_02}" ""
+  assert "compare_contents ${GENERATED_JOB_DATA_03} $DIR_EXPECTED_FILES${GENERATED_JOB_DATA_03}" ""
   for jgroup in "${JGROUPS[@]}"; do
-    GENERATED_JOB_OUTPUT="${LSF_OUTPUT_PREFIX}${SUMMARY_BASE_PREFIX}${JOBIDS[idx]}_${jgroup}.output"
-    GENERATED_JOB_ERROR="${LSF_OUTPUT_PREFIX}${SUMMARY_BASE_PREFIX}${JOBIDS[idx]}_${jgroup}.error"
+    GENERATED_JOB_OUTPUT="${LSF_OUTPUT_PREFIX}${SUMMARY_BASE_PREFIX}${sample}_${JOBIDS[idx]}_${jgroup}.output"
+    GENERATED_JOB_ERROR="${LSF_OUTPUT_PREFIX}${SUMMARY_BASE_PREFIX}${sample}_${JOBIDS[idx]}_${jgroup}.error"
     assert "file_exists ${GENERATED_JOB_OUTPUT}" "yes"
     assert "file_exists ${GENERATED_JOB_ERROR}" "yes"
   done
   idx=$((idx+1))
 done
 assert "file_exists ${GENERATED_SUBMITTED_JOBS_LIST}" "yes"
-
-
-
-
-# clear_generated # Remove existing output from previous tests
-
-# ## Create summary and job file(s) from protocol
-# ${CALL_JSUB} -sj -p ${PROTOCOL_FILE} --vars ${VARS_FILE} --fvars ${FVARS_FILE} $(getCommonHeaderOptionString "$JOB_HEADER") --summary-prefix ${SUMMARY_PREFIX} --job-prefix ${JOB_PREFIX}
-# # Check that a summary file and a summary listing file are generated from the protocol
-# assert "file_exists ${GENERATED_SUMMARY_01}" "yes"
-# assert "file_exists ${GENERATED_SUMMARY_02}" "yes"
-# assert "file_exists ${GENERATED_SUMMARY_03}" "yes"
-# assert "diff ${GENERATED_SUMMARY_01} ${EXPECTED_SUMMARY_01}" ""
-# assert "diff ${GENERATED_SUMMARY_02} ${EXPECTED_SUMMARY_02}" ""
-# assert "diff ${GENERATED_SUMMARY_03} ${EXPECTED_SUMMARY_03}" ""
-# assert "file_exists ${GENERATED_SUMMARY_LIST}" "yes"
-# assert "diff ${GENERATED_SUMMARY_LIST} ${EXPECTED_SUMMARY_LIST}" ""
-# # 37
-# # Check that a job file is generated from the summary file
-# assert "file_exists ${GENERATED_JOB_IN_01}" "yes"
-# assert "file_exists ${GENERATED_JOB_IN_02}" "yes"
-# assert "file_exists ${GENERATED_JOB_IN_03}" "yes"
-# assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_01} ${EXPECTED_JOB_IN_01}" "" # Ignore the line that contain absolute paths or the job header prefix
-# assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_02} ${EXPECTED_JOB_IN_02}" "" # Ignore the line that contain absolute paths or the job header prefix
-# assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_03} ${EXPECTED_JOB_IN_03}" "" # Ignore the line that contain absolute paths or the job header prefix
-# assert "file_exists ${GENERATED_JOB_LIST}" "yes"
-# assert "diff ${GENERATED_JOB_LIST} ${EXPECTED_JOB_LIST}" ""
-# # 45
-# clear_generated # Remove existing output from previous tests
-# ${CALL_JSUB} -s -p ${PROTOCOL_FILE} --vars ${VARS_FILE} --fvars ${FVARS_FILE} --summary-prefix ${SUMMARY_PREFIX} # Create summary files
-
-# ## Create job file(s) from summary and submit
-# # Run jsub - create job file from previously generated summary
-# # OPTION_HEADER=$(getCommonHeaderOptionString "$JOB_HEADER")
-# ${CALL_JSUB} -jb -u ${GENERATED_SUMMARY_LIST} $(getCommonHeaderOptionString "$JOB_HEADER") --job-prefix ${JOB_PREFIX}
-# # Check that a job file is generated from the summary file
-# assert "file_exists ${GENERATED_JOB_IN_01}" "yes"
-# assert "file_exists ${GENERATED_JOB_IN_02}" "yes"
-# assert "file_exists ${GENERATED_JOB_IN_03}" "yes"
-# assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_01} ${EXPECTED_JOB_IN_01}" "" # Ignore the line that contain absolute paths or the job header prefix
-# assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_02} ${EXPECTED_JOB_IN_02}" "" # Ignore the line that contain absolute paths or the job header prefix
-# assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_03} ${EXPECTED_JOB_IN_03}" "" # Ignore the line that contain absolute paths or the job header prefix
-# assert "file_exists ${GENERATED_JOB_LIST}" "yes"
-# assert "diff ${GENERATED_JOB_LIST} ${EXPECTED_JOB_LIST}" ""
-# awaitJobNameCompletion "$LSF_JOB_NAME_01"
-# awaitJobNameCompletion "$LSF_JOB_NAME_02"
-# awaitJobNameCompletion "$LSF_JOB_NAME_03"
-# assert "file_exists ${GENERATED_JOB_DATA_01}" "yes"
-# assert "file_exists ${GENERATED_JOB_DATA_02}" "yes"
-# assert "file_exists ${GENERATED_JOB_DATA_03}" "yes"
-# assert "diff ${GENERATED_JOB_DATA_01} ${EXPECTED_JOB_DATA_01}" ""
-# assert "diff ${GENERATED_JOB_DATA_02} ${EXPECTED_JOB_DATA_02}" ""
-# assert "diff ${GENERATED_JOB_DATA_03} ${EXPECTED_JOB_DATA_03}" ""
-# assert "file_exists ${GENERATED_JOB_OUTPUT_01}" "yes"
-# assert "file_exists ${GENERATED_JOB_OUTPUT_02}" "yes"
-# assert "file_exists ${GENERATED_JOB_OUTPUT_03}" "yes"
-# assert "file_exists ${GENERATED_JOB_ERROR_01}" "yes"
-# assert "file_exists ${GENERATED_JOB_ERROR_02}" "yes"
-# assert "file_exists ${GENERATED_JOB_ERROR_03}" "yes"
-# assert "file_exists ${GENERATED_SUBMITTED_JOBS_LIST}" "yes"
-
-# clear_generated # Remove existing output from previous tests
-
-# ## Start with a protocol and end by submitting job(s)
-# ${CALL_JSUB} -p ${PROTOCOL_FILE} $(getCommonHeaderOptionString "$JOB_HEADER") --vars ${VARS_FILE} --fvars ${FVARS_FILE} --summary-prefix ${SUMMARY_PREFIX} --job-prefix ${JOB_PREFIX}
-# # Check that a summary file and a summary listing file are generated from the protocol
-# assert "file_exists ${GENERATED_SUMMARY_01}" "yes"
-# assert "file_exists ${GENERATED_SUMMARY_02}" "yes"
-# assert "file_exists ${GENERATED_SUMMARY_03}" "yes"
-# assert "diff ${GENERATED_SUMMARY_01} ${EXPECTED_SUMMARY_01}" ""
-# assert "diff ${GENERATED_SUMMARY_02} ${EXPECTED_SUMMARY_02}" ""
-# assert "diff ${GENERATED_SUMMARY_03} ${EXPECTED_SUMMARY_03}" ""
-# assert "file_exists ${GENERATED_SUMMARY_LIST}" "yes"
-# assert "diff ${GENERATED_SUMMARY_LIST} ${EXPECTED_SUMMARY_LIST}" ""
-# # Check that a job file is generated from the summary file
-# assert "file_exists ${GENERATED_JOB_IN_01}" "yes"
-# assert "file_exists ${GENERATED_JOB_IN_02}" "yes"
-# assert "file_exists ${GENERATED_JOB_IN_03}" "yes"
-# assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_01} ${EXPECTED_JOB_IN_01}" "" # Ignore the line that contain absolute paths or the job header prefix
-# assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_02} ${EXPECTED_JOB_IN_02}" "" # Ignore the line that contain absolute paths or the job header prefix
-# assert "diff -I '^# --- From file:*' -I "'^#BSUB ?P*'" ${GENERATED_JOB_IN_03} ${EXPECTED_JOB_IN_03}" "" # Ignore the line that contain absolute paths or the job header prefix
-# assert "file_exists ${GENERATED_JOB_LIST}" "yes"
-# assert "diff ${GENERATED_JOB_LIST} ${EXPECTED_JOB_LIST}" ""
-# awaitJobNameCompletion "$LSF_JOB_NAME_01"
-# awaitJobNameCompletion "$LSF_JOB_NAME_02"
-# awaitJobNameCompletion "$LSF_JOB_NAME_03"
-# assert "file_exists ${GENERATED_JOB_DATA_01}" "yes"
-# assert "file_exists ${GENERATED_JOB_DATA_02}" "yes"
-# assert "file_exists ${GENERATED_JOB_DATA_03}" "yes"
-# assert "diff ${GENERATED_JOB_DATA_01} ${EXPECTED_JOB_DATA_01}" ""
-# assert "diff ${GENERATED_JOB_DATA_02} ${EXPECTED_JOB_DATA_02}" ""
-# assert "diff ${GENERATED_JOB_DATA_03} ${EXPECTED_JOB_DATA_03}" ""
-# assert "file_exists ${GENERATED_JOB_OUTPUT_01}" "yes"
-# assert "file_exists ${GENERATED_JOB_OUTPUT_02}" "yes"
-# assert "file_exists ${GENERATED_JOB_OUTPUT_03}" "yes"
-# assert "file_exists ${GENERATED_JOB_ERROR_01}" "yes"
-# assert "file_exists ${GENERATED_JOB_ERROR_02}" "yes"
-# assert "file_exists ${GENERATED_JOB_ERROR_03}" "yes"
-# assert "file_exists ${GENERATED_SUBMITTED_JOBS_LIST}" "yes"
 
 ## end of test suite
 assert_end
