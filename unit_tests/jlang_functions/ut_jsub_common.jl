@@ -1397,7 +1397,7 @@ Test.with_handler(ut_handler) do
   "the second job.summary",
   "the third job.summary",
   "the fourth job.summary",
-  "summary0005_YYYYMMDD_HHMMSS.summary",
+  "summary5_YYYYMMDD_HHMMSS.summary",
   "the sixth job.summary",
   "the seventh job.summary"
   ];
@@ -1407,7 +1407,7 @@ Test.with_handler(ut_handler) do
   "PRE_the second job_SUF",
   "PRE_the third job_SUF",
   "PRE_the fourth job_SUF",
-  "PRE_summary0005_YYYYMMDD_HHMMSS_SUF",
+  "PRE_summary5_YYYYMMDD_HHMMSS_SUF",
   "PRE_the sixth job_SUF",
   "PRE_the seventh job_SUF"
   ];  
@@ -2179,8 +2179,8 @@ Test.with_handler(ut_handler) do
     "\nJSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>",
     "\nJSUB_JOB_ID=\"ID002_second\"",                                   
     "\nJSUB_LOG_FILE=\"jlang_function_test_files/job_files/ut_generated_job.log\"",
-    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_generated_job_second.completed\"",
-    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_generated_job_second.incomplete\"",
+    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_generated_job_ID002_second.completed\"",
+    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_generated_job_ID002_second.incomplete\"",
     "\nJSUB_VERSION_CONTROL=true",
     "\nJSUB_JOB_TIMESTAMP=true",                                                                         
     "\n",
@@ -2371,7 +2371,7 @@ Test.with_handler(ut_handler) do
     "#BSUB -w \'ended(\"first\")&&ended(\"third\")&&ended(\"fourth\")&&ended(\"fifth\")\'",
     "\nheader suffix string"
   );
-  summaryFilePath = "dir/name/is/ignored/ut_create_jobs_from_summary.summary"
+  summaryFilePath = "dir/name/is/ignored/jobID0000.summary"
   @test isfile(summaryFilePath) == false
   # Supplied input
   suppliedSummaryArray = [];
@@ -2415,7 +2415,7 @@ Test.with_handler(ut_handler) do
     "first" => group1,
     "second" => group2
   )
-  expectedFilePath01 = "jlang_function_test_files/job_files/ut_create_jobs_from_summary_root.lsf"
+  expectedFilePath01 = "jlang_function_test_files/job_files/jobID0000_root.lsf"
   try run(`rm $expectedFilePath01`) end
   expectedFileHeader01 = string( 
     "#!/bin/bash\n",
@@ -2430,9 +2430,9 @@ Test.with_handler(ut_handler) do
     "\n# Job file variables:",
     "\nJSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>",
     "\nJSUB_JOB_ID=\"jobID0000_root\"",                                   
-    "\nJSUB_LOG_FILE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary.log\"",
-    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary_root.completed\"",
-    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary_root.incomplete\"",
+    "\nJSUB_LOG_FILE=\"jlang_function_test_files/job_files/jobID0000.log\"",
+    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/JOBDATE0_000000_jobID0000_root.completed\"",
+    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/JOBDATE0_000000_jobID0000_root.incomplete\"",
     "\nJSUB_VERSION_CONTROL=true",
     "\nJSUB_JOB_TIMESTAMP=true",
     "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n",
@@ -2444,7 +2444,7 @@ Test.with_handler(ut_handler) do
     "function dummy3 {\necho Running_dummy_function_3\n}\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/jcheck_resume.sh", "\n",
     "contents of jcheck_resume.sh", "\n",
-    "\n\n# Commands taken from summary file: dir/name/is/ignored/ut_create_jobs_from_summary.summary""\n",
+    "\n\n# Commands taken from summary file: dir/name/is/ignored/jobID0000.summary""\n",
     "\n#JSUB<begin-job>\n",
     "# This data would come from reading summary files.", "\n",
     "#JSUB<summary-name>ProtocolName", "\n",
@@ -2458,7 +2458,7 @@ Test.with_handler(ut_handler) do
     "\non_completion",
     "\n"
   )
-  expectedFilePath02 = "jlang_function_test_files/job_files/ut_create_jobs_from_summary_first.lsf"
+  expectedFilePath02 = "jlang_function_test_files/job_files/jobID0000_first.lsf"
   try run(`rm $expectedFilePath02`) end
   expectedFileHeader02 = string( 
       "#!/bin/bash\n",
@@ -2474,9 +2474,9 @@ Test.with_handler(ut_handler) do
     "\n# Job file variables:",
     "\nJSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>",
     "\nJSUB_JOB_ID=\"jobID0000_first\"",                                   
-    "\nJSUB_LOG_FILE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary.log\"",
-    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary_first.completed\"",
-    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary_first.incomplete\"",
+    "\nJSUB_LOG_FILE=\"jlang_function_test_files/job_files/jobID0000.log\"",
+    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/JOBDATE0_000000_jobID0000_first.completed\"",
+    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/JOBDATE0_000000_jobID0000_first.incomplete\"",
     "\nJSUB_VERSION_CONTROL=true",
     "\nJSUB_JOB_TIMESTAMP=true",
     "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n",
@@ -2488,9 +2488,9 @@ Test.with_handler(ut_handler) do
     "function dummy3 {\necho Running_dummy_function_3\n}\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/jcheck_resume.sh", "\n",
     "contents of jcheck_resume.sh", "\n",
-    "\n\n# Commands taken from summary file: dir/name/is/ignored/ut_create_jobs_from_summary.summary""\n",
+    "\n\n# Commands taken from summary file: dir/name/is/ignored/jobID0000.summary""\n",
     "\n#JSUB<begin-job>\n",
-    "check_completion \"jlang_function_test_files/job_files/ut_create_jobs_from_summary_jobID0000_root.completed\"\n",
+    "check_completion \"jlang_function_test_files/job_files/JOBDATE0_000000_jobID0000_root.completed\"\n",
     "#JGROUP first", "\n",
     "bash echo \"cmd 12\"", "\n",
     "jcheck_resume", "\n",
@@ -2501,7 +2501,7 @@ Test.with_handler(ut_handler) do
     "\non_completion",
     "\n"
   )
-  expectedFilePath03 = "jlang_function_test_files/job_files/ut_create_jobs_from_summary_second.lsf"
+  expectedFilePath03 = "jlang_function_test_files/job_files/jobID0000_second.lsf"
   try run(`rm $expectedFilePath03`) end
   expectedFileHeader03 = string( 
       "#!/bin/bash\n",
@@ -2517,9 +2517,9 @@ Test.with_handler(ut_handler) do
     "\n# Job file variables:",
     "\nJSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>",
     "\nJSUB_JOB_ID=\"jobID0000_second\"",                                   
-    "\nJSUB_LOG_FILE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary.log\"",
-    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary_second.completed\"",
-    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary_second.incomplete\"",
+    "\nJSUB_LOG_FILE=\"jlang_function_test_files/job_files/jobID0000.log\"",
+    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/JOBDATE0_000000_jobID0000_second.completed\"",
+    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/JOBDATE0_000000_jobID0000_second.incomplete\"",
     "\nJSUB_VERSION_CONTROL=true",
     "\nJSUB_JOB_TIMESTAMP=true",
     "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n",
@@ -2531,10 +2531,10 @@ Test.with_handler(ut_handler) do
     "function dummy3 {\necho Running_dummy_function_3\n}\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/jcheck_resume.sh", "\n",
     "contents of jcheck_resume.sh", "\n",
-    "\n\n# Commands taken from summary file: dir/name/is/ignored/ut_create_jobs_from_summary.summary""\n",
+    "\n\n# Commands taken from summary file: dir/name/is/ignored/jobID0000.summary""\n",
     "\n#JSUB<begin-job>",
-    "\ncheck_completion \"jlang_function_test_files/job_files/ut_create_jobs_from_summary_jobID0000_root.completed\"",
-    "\ncheck_completion \"jlang_function_test_files/job_files/ut_create_jobs_from_summary_jobID0000_first.completed\"",
+    "\ncheck_completion \"jlang_function_test_files/job_files/JOBDATE0_000000_jobID0000_root.completed\"",
+    "\ncheck_completion \"jlang_function_test_files/job_files/JOBDATE0_000000_jobID0000_first.completed\"",
     "\n#JGROUP second first", "\n",
     "bash echo \"cmd 21\"", "\n",
     "jcheck_resume", "\n",
@@ -2553,18 +2553,18 @@ Test.with_handler(ut_handler) do
     #tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true
     jobID="jobID0000", jobDate="JOBDATE0_000000"
   ) == Dict(
-    "root"   => "jlang_function_test_files/job_files/ut_create_jobs_from_summary_root.lsf",
-    "second" => "jlang_function_test_files/job_files/ut_create_jobs_from_summary_second.lsf",
-    "first"  => "jlang_function_test_files/job_files/ut_create_jobs_from_summary_first.lsf",
+    "root"   => "jlang_function_test_files/job_files/jobID0000_root.lsf",
+    "second" => "jlang_function_test_files/job_files/jobID0000_second.lsf",
+    "first"  => "jlang_function_test_files/job_files/jobID0000_first.lsf",
   )
   @test expectedFileContents01 == readall(expectedFilePath01)
   # O=split(readall(expectedFilePath01), '\n');
   # E=split(expectedFileContents01, '\n');
   # compare_arrays(split(readall(expectedFilePath01), '\n'), split(expectedFileContents01, '\n'));
   @test expectedFileContents02 == readall(expectedFilePath02)
-  # O=split(readall(expectedFilePath02), '\n');
-  # E=split(expectedFileContents02, '\n');
-  # compare_arrays(split(readall(expectedFilePath02), '\n'), split(expectedFileContents02, '\n'));
+  O=split(readall(expectedFilePath02), '\n');
+  E=split(expectedFileContents02, '\n');
+  compare_arrays(split(readall(expectedFilePath02), '\n'), split(expectedFileContents02, '\n'));
   @test expectedFileContents03 == readall(expectedFilePath03)
   # Observed03=split(readall(expectedFilePath03), '\n');
   # Expected03=split(expectedFileContents03, '\n');
@@ -2579,7 +2579,7 @@ Test.with_handler(ut_handler) do
   @test expectedFileContents01 == readall(expectedFilePath01)
   @test expectedFileContents02 == readall(expectedFilePath02)
   @test expectedFileContents03 == readall(expectedFilePath03)
-  expectedFilePath01 = "jlang_function_test_files/job_files/ut_create_jobs_from_summary_root.lsf"
+  expectedFilePath01 = "jlang_function_test_files/job_files/jobID0000_root.lsf"
   try run(`rm $expectedFilePath01`) end
   expectedFileHeader01 = string( 
       "#!/bin/bash\n",
@@ -2595,9 +2595,9 @@ Test.with_handler(ut_handler) do
     "\n# Job file variables:",
     "\nJSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>",
     "\nJSUB_JOB_ID=\"jobID0000_root\"",                                   
-    "\nJSUB_LOG_FILE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary.log\"",
-    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary_root.completed\"",
-    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/ut_create_jobs_from_summary_root.incomplete\"",
+    "\nJSUB_LOG_FILE=\"jlang_function_test_files/job_files/jobID0000.log\"",
+    "\nJSUB_SUMMARY_COMPLETED=\"jlang_function_test_files/job_files/JOBDATE0_000000_jobID0000_root.completed\"",
+    "\nJSUB_SUMMARY_INCOMPLETE=\"jlang_function_test_files/job_files/JOBDATE0_000000_jobID0000_root.incomplete\"",
     "\nJSUB_VERSION_CONTROL=true",
     "\nJSUB_JOB_TIMESTAMP=true",
     "\n\n# Contents inserted from other files (this section is intended to be used only for functions):\n",
@@ -2609,7 +2609,7 @@ Test.with_handler(ut_handler) do
     "function dummy3 {\necho Running_dummy_function_3\n}\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/jcheck_resume.sh", "\n",
     "contents of jcheck_resume.sh", "\n",
-    "\n\n# Commands taken from summary file: dir/name/is/ignored/ut_create_jobs_from_summary.summary""\n",
+    "\n\n# Commands taken from summary file: dir/name/is/ignored/jobID0000.summary""\n",
     "\n#JSUB<begin-job>\n",
     "# This data would come from reading summary files.", "\n",
     "#JSUB<summary-name>ProtocolName", "\n",
@@ -2628,9 +2628,9 @@ Test.with_handler(ut_handler) do
     #tagBegin="#JSUB<begin-job>", tagFinish="#JSUB<finish-job>", tagCheckpoint="jcheck_", headerPrefix="#!/bin/bash\n" , headerSuffix="", summaryFile="", jobID=nothing, jobDate=nothing, appendOptions=true
     jobID="jobID0000", jobDate="JOBDATE0_000000", rootSleepSeconds="7.7"
   ) == Dict(
-    "root"   => "jlang_function_test_files/job_files/ut_create_jobs_from_summary_root.lsf",
-    "second" => "jlang_function_test_files/job_files/ut_create_jobs_from_summary_second.lsf",
-    "first"  => "jlang_function_test_files/job_files/ut_create_jobs_from_summary_first.lsf",
+    "root"   => "jlang_function_test_files/job_files/jobID0000_root.lsf",
+    "second" => "jlang_function_test_files/job_files/jobID0000_second.lsf",
+    "first"  => "jlang_function_test_files/job_files/jobID0000_first.lsf",
   )
   @test expectedFileContents01 == readall(expectedFilePath01)
   # O=split(readall(expectedFilePath01), '\n')
