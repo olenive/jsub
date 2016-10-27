@@ -1,0 +1,8 @@
+#JSUB<summary-name> sample0003A
+echo "Processing summary data from: "sample0003A
+# root group
+bash ../../bash_scripts/trivial.sh "results/outPrefix_"sample0003A.txt
+bash ../../bash_scripts/trivial.sh "results/outPrefix_"sample0003A.txt
+jcheck_file_not_empty "results/outPrefix_"sample0003A.txt
+
+#JSUB Successfully ran job on: 20161027_154906

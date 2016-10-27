@@ -1,0 +1,8 @@
+check_completion "jobs/jobPrefix_summaryPrefix_sample0001A_1_root.completed"
+#JGROUP first
+bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0001A_first.txt sub01X sub01Y
+jcheck_file_not_empty "results/outPrefix_"sample0001A_first.txt
+bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0001A_first.txt sub01Y sub01Z
+jcheck_file_not_empty "results/outPrefix_"sample0001A_first.txt
+
+#JSUB Successfully ran job on: 20161027_154911

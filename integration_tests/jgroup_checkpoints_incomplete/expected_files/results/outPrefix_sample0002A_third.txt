@@ -1,8 +1,1 @@
-Concatenated arguments produced by ../../bash_scripts/concat.sh:
-sub02Z_sub02X
-Concatenated arguments produced by ../../bash_scripts/concat.sh:
-sub02X_sub02Y
-Concatenated arguments produced by ../../bash_scripts/concat.sh:
-sub02Z_sub02X
-Concatenated arguments produced by ../../bash_scripts/concat.sh:
-sub02X_sub02Y
+  

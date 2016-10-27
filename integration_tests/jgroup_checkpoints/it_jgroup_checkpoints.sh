@@ -107,6 +107,11 @@ for sample in "${SAMPLES[@]}"; do
     GENERATED_JOB_ERROR="${LSF_OUTPUT_PREFIX}${SUMMARY_BASE_PREFIX}${sample}_${JOBIDS[idx]}_${jgroup}.error"
     assert "file_exists ${GENERATED_JOB_OUTPUT}" "yes"
     assert "file_exists ${GENERATED_JOB_ERROR}" "yes"
+    # Check the .completed and incomplete files
+    GENERATED_COMPLETED=${JOB_PREFIX}${SUMMARY_BASE_PREFIX}${sample}_${JOBIDS[idx]}_${jgroup}".completed"
+    assert "file_exists ${GENERATED_COMPLETED}" "yes"
+    # GENERATED_INCOMPLETE=${JOB_PREFIX}${SUMMARY_BASE_PREFIX}${sample}_${JOBIDS[idx]}_${jgroup}".incomplete"
+    # assert "file_exists ${GENERATED_INCOMPLETE}" "yes"
   done
   idx=$((idx+1))
 done

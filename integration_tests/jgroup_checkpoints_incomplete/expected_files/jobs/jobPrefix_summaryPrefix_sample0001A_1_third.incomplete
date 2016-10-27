@@ -1,0 +1,4 @@
+bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0001A_third.txt sub01X sub01Y
+echo " " > "results/outPrefix_"sample0001A_third.txt
+jcheck_file_not_empty "results/outPrefix_"sample0001A_third.txt
+

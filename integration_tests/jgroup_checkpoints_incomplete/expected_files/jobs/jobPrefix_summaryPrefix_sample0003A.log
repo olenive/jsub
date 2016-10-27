@@ -1,27 +1,32 @@
- summaryPrefix_sample0003A completed - # Basic integration test protocol involving only a call to a bash script that writes a single line to a text file.
- summaryPrefix_sample0003A completed - #JSUB<summary-name> sample0003A
- summaryPrefix_sample0003A completed - echo "Processing summary data from: "sample0003A
- summaryPrefix_sample0003A completed - # root group
- summaryPrefix_sample0003A completed - OUTFILE="results/outPrefix_"sample0003A # Note: this is an example of what not to do! After the protocol is split OUTFILE will be undeclared in subsequent groups unless it is declared there again using variables from vars and variables from the top of the script.
- summaryPrefix_sample0003A completed - bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
- summaryPrefix_sample0003A completed - bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
- summaryPrefix_sample0003A completed - 
- summaryPrefix_sample0003A completed - #JGROUP second
- summaryPrefix_sample0003A completed - OUTFILE="results/outPrefix_"sample0003A
- summaryPrefix_sample0003A completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub03Y sub03Z
- summaryPrefix_sample0003A completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub03Z sub03X
- summaryPrefix_sample0003A completed - 
- summaryPrefix_sample0003A completed - #JGROUP first
- summaryPrefix_sample0003A completed - OUTFILE="results/outPrefix_"sample0003A
- summaryPrefix_sample0003A completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub03X sub03Y
- summaryPrefix_sample0003A completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub03Y sub03Z
- summaryPrefix_sample0003A completed - 
- summaryPrefix_sample0003A completed - #JGROUP last
- summaryPrefix_sample0003A completed - OUTFILE="results/outPrefix_"sample0003A
- summaryPrefix_sample0003A completed - bash ../../bash_scripts/catfiles.sh "$OUTFILE".txt "$OUTFILE"_first.txt "$OUTFILE"_second.txt "$OUTFILE"_third.txt
- summaryPrefix_sample0003A completed - 
- summaryPrefix_sample0003A completed - #JGROUP third
- summaryPrefix_sample0003A completed - OUTFILE="results/outPrefix_"sample0003A
- summaryPrefix_sample0003A completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub03Z sub03X
- summaryPrefix_sample0003A completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub03X sub03Y
- summaryPrefix_sample0003A completed - 
+20161027_154906 summaryPrefix_sample0003A_3_root - Passed checkpoint jcheck_file_not_empty for file: results/outPrefix_sample0003A.txt
+20161027_154906 summaryPrefix_sample0003A_3_root completed - #JSUB<summary-name> sample0003A
+20161027_154906 summaryPrefix_sample0003A_3_root completed - echo "Processing summary data from: "sample0003A
+20161027_154906 summaryPrefix_sample0003A_3_root completed - # root group
+20161027_154906 summaryPrefix_sample0003A_3_root completed - bash ../../bash_scripts/trivial.sh "results/outPrefix_"sample0003A.txt
+20161027_154906 summaryPrefix_sample0003A_3_root completed - bash ../../bash_scripts/trivial.sh "results/outPrefix_"sample0003A.txt
+20161027_154906 summaryPrefix_sample0003A_3_root completed - jcheck_file_not_empty "results/outPrefix_"sample0003A.txt
+20161027_154906 summaryPrefix_sample0003A_3_root completed - 
+20161027_154911 summaryPrefix_sample0003A_3_first - Passed checkpoint jcheck_file_not_empty for file: results/outPrefix_sample0003A_first.txt
+20161027_154911 summaryPrefix_sample0003A_3_second - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: results/outPrefix_sample0003A_second.txt
+20161027_154911 summaryPrefix_sample0003A_3_first completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0003A_3_root.completed"
+20161027_154911 summaryPrefix_sample0003A_3_second incomplete - check_completion "jobs/jobPrefix_summaryPrefix_sample0003A_3_root.completed"
+20161027_154911 summaryPrefix_sample0003A_3_first completed - #JGROUP first
+20161027_154911 summaryPrefix_sample0003A_3_second incomplete - #JGROUP second
+20161027_154911 summaryPrefix_sample0003A_3_first completed - bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0003A_first.txt sub03X sub03Y
+20161027_154911 summaryPrefix_sample0003A_3_second incomplete - bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0003A_second.txt sub03Y sub03Z
+20161027_154911 summaryPrefix_sample0003A_3_first completed - jcheck_file_not_empty "results/outPrefix_"sample0003A_first.txt
+20161027_154911 summaryPrefix_sample0003A_3_second incomplete - echo " " > "results/outPrefix_"sample0003A_second.txt
+20161027_154911 summaryPrefix_sample0003A_3_second incomplete - jcheck_file_not_empty "results/outPrefix_"sample0003A_second.txt
+20161027_154911 summaryPrefix_sample0003A_3_first - Passed checkpoint jcheck_file_not_empty for file: results/outPrefix_sample0003A_first.txt
+20161027_154911 summaryPrefix_sample0003A_3_first completed - bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0003A_first.txt sub03Y sub03Z
+20161027_154911 summaryPrefix_sample0003A_3_first completed - jcheck_file_not_empty "results/outPrefix_"sample0003A_first.txt
+20161027_154911 summaryPrefix_sample0003A_3_third - Passed checkpoint jcheck_file_not_empty for file: results/outPrefix_sample0003A_third.txt
+20161027_154911 summaryPrefix_sample0003A_3_first completed - 
+20161027_154911 summaryPrefix_sample0003A_3_third completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0003A_3_root.completed"
+20161027_154911 summaryPrefix_sample0003A_3_third completed - #JGROUP third
+20161027_154911 summaryPrefix_sample0003A_3_third completed - bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0003A_third.txt sub03Z sub03X
+20161027_154911 summaryPrefix_sample0003A_3_third completed - jcheck_file_not_empty "results/outPrefix_"sample0003A_third.txt
+20161027_154911 summaryPrefix_sample0003A_3_third - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: results/outPrefix_sample0003A_third.txt
+20161027_154911 summaryPrefix_sample0003A_3_third incomplete - bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0003A_third.txt sub03X sub03Y
+20161027_154911 summaryPrefix_sample0003A_3_third incomplete - echo " " > "results/outPrefix_"sample0003A_third.txt
+20161027_154911 summaryPrefix_sample0003A_3_third incomplete - jcheck_file_not_empty "results/outPrefix_"sample0003A_third.txt

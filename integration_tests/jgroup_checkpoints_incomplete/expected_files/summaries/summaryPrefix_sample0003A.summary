@@ -1,4 +1,3 @@
-# Basic integration test protocol involving only a call to a bash script that writes a single line to a text file.
 #JSUB<summary-name> sample0003A
 echo "Processing summary data from: "sample0003A
 # root group 
@@ -22,7 +21,7 @@ jcheck_file_not_empty  "results/outPrefix_"sample0003A_third.txt
 bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0003A_third.txt sub03X sub03Y
 echo "  " >            "results/outPrefix_"sample0003A_third.txt
 jcheck_file_not_empty  "results/outPrefix_"sample0003A_third.txt
-#JGROUP last
+#JGROUP last first second third
 jcheck_file_not_empty                                  "results/outPrefix_"sample0003A_first.txt "results/outPrefix_"sample0003A"_second.txt "results/outPrefix_"sample0003A_third.txt"
 bash ../../bash_scripts/catfiles.sh "results/outPrefix_"sample0003A.txt "results/outPrefix_"sample0003A"_first.txt "results/outPrefix_"sample0003A_second.txt results/outPrefix_"sample0003A_third.txt
 jcheck_file_not_empty    "results/outPrefix_"sample0003A.txt

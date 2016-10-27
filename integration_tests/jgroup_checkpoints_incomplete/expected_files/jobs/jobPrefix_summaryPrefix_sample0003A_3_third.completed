@@ -1,0 +1,4 @@
+check_completion "jobs/jobPrefix_summaryPrefix_sample0003A_3_root.completed"
+#JGROUP third
+bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0003A_third.txt sub03Z sub03X
+jcheck_file_not_empty "results/outPrefix_"sample0003A_third.txt

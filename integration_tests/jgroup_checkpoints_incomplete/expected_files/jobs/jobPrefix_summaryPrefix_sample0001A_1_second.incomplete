@@ -1,0 +1,8 @@
+check_completion "jobs/jobPrefix_summaryPrefix_sample0001A_1_root.completed"
+#JGROUP second
+bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0001A_second.txt sub01Y sub01Z
+echo " " > "results/outPrefix_"sample0001A_second.txt
+jcheck_file_not_empty "results/outPrefix_"sample0001A_second.txt
+bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0001A_second.txt sub01Z sub01X
+jcheck_file_not_empty "results/outPrefix_"sample0001A_second.txt
+
