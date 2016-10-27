@@ -30,7 +30,6 @@ GENERATED_SUBMITTED_JOBS_LIST="$GENERATED_JOB_LIST".submitted
 
 EXPECTED_SUMMARY_LIST=${DIR_EXPECTED_FILES}/${GENERATED_SUMMARY_LIST}
 EXPECTED_JOB_LIST=${DIR_EXPECTED_FILES}/${GENERATED_JOB_LIST}
-EXPECTED_JOB_DATA=${DIR_EXPECTED_FILES}/"it1_fvars.txt"
 
 CALL_JSUB="julia ../../../jsub.jl -d -v "
 
@@ -50,8 +49,8 @@ mkdir -p ${GENERATED_DIR}
 cd ${GENERATED_DIR}
 
 clear_generated # Remove existing output from previous tests
-mkdir -p results
-mkdir -p lsf_output
+mkdir -p $(dirname "$OUT_PREFIX")
+mkdir -p $(dirname "$LSF_OUTPUT_PREFIX")
 
 # Run jsub - only create summary file
 ${CALL_JSUB} -s -p ${PROTOCOL_FILE} --vars ${VARS_FILE} --fvars ${FVARS_FILE} --summary-prefix ${SUMMARY_PREFIX}

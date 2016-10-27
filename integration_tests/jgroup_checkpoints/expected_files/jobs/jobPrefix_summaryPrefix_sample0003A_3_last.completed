@@ -1,0 +1,6 @@
+check_completion "jobs/jobPrefix_summaryPrefix_sample0003A_3_root.completed"
+check_completion "jobs/jobPrefix_summaryPrefix_sample0003A_3_first.completed"
+check_completion "jobs/jobPrefix_summaryPrefix_sample0003A_3_second.completed"
+check_completion "jobs/jobPrefix_summaryPrefix_sample0003A_3_third.completed"
+#JGROUP last first second third
+jcheck_file_not_empty "results/outPrefix_"sample0003A_first.txt "results/outPrefix_"sample0003A"_second.txt "results/outPrefix_"sample0003A_third.txt"
