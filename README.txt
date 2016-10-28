@@ -1,84 +1,159 @@
+This is a light weight tool for creating and submitting job file to the LSF queuing system.  Its purpose is to automate job file generation in cases where the same processing steps need to be applied to different sets of input data.
+
+Dependencies
+The code for generating job files is written in Julia (version 0.4.0) and uses the ArgParse package (v0.3.1).  Job files use bash shell command and have been tested with LSF version 9.1.2.0 in a Linux environment.
 
 
-For quick reference
-Input file formats:
+Aims
+Traceability: Job files produced by jsub contain bash shell functions that write to log files as the job proceeds. This creating a record of the steps taken to obtain the resulting output data
 
-Variables File
-The .vars file is a tab delimited file of two columns only.
-The left column contains the name of the variable (without a dollar sign) which matches the variable in the .protocol file (including dollar sign).
-The right column (everything to the right of the first tab character) is the value of the variable and will be substituted into the protocol file (this can contain spaces tabs and just about anything else but is made with short non-whitespace strings in mind).
-# Can contain comment lines starting with "#" or " 	#" but no comments following data in a signle row.
-
-Variables from list file
-The .fvars file indicates that the value of a variable should be taken from a list.
-This file is tab delimited with exactly three columns: variable name, column in the list file, path to the list file. 
-Currently all lists are expected to be the same length with a one-to-one mapping between each row of each list.
-# Can contain comment lines starting with "#" or " 	#" but no comments following data in a signle row.
-
-Protocol File
-Whitespace delimited file with an arbitrary number of entries in each row.
-# Can contain comment lines starting with "#" or " 	#".  Comment lines and comments after data will be inserted into the job file so it is up to the user to maintain syntax that shell can process.  When in doubt do not put comments on the same line as the data (protocol instrucitons).
+Modularity: Paths to the input data and the steps taken to process it can be specified in separate files.
 
 
-Outline:
+Example 1 - minimal
+The most basic use of jsub is to pass a file listing bash commands as an argument to --protocol.  The tool will create the required files and submit an LSF job.
+
+NOTE: Depending on your LSF setup you may need to provide specific options to LSF, such as a grant code or a queue length.  The prefered way of doing this is to write the desired options into a text file (in the same format as you would in an LSF job file) and provide the path to this file as an argument to the "--header-from-file" option.
+For a full list of options run jsub with the "--help" flag.
+
+Example header file contents "my_job_header_file.txt":
+#BSUB -P grant-code
+#BSUB -q short
+
+Assuming both Julia and LSF are running in the current environment and Julia is accessible with the julia command.
+From the jsub directory:
+
+alias jsub="julia $(pwd)/jsub.jl "
+
+cd examples/example_01
+
+jsub --protocol echo.protocol --header-from-file "my_job_header_file.txt"
+
+Running this example should produce the following files:
+./echo_1_1.completed
+./echo_1_1.error
+./echo_1_1.lsf
+./echo_1_1.output
+./echo_1.log
+./echo_1.summary
+./echo.list-jobs
+./echo.list-jobs.submitted
+./echo.list-summaries
+./example_01_output.txt
+
+Here is the order of events, jsub runs in three disticnt stages that may be run together or separately.
+
+STAGE 1) 
+The file "echo.protocol" is parsed and the file "echo_1.summary" is generated from it.
+In this simple case the two files are identical but in more complex situations variables in *.protocol files are substituted for values in other files resulting in multiple *.summary files per *.protocol file (see below).
+The file echo.list-summaries contains a list of the summary files generated (just one in this case).
+
+STAGE 2) The echo_1.summary file is used to generate the job files echo_1_1.lsf and echo.list-jobs.
+
+STAGE 3) The job files from stage 2 are submitted to LSF.  The list of submitted files is found in "echo.list-jobs.submitted" and the results of running the bash commands in the file can be seen in "example_01_output.txt".  LSF writes stdout and stderr to "echo_1_1.output" and "echo_1_1.error" respectively.  Functions in the job file create a list the steps that appear to have been completed successfully in the file "echo_1_1.completed" and write other information to "echo_1.log".
 
 
-STAGE 1 INPUTS
-  
-  The following options are used to generate a "process name"
-    --protocol "dir/protocolFile"
-    --vars     "dir/varsFile"
-    --fvars    "dir/fvarsFile"
-      OR
-    --process-name "processName"
-  
-  --summary-prefix "dir/sp_"
+Example 2 - vars
+Consider an extension of example 1 where want to echo specified strings to the output file.  Suppose that there are several combinations of inputs and we want to try them one at a time while keeping the overall procedure the same (see: examples/example_02/echo_vars.protocol).  
+
+Variables are declared in the protocol file using the same syntax as in bash (e.g. $VARIABLE or ${VARIABLE}).
+
+We can create a table of variable names and their associated values in a file and pass it as an argument to the --vars option (see examples/example_02/vars02.vars)
+
+NOTE: While it is possible to declare variables in the protocol as you would in a bash script, this removes the ability to change their values without changing the protocol file.  Doing so may also cause problems for protocols that are used to generate multiple job files.
+
+If we want to try a different set of values we don't need to change the echo_vars.protocol file, instead we can supply a different file to --vars.
+
+NOTE: The expected format for a file passed to --vars is two, tab-delimited columns with the variable names in the left column.
+
+cd examples/example_02
+
+jsub --protocol echo02.protocol \
+     --header-from-file "my_job_header_file.txt" \
+     --vars vars02.vars
 
 
-STAGE 1 OUTPUTS
-  
-  File listing summary files: "dir/sp_processName.list-summaries"
-      
-  The *.list-summaries file contains a list of paths:
-                      "dir/sp_processName_1.summary"
-                      "dir/sp_processName_2.summary"
-                      .
-                      .
-                      .
-    OR
-    if "#JSUB<summary-name> summaryName" is declared in the protocol file "dir/sp_summaryName.summary"
-                      "dir/sp_summaryName_1.summary"
-                      "dir/sp_summaryName_2.summary"
-                      .
-                      .
-                      .
+Example 3 - fvars
+We often want to run the same procedure on a list of files, for example, different experimental samples.
+To facilitate this the --fvars argument takes a path to a file that consists of a three, tab-delimited columns listing (1) variable names, (2) column numbers and (3) paths to list files.
+One summary file is created for each row of the list files.  This summary file corresponds to the protocol file but with variable names substituted for values taken from the list files.
 
-STAGE 2 INPUTS
+NOTE: the list files are required to have the same number of rows to avoid ambiguity.
 
-  --list-summaries "dir/sp_processName.list-summaries"
+The files listed in column 3 supply values to the matching variables in the protocol.
 
-  --job-prefix "dir/jp_"
+For example, if the file passed to --fvars contains the following lines:
+LVAR1	1	list_file.txt 
+LVAR2	2	list_file.txt 
 
-  Prefixes for *.output, *.error, *.completed and *.incomplete files.
+and the file "list_file.txt" contains values:
+row1col1	row1col2
+row2col1	row2col2
+row3col1	row3col2
 
-STAGE 2 OUTPUTS
+Three summary files will be generated.  Instances of "$LVAR1" or "$LVAR2" will be replaces with values from the corresponding rows and columns found in "list_file.txt".
 
-  File listing job files: "dir/jp_sp_processName.list-jobs"
+cd examples/example_03
 
-  Paths to job files: 
-    "dir/jp_sp_summaryName_1_groupA.lsf"
-    "dir/jp_sp_summaryName_1_groupB.lsf"
-    ...
-    "dir/jp_sp_summaryName_2_groupA.lsf"
-    "dir/jp_sp_summaryName_2_groupB.lsf"
-    ...
-    .
-    .
-    .
+jsub --protocol echo03.protocol \
+     --header-from-file "my_job_header_file.txt" \
+     --vars vars02.vars \
+     --fvars fvars03.fvars
 
-STAGE 3 INPUTS
+NOTE: Jobs are run in a non-deterministic order (determined by LSF) so it is usually best not to write the output from different jobs to the same file. 
 
-  --list-jobs "dir/jp_sp_processName.list-jobs"
+NOTE: Variable values passed via --vars are used to expand matching variables in the file passed to --fvars.
+
+
+Example 4 - prefixes
+The number of files generated by jsub and LSF starts to grow as longer lists are usesd.  We can use prefixes to specify output file locations (for a full list of prefix options run jsub with the --help flag).
+
+cd examples/example_04
+
+jsub --protocol echo03.protocol \
+     --header-from-file "my_job_header_file.txt" \
+     --vars vars02.vars \
+     --fvars fvars03.fvars \
+     --summary-prefix "summaries/sumpre_" \
+     --job-prefix "jobs/jobpre_" \
+     --prefix-lsf-out "lsf_out/lsf_" \
+     --prefix-completed-incomplete "progoress/job_progress_" \
+     --timestamp-files
+
+
+Example 5 stages
+In the above examples all the stages were run together.  Here we run them one at a time.
+
+... 
+
+
+Example ? checkpoints
+
+...
+
+Example ? *.incomplete
+When a job fails
+
+...
+
+
+
+
+
+# A handy function for resetting example directories
+function clean {
+  mkdir -p TRASH
+  mv * TRASH/
+  mv TRASH/README.txt .
+  mv TRASH/*.protocol .
+  mv TRASH/my_job_header_file.txt .
+  mv TRASH/*.vars .
+  mv TRASH/*.fvars .
+  mv TRASH/list_file.txt .
+}
+
+
+
 
 
 
