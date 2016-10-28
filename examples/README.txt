@@ -119,7 +119,8 @@ jsub --protocol echo03.protocol \
      --summary-prefix "summaries/sumpre_" \
      --job-prefix "jobs/jobpre_" \
      --prefix-lsf-out "lsf_out/lsf_" \
-     --prefix-completed-incomplete "progoress/job_progress_" \
+     --prefix-completed "progoress/completed/" \
+     --prefix-incomplete "progoress/incomplete/" \
      --timestamp-files
 
 
