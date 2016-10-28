@@ -1,0 +1,4 @@
+# Example protocol using only echo
+echo "Creating a new file" > example_01_output.txt # Create a file
+echo "Text from step 2" >> example_01_output.txt # Append some text to the file
+echo "Text from step 3" >> example_01_output.txt# Append some other text to the file

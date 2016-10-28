@@ -1,6 +1,6 @@
 using ArgParse
 
-flagDebug=true; # Used to print extra information for debugging
+flagDebug=false; # Used to print extra information for debugging
 
 argSettings = ArgParseSettings(description = string(
 "This is a tool for systematically generating LSF jobs which write to log files. Below is an outline of the process.\n",
@@ -246,9 +246,9 @@ include("./common_functions/jsub_common.jl")
   "-l", "--header-from-file"
     help = "Path to a file containing text to be included in every job file header.  This is included after any string specified in the --common-header option."
 
-  "-y", "--no-version-control"
-    action = :store_false
-    help = "Do not call the bash function which does version control inside these jobs."
+  # "-y", "--no-version-control"
+  #   action = :store_false
+  #   help = "Do not call the bash function which does version control inside these jobs."
 
   "-d", "--no-logging-timestamp"
     action = :store_false
@@ -511,8 +511,8 @@ if requiredStages[2] == '1'
     string(inputJobsPrefix, basename(remove_suffix(pathExistingSummariesList, ".list-summaries")), ".list-jobs"); # Determine path to the *.list-jobs file
     flagVerbose=flagVerbose, tagsExpand=tagsExpand, checkpointsDict=checkpointsDict, commonFunctions=commonFunctions, 
     jobFilePrefix=inputJobsPrefix,
-    doJsubVersionControl=get_argument(parsed_args, "no-version-control"; verbose=flagVerbose, optional=true, default=true), 
-    stringBoolFlagLoggingTimestamp=( get_argument(parsed_args, "no-logging-timestamp"; verbose=flagVerbose, optional=true, default=true) ? "false" : "true" ), # Indicates if bash scripts should create a timestamp in the logging file, default is "true" (this is a string because it is written into a bash script)
+    doJsubVersionControl=false, #get_argument(parsed_args, "no-version-control"; verbose=flagVerbose, optional=true, default=true), 
+    stringBoolFlagLoggingTimestamp=( get_argument(parsed_args, "no-logging-timestamp"; verbose=flagVerbose, optional=true, default=false) ? "false" : "true" ), # Indicates if bash scripts should create a timestamp in the logging file, default is "true" (this is a string because it is written into a bash script)
     headerPrefix=get_argument(parsed_args, "common-header"; verbose=flagVerbose, optional=true, default="#!/bin/bash\nset -eu\n"),
     prefixOutputError=get_argument(parsed_args, "prefix-lsf-out", verbose=flagVerbose, optional=true, default=""), # Get prefix for *.error and *.output files (written by the LSF job)
     timestampString=(get_argument(parsed_args, "timestamp-files", verbose=flagVerbose, optional=true, default=false) ? get_timestamp_(nothing) : ""), # Get job timestamp string
