@@ -1,0 +1,9 @@
+check_completion "jobs/jobPrefix_summaryPrefix_sample0006A_06_root.completed"
+check_completion "jobs/jobPrefix_summaryPrefix_sample0006A_06_first.completed"
+check_completion "jobs/jobPrefix_summaryPrefix_sample0006A_06_second.completed"
+check_completion "jobs/jobPrefix_summaryPrefix_sample0006A_06_third.completed"
+#JGROUP last first second third
+OUTFILE="results/outPrefix_"sample0006A
+bash ../../bash_scripts/catfiles.sh "$OUTFILE".txt "$OUTFILE"_first.txt "$OUTFILE"_second.txt "$OUTFILE"_third.txt
+
+#JSUB Successfully ran job on: 20161027_140148

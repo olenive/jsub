@@ -1,0 +1,117 @@
+#!/bin/bash
+set -eu
+
+#BSUB -J summaryPrefix_sample0011A_11_root
+#BSUB -e lsf_output/lsf_summaryPrefix_sample0011A_11_root.error
+#BSUB -o lsf_output/lsf_summaryPrefix_sample0011A_11_root.output
+#BSUB -P grant-code
+#BSUB -q short
+
+
+# Job file variables:
+JSUB_PATH_TO_THIS_JOB="jsub/integration_tests/fvars/generated_files/jobs/jobPrefix_summaryPrefix_sample0001A_1.lsf"
+JSUB_JOB_ID="summaryPrefix_sample0011A_11_root"
+JSUB_LOG_FILE="jobs/jobPrefix_summaryPrefix_sample0011A.log"
+JSUB_SUMMARY_COMPLETED="jobs/jobPrefix_summaryPrefix_sample0011A_11_root.completed"
+JSUB_SUMMARY_INCOMPLETE="jobs/jobPrefix_summaryPrefix_sample0011A_11_root.incomplete"
+JSUB_VERSION_CONTROL=true
+JSUB_JOB_TIMESTAMP=true
+
+# Contents inserted from other files (this section is intended to be used only for functions):
+
+# --- From file: jsub/common_functions/job_processing.sh
+## job_processing parses the job file, writes to log and summary files, and calls version control functions.
+# Function allowing job script termination
+trap "exit 1" TERM
+export TOP_PID=$$
+function kill_this_job {
+  echo "Terminating job $1"
+  kill -s TERM $TOP_PID
+}
+# Tag variables
+JSUB_BEGIN_JOB_TAG="#JSUB<begin-job>"
+JSUB_CHECKPOINT_TAG="jcheck_"
+JSUB_FINISH_JOB_TAG="#JSUB<finish-job>"
+JSUB_SUCCESSFUL_COMPLETION="#JSUB Successfully ran job on:"
+# Job processing variables
+JSUB_PREVIOUS_END=0
+JSUB_FLAG_FAIL=false
+function process_job { # This function reads the job file line by line and writes to log and summray (completed and incomplete) files.
+  local dateTime=""
+  [[ ${JSUB_JOB_TIMESTAMP} = true ]] && dateTime=`date +%Y%m%d_%H%M%S`
+  rm -f ${JSUB_SUMMARY_INCOMPLETE} # Clean out the summary.incomplete file so that it is ready to accept a new text from the start
+  ## Loop over this job file and process lines
+  local jline=0 # Line number within the job commands section
+  local flagInJob=false
+  local flagBlockEnded=false
+  while read -r line || [[ -n "$line" ]]; do
+    ## Check if we have entered or left the job commands section
+    if [[ ${line} == ${JSUB_BEGIN_JOB_TAG}* ]]; then
+      flagInJob=true
+      continue
+    elif [[ ${line} == ${JSUB_FINISH_JOB_TAG}* ]]; then
+      jline=$((jline+1))
+      flagInJob=false
+    fi
+    ## Only process the line if it originated form a summary file
+    if [ ${flagInJob} = true ]; then
+      jline=$((jline+1)) # Increment line numbers inside job
+      ## Determin current line type
+      if [ ${flagBlockEnded} = false ]; then
+        if [ ${jline} -le ${JSUB_PREVIOUS_END} ]; then # A line before the block of code currently being executed
+          : # do nothing
+        elif [ ${jline} -gt ${JSUB_PREVIOUS_END} ]; then # A line within the block of code currently being executed
+          ## Check if this line corresponds to the end of a block
+          if [[ ${line} == ${JSUB_CHECKPOINT_TAG}* ]] || [[ ${line} == ${JSUB_FINISH_JOB_TAG}* ]]; then
+            flagBlockEnded=true
+            JSUB_PREVIOUS_END=${jline} # Update line number of last block end
+          fi
+          ## Write to log and summary files
+          if [ ${JSUB_FLAG_FAIL} = false ]; then
+            echo "$dateTime ""$JSUB_JOB_ID"" completed - "${line} >> ${JSUB_LOG_FILE}
+            echo ${line} >> ${JSUB_SUMMARY_COMPLETED}
+          else
+            echo "$dateTime ""$JSUB_JOB_ID"" incomplete - "${line} >> ${JSUB_LOG_FILE}
+            echo ${line} >> ${JSUB_SUMMARY_INCOMPLETE}
+          fi
+          [[ ${JSUB_VERSION_CONTROL} = true ]] && version_control # Do version control
+        fi
+      else # A line after the block of code that has just been executed
+        echo ${line} >> ${JSUB_SUMMARY_INCOMPLETE}
+      fi
+    fi
+  done < ${JSUB_PATH_TO_THIS_JOB}
+  [[ ${JSUB_FLAG_FAIL} = true ]] && kill_this_job ${JSUB_PATH_TO_THIS_JOB} # Kill the job if a checkpoint fail occured (but let this function do logging etc first)
+  return 0
+}
+function check_completion { # Check that the input file ends a string indicating successful job completion
+  [[ ${JSUB_JOB_TIMESTAMP} = true ]] && local dateTime=`date +%Y%m%d_%H%M%S` || local dateTime=""
+  if [[ $(tail -n1 "$1") != "$JSUB_SUCCESSFUL_COMPLETION"* ]]; then 
+    echo "$dateTime ""$JSUB_JOB_ID"" Terminating job due to lack of line indicating successful parent job completion at the end of the file: ""$1"""
+    kill_this_job ${JSUB_PATH_TO_THIS_JOB} 
+  fi
+}
+function on_completion { # Writes a line indicating successful job completing to the .incomplete file.  This line is then used to determine if jobs which depend on this one should be run.
+  [[ ${JSUB_JOB_TIMESTAMP} = true ]] && local dateTime=`date +%Y%m%d_%H%M%S` || local dateTime=""
+  [[ ${JSUB_FLAG_FAIL} == false ]] && echo ${JSUB_SUCCESSFUL_COMPLETION}" "${dateTime} >> ${JSUB_SUMMARY_COMPLETED}
+}
+
+# --- From file: jsub/common_functions/version_control.sh
+# Function used to try to keep track of the versions of arbitrary software on the system by checking the which command and checking for the existance of git repositories.
+function version_control {
+  echo "called version_control"
+}
+
+# Commands taken from summary file: summaries/summaryPrefix_sample0011A.summary
+
+#JSUB<begin-job>
+#JSUB<summary-name> sample0011A
+echo "Processing summary data from: "sample0011A
+# root group 
+OUTFILE="results/outPrefix_"sample0011A # Note: this is an example of what not to do! After the protocol is split OUTFILE will be undeclared in subsequent groups unless it is declared there again using variables from vars and fvars but NOT variables from the top of the script.
+bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
+bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
+
+#JSUB<finish-job>
+process_job
+on_completion

@@ -1,0 +1,11 @@
+sub01X	sub01Y	sub01Z
+sub02X	sub02Y	sub02Z
+sub03X	sub03Y	sub03Z
+sub04X	sub04Y	sub04Z
+sub05X	sub05Y	sub05Z
+sub06X	sub06Y	sub06Z
+sub07X	sub07Y	sub07Z
+sub08X	sub08Y	sub08Z
+sub09X	sub09Y	sub09Z
+sub10X	sub10Y	sub10Z
+sub11X	sub11Y	sub11Z

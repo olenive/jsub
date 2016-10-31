@@ -1,0 +1,4 @@
+SAMPLE_ID	1	../samples.txt
+SUBSAMPLE_01	1	../subsamples.txt
+SUBSAMPLE_02	2	../subsamples.txt
+SUBSAMPLE_03	3	../subsamples.txt

@@ -1,0 +1,4 @@
+Concatenated arguments produced by ../../bash_scripts/concat.sh:
+sub10X_sub10Y
+Concatenated arguments produced by ../../bash_scripts/concat.sh:
+sub10Y_sub10Z

@@ -1,0 +1,15 @@
+One line of text produced by trivial.sh
+One line of text produced by trivial.sh
+Concatenated file contents produced by ../../bash_scripts/catfiles.sh:
+Concatenated arguments produced by ../../bash_scripts/concat.sh:
+sub10X_sub10Y
+Concatenated arguments produced by ../../bash_scripts/concat.sh:
+sub10Y_sub10Z
+Concatenated arguments produced by ../../bash_scripts/concat.sh:
+sub10Y_sub10Z
+Concatenated arguments produced by ../../bash_scripts/concat.sh:
+sub10Z_sub10X
+Concatenated arguments produced by ../../bash_scripts/concat.sh:
+sub10Z_sub10X
+Concatenated arguments produced by ../../bash_scripts/concat.sh:
+sub10X_sub10Y
