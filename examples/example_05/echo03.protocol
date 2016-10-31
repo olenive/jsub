@@ -1,0 +1,5 @@
+# Example protocol using only echo
+echo "Creating a new file" > $OUTFILE.txt # Create a file
+echo "Text from step 2, with variable value: ""$VAR1" >> $OUTFILE.txt # Append some text to the file
+echo "Text from step 3, with variable value: ""$VAR2" >> $OUTFILE.txt # Append some other text to the file
+echo "Variables from list_files.txt: $LVAR1 $LVAR2" >> $OUTFILE.txt

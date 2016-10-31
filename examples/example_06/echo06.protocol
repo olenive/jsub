@@ -1,0 +1,6 @@
+# Example protocol using only echo
+echo ${LVAR1} > ${OUT1}
+echo ${LVAR2} > ${OUT2}
+jcheck_file_not_empty ${OUT1} ${OUT2}
+echo "After going past jcheck_file_not_empty" >> ${OUT1}
+echo "After going past jcheck_file_not_empty" >> ${OUT2}

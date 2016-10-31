@@ -1,0 +1,4 @@
+row1col1	row1col2	outfile1
+row2col1	row2col2	outfile2
+row3col1	row3col2	outfile3
+
