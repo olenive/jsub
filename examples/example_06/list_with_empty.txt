@@ -1,2 +1,2 @@
-row1col1	row1col2
-row2col1	" "
+row1col1	row1col2	num1
+row2col1	" "	num2
