@@ -12,9 +12,9 @@ set -eu
 JSUB_PATH_TO_THIS_JOB="jsub/integration_tests/fvars/generated_files/jobs/jobPrefix_summaryPrefix_sample0001A_1.lsf"
 JSUB_JOB_ID="summaryPrefix_sample0011A_11_root"
 JSUB_LOG_FILE="jobs/jobPrefix_summaryPrefix_sample0011A.log"
-JSUB_SUMMARY_COMPLETED="jobs/jobPrefix_summaryPrefix_sample0011A_11_root.completed"
-JSUB_SUMMARY_INCOMPLETE="jobs/jobPrefix_summaryPrefix_sample0011A_11_root.incomplete"
-JSUB_VERSION_CONTROL=true
+JSUB_SUMMARY_COMPLETED="progoress/completed/summaryPrefix_sample0011A_11_root.completed"
+JSUB_SUMMARY_INCOMPLETE="progoress/incomplete/summaryPrefix_sample0011A_11_root.incomplete"
+JSUB_VERSION_CONTROL=false
 JSUB_JOB_TIMESTAMP=true
 
 # Contents inserted from other files (this section is intended to be used only for functions):

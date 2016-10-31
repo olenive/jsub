@@ -1,33 +1,33 @@
-20161027_140111 summaryPrefix_sample0010A_10_root completed - #JSUB<summary-name> sample0010A
-20161027_140111 summaryPrefix_sample0010A_10_root completed - echo "Processing summary data from: "sample0010A
-20161027_140111 summaryPrefix_sample0010A_10_root completed - # root group
-20161027_140111 summaryPrefix_sample0010A_10_root completed - OUTFILE="results/outPrefix_"sample0010A # Note: this is an example of what not to do! After the protocol is split OUTFILE will be undeclared in subsequent groups unless it is declared there again using variables from vars and fvars but NOT variables from the top of the script.
-20161027_140111 summaryPrefix_sample0010A_10_root completed - bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
-20161027_140111 summaryPrefix_sample0010A_10_root completed - bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
-20161027_140111 summaryPrefix_sample0010A_10_root completed - 
-20161027_140115 summaryPrefix_sample0010A_10_second completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0010A_10_root.completed"
-20161027_140115 summaryPrefix_sample0010A_10_second completed - #JGROUP second
-20161027_140115 summaryPrefix_sample0010A_10_second completed - OUTFILE="results/outPrefix_"sample0010A
-20161027_140115 summaryPrefix_sample0010A_10_second completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub10Y sub10Z
-20161027_140115 summaryPrefix_sample0010A_10_second completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub10Z sub10X
-20161027_140115 summaryPrefix_sample0010A_10_second completed - 
-20161027_140116 summaryPrefix_sample0010A_10_first completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0010A_10_root.completed"
-20161027_140116 summaryPrefix_sample0010A_10_first completed - #JGROUP first
-20161027_140116 summaryPrefix_sample0010A_10_first completed - OUTFILE="results/outPrefix_"sample0010A
-20161027_140116 summaryPrefix_sample0010A_10_first completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub10X sub10Y
-20161027_140116 summaryPrefix_sample0010A_10_first completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub10Y sub10Z
-20161027_140116 summaryPrefix_sample0010A_10_first completed - 
-20161027_140116 summaryPrefix_sample0010A_10_third completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0010A_10_root.completed"
-20161027_140116 summaryPrefix_sample0010A_10_third completed - #JGROUP third
-20161027_140116 summaryPrefix_sample0010A_10_third completed - OUTFILE="results/outPrefix_"sample0010A
-20161027_140116 summaryPrefix_sample0010A_10_third completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub10Z sub10X
-20161027_140116 summaryPrefix_sample0010A_10_third completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub10X sub10Y
-20161027_140116 summaryPrefix_sample0010A_10_third completed - 
-20161027_140119 summaryPrefix_sample0010A_10_last completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0010A_10_root.completed"
-20161027_140119 summaryPrefix_sample0010A_10_last completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0010A_10_first.completed"
-20161027_140119 summaryPrefix_sample0010A_10_last completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0010A_10_second.completed"
-20161027_140119 summaryPrefix_sample0010A_10_last completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0010A_10_third.completed"
-20161027_140119 summaryPrefix_sample0010A_10_last completed - #JGROUP last first second third
-20161027_140119 summaryPrefix_sample0010A_10_last completed - OUTFILE="results/outPrefix_"sample0010A
-20161027_140119 summaryPrefix_sample0010A_10_last completed - bash ../../bash_scripts/catfiles.sh "$OUTFILE".txt "$OUTFILE"_first.txt "$OUTFILE"_second.txt "$OUTFILE"_third.txt
-20161027_140119 summaryPrefix_sample0010A_10_last completed - 
+20161031_131036 summaryPrefix_sample0010A_10_root completed - #JSUB<summary-name> sample0010A
+20161031_131036 summaryPrefix_sample0010A_10_root completed - echo "Processing summary data from: "sample0010A
+20161031_131036 summaryPrefix_sample0010A_10_root completed - # root group
+20161031_131036 summaryPrefix_sample0010A_10_root completed - OUTFILE="results/outPrefix_"sample0010A # Note: this is an example of what not to do! After the protocol is split OUTFILE will be undeclared in subsequent groups unless it is declared there again using variables from vars and fvars but NOT variables from the top of the script.
+20161031_131036 summaryPrefix_sample0010A_10_root completed - bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
+20161031_131036 summaryPrefix_sample0010A_10_root completed - bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
+20161031_131036 summaryPrefix_sample0010A_10_root completed - 
+20161031_131055 summaryPrefix_sample0010A_10_third completed - check_completion "progoress/completed/summaryPrefix_sample0010A_10_root.completed"
+20161031_131055 summaryPrefix_sample0010A_10_first completed - check_completion "progoress/completed/summaryPrefix_sample0010A_10_root.completed"
+20161031_131055 summaryPrefix_sample0010A_10_second completed - check_completion "progoress/completed/summaryPrefix_sample0010A_10_root.completed"
+20161031_131055 summaryPrefix_sample0010A_10_third completed - #JGROUP third
+20161031_131055 summaryPrefix_sample0010A_10_second completed - #JGROUP second
+20161031_131055 summaryPrefix_sample0010A_10_first completed - #JGROUP first
+20161031_131055 summaryPrefix_sample0010A_10_third completed - OUTFILE="results/outPrefix_"sample0010A
+20161031_131055 summaryPrefix_sample0010A_10_second completed - OUTFILE="results/outPrefix_"sample0010A
+20161031_131055 summaryPrefix_sample0010A_10_first completed - OUTFILE="results/outPrefix_"sample0010A
+20161031_131055 summaryPrefix_sample0010A_10_third completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub10Z sub10X
+20161031_131055 summaryPrefix_sample0010A_10_second completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub10Y sub10Z
+20161031_131055 summaryPrefix_sample0010A_10_third completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub10X sub10Y
+20161031_131055 summaryPrefix_sample0010A_10_first completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub10X sub10Y
+20161031_131055 summaryPrefix_sample0010A_10_second completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub10Z sub10X
+20161031_131055 summaryPrefix_sample0010A_10_first completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub10Y sub10Z
+20161031_131055 summaryPrefix_sample0010A_10_third completed - 
+20161031_131055 summaryPrefix_sample0010A_10_second completed - 
+20161031_131055 summaryPrefix_sample0010A_10_first completed - 
+20161031_131056 summaryPrefix_sample0010A_10_last completed - check_completion "progoress/completed/summaryPrefix_sample0010A_10_root.completed"
+20161031_131056 summaryPrefix_sample0010A_10_last completed - check_completion "progoress/completed/summaryPrefix_sample0010A_10_first.completed"
+20161031_131056 summaryPrefix_sample0010A_10_last completed - check_completion "progoress/completed/summaryPrefix_sample0010A_10_second.completed"
+20161031_131056 summaryPrefix_sample0010A_10_last completed - check_completion "progoress/completed/summaryPrefix_sample0010A_10_third.completed"
+20161031_131056 summaryPrefix_sample0010A_10_last completed - #JGROUP last first second third
+20161031_131056 summaryPrefix_sample0010A_10_last completed - OUTFILE="results/outPrefix_"sample0010A
+20161031_131056 summaryPrefix_sample0010A_10_last completed - bash ../../bash_scripts/catfiles.sh "$OUTFILE".txt "$OUTFILE"_first.txt "$OUTFILE"_second.txt "$OUTFILE"_third.txt
+20161031_131056 summaryPrefix_sample0010A_10_last completed - 

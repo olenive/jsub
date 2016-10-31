@@ -1,8 +1,0 @@
-#JSUB<summary-name> sample0011A
-echo "Processing summary data from: "sample0011A
-# root group
-OUTFILE="results/outPrefix_"sample0011A # Note: this is an example of what not to do! After the protocol is split OUTFILE will be undeclared in subsequent groups unless it is declared there again using variables from vars and fvars but NOT variables from the top of the script.
-bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
-bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
-
-#JSUB Successfully ran job on: 20161027_140116
