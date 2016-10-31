@@ -1,0 +1,6 @@
+20161031_115456 sumpre_echo03_vars02_fvars03_it_1_1 completed - # Example protocol using only echo
+20161031_115456 sumpre_echo03_vars02_fvars03_it_1_1 completed - echo "Creating a new file" > outfile1.txt # Create a file
+20161031_115456 sumpre_echo03_vars02_fvars03_it_1_1 completed - echo "Text from step 2, with variable value: string from the VAR1 variable without quotes" >> outfile1.txt # Append some text to the file
+20161031_115456 sumpre_echo03_vars02_fvars03_it_1_1 completed - echo "Text from step 3, with variable value: \"string from teh VAR2 variable with quotes\"" >> outfile1.txt # Append some other text to the file
+20161031_115456 sumpre_echo03_vars02_fvars03_it_1_1 completed - echo "Variables from list_files.txt: "row1col1" "row1col2 >> outfile1.txt
+20161031_115456 sumpre_echo03_vars02_fvars03_it_1_1 completed - 

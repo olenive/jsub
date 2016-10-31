@@ -7,11 +7,11 @@ set -e
 JOB_HEADER="$1"
 
 GENERATED_DIR="generated_files/"
-PROTOCOL_DIR="../../examples/example_04/"
+PROTOCOL_DIR="../../../examples/example_04/"
 PROTOCOL_FILE="$PROTOCOL_DIR"/"echo03.protocol"
 VARS_FILE="$PROTOCOL_DIR"/"vars02.vars"
-FVARS_FILE="$PROTOCOL_DIR"/"fvars03.fvars"
-LONG_NAME="echo03_vars02_fvars03"
+FVARS_FILE="../""fvars03_it.fvars"
+LONG_NAME="echo03_vars02_fvars03_it"
 SUMMARY_PREFIX="summaries/sumpre_"
 SUMMARY_BASE_PREFIX=$(basename $SUMMARY_PREFIX)
 JOB_PREFIX="jobs/jobpre_"
@@ -28,6 +28,7 @@ DIR_EXPECTED_FILES="../expected_files/"
 declare -a SAMPLES_COL01=("row1col1" "row2col1" "row3col1")
 declare -a SAMPLES_COL02=("row1col2" "row2col2" "row3col2")
 declare -a SAMPLES_COL03=("outfile1" "outfile2" "outfile3")
+declare -a COUNTER=("1" "2" "3")
 JOBID_PREFIX=""
 declare -a JOBIDS=("$JOBID_PREFIX""1" "$JOBID_PREFIX""2" "$JOBID_PREFIX""3")
 # declare -a JGROUPS=("root" "first" "second" "third" "last")
@@ -51,6 +52,17 @@ echo "Running integration test: ""$0""..."
 
 ### FUNCTIONS ###
 source ../common_it_functions.sh
+function clear_generated {
+  rm -rf "lsf_output"
+  rm -rf "summaries"
+  rm -rf "jobs"
+  rm -rf "results"
+  rm -f *".error"
+  rm -f *".output"
+  rm outfile1.txt
+  rm outfile2.txt
+  rm outfile3.txt
+}
 #################
 
 # Change to generated_files directory
@@ -63,8 +75,8 @@ mkdir -p $(dirname "$OUT_PREFIX")
 mkdir -p $(dirname "$LSF_OUTPUT_PREFIX")
 
 ## Run (code similar to) example 
-${CALL_JSUB} --protocol "PROTOCOL_FILE" \
-     --header-from-file "$JOB_HEADER" \
+${CALL_JSUB} --protocol "$PROTOCOL_FILE" \
+    $(getCommonHeaderOptionString "$JOB_HEADER") \
      --vars "$VARS_FILE" \
      --fvars "$FVARS_FILE" \
      --summary-prefix "$SUMMARY_PREFIX" \
@@ -76,8 +88,8 @@ ${CALL_JSUB} --protocol "PROTOCOL_FILE" \
 
 # Check that summary files are generated
 # Check that a summary file and a summary listing file are generated from the protocol
-for sample in "${SAMPLES[@]}"; do
-  GENERATED_SUMMARY="$SUMMARY_PREFIX""$LONG_NAME".summary
+for sample in "${COUNTER[@]}"; do
+  GENERATED_SUMMARY="$SUMMARY_PREFIX""$LONG_NAME"_"$sample".summary
   EXPECTED_SUMMARY="$DIR_EXPECTED_FILES"/"$GENERATED_SUMMARY"
   assert "file_exists ${GENERATED_SUMMARY}" "yes"
   assert "compare_contents ${GENERATED_SUMMARY} ${EXPECTED_SUMMARY}" ""
@@ -89,25 +101,30 @@ assert "compare_contents ${GENERATED_SUMMARY_LIST} ${EXPECTED_SUMMARY_LIST}" ""
 assert "file_exists ${GENERATED_JOB_LIST}" "yes"
 assert "compare_contents ${GENERATED_JOB_LIST} ${EXPECTED_JOB_LIST}" ""
 idx=0
-for sample in "${SAMPLES[@]}"; do
+for sample in "${COUNTER[@]}"; do
   for jgroup in "${JGROUPS[@]}"; do
-    awaitJobNameCompletion ${SUMMARY_BASE_PREFIX}${sample}_${JOBIDS[idx]}_${jgroup}
+    LSF_JOBID=${SUMMARY_BASE_PREFIX}${LONG_NAME}_${sample}_${JOBIDS[idx]} #_${jgroup}
+    echo "Expected job name: " $LSF_JOBID
+    awaitJobNameCompletion $LSF_JOBID 
   done
   sleep 2 # to make sure output files have been written
   for jgroup in "${JGROUPS[@]}"; do
 
+    # Check that job files were generated
+    GENERATED_JOB_FILE="$JOB_PREFIX""$SUMMARY_BASE_PREFIX""$LONG_NAME"
+
     # Check that job called the required commands
-    GENERATED_JOB_DATA_00="${OUT_PREFIX}${sample}.txt"
+    GENERATED_JOB_DATA_00="outfile""$sample"".txt"
     assert "file_exists ${GENERATED_JOB_DATA_00}" "yes"
     assert "compare_contents ${GENERATED_JOB_DATA_00} ${DIR_EXPECTED_FILES}/${GENERATED_JOB_DATA_00}" ""
 
     # Check that the .output and .error files exist
-    GENERATED_JOB_OUTPUT="${LSF_OUTPUT_PREFIX}${SUMMARY_BASE_PREFIX}${sample}_${JOBIDS[idx]}_${jgroup}.output"
-    GENERATED_JOB_ERROR="${LSF_OUTPUT_PREFIX}${SUMMARY_BASE_PREFIX}${sample}_${JOBIDS[idx]}_${jgroup}.error"
+    GENERATED_JOB_OUTPUT="${LSF_OUTPUT_PREFIX}${SUMMARY_BASE_PREFIX}""$LONG_NAME"_"${sample}_${JOBIDS[idx]}".output #_${jgroup}.output"
+    GENERATED_JOB_ERROR="${LSF_OUTPUT_PREFIX}${SUMMARY_BASE_PREFIX}""$LONG_NAME"_"${sample}_${JOBIDS[idx]}".error #_${jgroup}.error"
     assert "file_exists ${GENERATED_JOB_OUTPUT}" "yes"
     assert "file_exists ${GENERATED_JOB_ERROR}" "yes"
     # Check the .completed and incomplete files
-    GENERATED_COMPLETED=${JOB_PREFIX}${SUMMARY_BASE_PREFIX}${sample}_${JOBIDS[idx]}_${jgroup}".completed"
+    GENERATED_COMPLETED=${COMPLETED_PREFIX}${SUMMARY_BASE_PREFIX}"$LONG_NAME"_${sample}_${JOBIDS[idx]}.completed #_${jgroup}".completed"
     assert "file_exists ${GENERATED_COMPLETED}" "yes"
     # GENERATED_INCOMPLETE=${JOB_PREFIX}${SUMMARY_BASE_PREFIX}${sample}_${JOBIDS[idx]}_${jgroup}".incomplete"
     # assert "file_exists ${GENERATED_INCOMPLETE}" "yes"

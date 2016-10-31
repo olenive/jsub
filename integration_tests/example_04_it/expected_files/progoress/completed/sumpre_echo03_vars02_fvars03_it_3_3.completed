@@ -1,0 +1,21 @@
+# Example protocol using only echo
+echo "Creating a new file" > outfile3.txt # Create a file
+echo "Text from step 2, with variable value: string from the VAR1 variable without quotes" >> outfile3.txt # Append some text to the file
+echo "Text from step 3, with variable value: \"string from teh VAR2 variable with quotes\"" >> outfile3.txt # Append some other text to the file
+echo "Variables from list_files.txt: "row3col1" "row3col2 >> outfile3.txt
+
+#JSUB Successfully ran job on: 20161031_113857
+# Example protocol using only echo
+echo "Creating a new file" > outfile3.txt # Create a file
+echo "Text from step 2, with variable value: string from the VAR1 variable without quotes" >> outfile3.txt # Append some text to the file
+echo "Text from step 3, with variable value: \"string from teh VAR2 variable with quotes\"" >> outfile3.txt # Append some other text to the file
+echo "Variables from list_files.txt: "row3col1" "row3col2 >> outfile3.txt
+
+#JSUB Successfully ran job on: 20161031_115017
+# Example protocol using only echo
+echo "Creating a new file" > outfile3.txt # Create a file
+echo "Text from step 2, with variable value: string from the VAR1 variable without quotes" >> outfile3.txt # Append some text to the file
+echo "Text from step 3, with variable value: \"string from teh VAR2 variable with quotes\"" >> outfile3.txt # Append some other text to the file
+echo "Variables from list_files.txt: "row3col1" "row3col2 >> outfile3.txt
+
+#JSUB Successfully ran job on: 20161031_115456

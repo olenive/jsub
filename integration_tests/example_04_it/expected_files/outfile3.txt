@@ -1,0 +1,4 @@
+Creating a new file
+Text from step 2, with variable value: string from the VAR1 variable without quotes
+Text from step 3, with variable value: "string from teh VAR2 variable with quotes"
+Variables from list_files.txt: row3col1 row3col2
