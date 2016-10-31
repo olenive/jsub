@@ -5,7 +5,7 @@ The code for generating job files is written in Julia (version 0.4.0) and uses t
 
 
 Aims
-Traceability: Job files produced by jsub contain bash shell functions that write to log files as the job proceeds. This creating a record of the steps taken to obtain the resulting output data
+Traceability: Job files produced by jsub contain bash shell functions that write to log files as the job proceeds. This creates a record of the steps taken to obtain the resulting output data.
 
 Modularity: Paths to the input data and the steps taken to process it can be specified in separate files.
 

@@ -53,7 +53,7 @@ mkdir -p $(dirname "$OUT_PREFIX")
 mkdir -p $(dirname "$LSF_OUTPUT_PREFIX")
 
 # Run jsub - only create summary file
-${CALL_JSUB} -s -p ${PROTOCOL_FILE} --vars ${VARS_FILE} --fvars ${FVARS_FILE} --summary-prefix ${SUMMARY_PREFIX}
+${CALL_JSUB} -s --protocol ${PROTOCOL_FILE} --vars ${VARS_FILE} --fvars ${FVARS_FILE} --summary-prefix ${SUMMARY_PREFIX}
 # Check that a summary file and a summary listing file are generated from the protocol
 for sample in "${SAMPLES[@]}"; do
   assert "file_exists $SUMMARY_PREFIX""$sample"".summary" "yes"
