@@ -1,0 +1,2 @@
+ echo06_vars06_fvars06_2_2 - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: bash_function_test_files/test_outputs/job_processing/based_on_example_06//results_Bnum2.txt
+Terminating job bash_function_test_files/job_mocks//based_on_example_06//echo06_vars06_fvars06_2_2.lsf

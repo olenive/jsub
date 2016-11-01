@@ -1,0 +1,14 @@
+
+# Commands taken from summary file: summaries/echo06_vars06_fvars06_2.summary
+
+#JSUB<begin-job>
+# Example protocol using only echo
+echo row2col1 > ${DIR_OUT}/"results_A"num2.txt
+echo " " > ${DIR_OUT}/"results_B"num2.txt
+jcheck_file_not_empty ${DIR_OUT}/"results_A"num2.txt ${DIR_OUT}/"results_Bnum2.txt"
+echo "After going past jcheck_file_not_empty" >> ${DIR_OUT}/"results_A"num2.txt
+echo "After going past jcheck_file_not_empty" >> ${DIR_OUT}/"results_B"num2.txt
+
+#JSUB<finish-job>
+process_job
+on_completion

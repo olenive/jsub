@@ -1,0 +1,8 @@
+# Example protocol using only echo
+echo row1col1 > ${DIR_OUT}/"results_A"num1.txt
+echo row1col2 > ${DIR_OUT}/"results_B"num1.txt
+jcheck_file_not_empty ${DIR_OUT}/"results_A"num1.txt ${DIR_OUT}/"results_Bnum1.txt"
+echo "After going past jcheck_file_not_empty" >> ${DIR_OUT}/"results_A"num1.txt
+echo "After going past jcheck_file_not_empty" >> ${DIR_OUT}/"results_B"num1.txt
+
+#JSUB Successfully ran job on: 

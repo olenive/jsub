@@ -1,31 +1,48 @@
 #!/bin/bash
 set -eu
 
-##### Coded added when making the unit test
-DIR_OUT="bash_function_test_files/test_outputs/job_processing/based_on_integration_tests/jgroups/"
-BASH_SCRIPTS="bash_function_test_files/job_mocks/bash_scripts"
-RESULTS="bash_function_test_files/test_outputs/job_processing/based_on_integration_tests/jgroups/results"
-
-###### Code from integration test (with some small changes) #########
-
-#BSUB -w 'ended("summaryPrefix_sample0001A_root")'
-#BSUB -J summaryPrefix_sample0001A_first
-#BSUB -e summaryPrefix_sample0001A_first.error
-#BSUB -o summaryPrefix_sample0001A_first.output
-#BSUB -P grant-code
+#BSUB -J echo06_vars06_fvars06_2_2
+#BSUB -e lsf_out/echo06_vars06_fvars06_2_2.error
+#BSUB -o lsf_out/echo06_vars06_fvars06_2_2.output
+#BSUB -P prepay-houlston
 #BSUB -q short
 
+## Unit test that tries to reproduce the problem of repeated entries in the *.complete and missing entries in *.incomplete file that was found in the initial implementation of example 6
+DIR_EXPECTEDS="bash_function_test_files/job_mocks//based_on_example_06/"
+FILE_EXPECTED_LOG=${DIR_EXPECTEDS}/"echo06_vars06_fvars06_1.log"
+mkdir -p ${DIR_EXPECTEDS}/"progress"/completed
+mkdir -p ${DIR_EXPECTEDS}/"progress"/incomplete
+FILE_EXPECTED_COMPLETED_01=${DIR_EXPECTEDS}/"progress"/"completed"/echo06_vars06_fvars06_1_1.completed
+FILE_EXPECTED_COMPLETED_02=${DIR_EXPECTEDS}/"progress"/"completed"/echo06_vars06_fvars06_2_2.completed
+FILE_EXPECTED_INCOMPLETE_01=${DIR_EXPECTEDS}/"progress"/"incomplete"/echo06_vars06_fvars06_1_1.incomplete
+FILE_EXPECTED_INCOMPLETE_02=${DIR_EXPECTEDS}/"progress"/"incomplete"/echo06_vars06_fvars06_2_2.incomplete
+DIR_OUT="bash_function_test_files/test_outputs/job_processing/based_on_example_06/"
+mkdir -p ${DIR_OUT}"/results"
+mkdir -p ${DIR_OUT}"/jobs"
+mkdir -p ${DIR_OUT}"/progress/completed"
+mkdir -p ${DIR_OUT}"/progress/incomplete"
+FILE_TEST_JOB_01=${DIR_EXPECTEDS}/"echo06_vars06_fvars06_1_1.lsf"
+FILE_TEST_JOB_02=${DIR_EXPECTEDS}/"echo06_vars06_fvars06_2_2.lsf"
+RESULTS=${DIR_OUT}/"results"
+FILE_JOB_RESULT_A1=${DIR_OUT}/"results_A1.txt"
+FILE_JOB_RESULT_B1=${DIR_OUT}/"results_B1.txt"
+FILE_JOB_RESULT_A2=${DIR_OUT}/"results_A2.txt"
+FILE_JOB_RESULT_B2=${DIR_OUT}/"results_B2.txt"
+FILE_LOG_01=${DIR_OUT}/jobs/"echo06_vars06_fvars06_1.log"
+FILE_LOG_02=${DIR_OUT}/jobs/"echo06_vars06_fvars06_2.log"
+FILE_COMPLETED_01=${DIR_OUT}"/progress/completed"/"echo06_vars06_fvars06_1_1.completed"
+FILE_COMPLETED_02=${DIR_OUT}"/progress/completed"/"echo06_vars06_fvars06_2_2.completed"
+FILE_INCOMPLETE_01=${DIR_OUT}"/progress/completed"/"echo06_vars06_fvars06_1_1.incomplete"
+FILE_INCOMPLETE_02=${DIR_OUT}"/progress/completed"/"echo06_vars06_fvars06_2_2.incomplete"
 
 # Job file variables:
-JSUB_PATH_TO_THIS_JOB="bash_function_test_files/job_mocks/based_on_integration_tests/jgroups/jobPrefix_summaryPrefix_sample0001A_first.lsf"
-JSUB_JOB_ID="summaryPrefix_sample0001A_first"
-JSUB_LOG_FILE=${DIR_OUT}/"jobPrefix_summaryPrefix_sample0001A.log"
-JSUB_SUMMARY_COMPLETED=${DIR_OUT}/"jobPrefix_summaryPrefix_sample0001A_first.completed"
-JSUB_SUMMARY_INCOMPLETE=${DIR_OUT}/"jobPrefix_summaryPrefix_sample0001A_first.incomplete"
+JSUB_PATH_TO_THIS_JOB=${DIR_EXPECTEDS}/"echo06_vars06_fvars06_2_2.lsf"
+JSUB_JOB_ID="echo06_vars06_fvars06_2_2"
+JSUB_LOG_FILE=${DIR_OUT}/jobs/"echo06_vars06_fvars06_2.log"
+JSUB_SUMMARY_COMPLETED=${DIR_OUT}"/progress/completed"/"echo06_vars06_fvars06_2_2.completed"
+JSUB_SUMMARY_INCOMPLETE=${DIR_OUT}"/progress/completed"/"echo06_vars06_fvars06_2_2.incomplete"
 JSUB_VERSION_CONTROL=false
 JSUB_JOB_TIMESTAMP=false
-
-# Contents inserted from other files (this section is intended to be used only for functions):
 function file_contains_nonwhitespace {
   while read -r line || [[ -n "$line" ]]; do
     if [[ "$line" = *[![:space:]]* ]]; then
@@ -125,21 +142,17 @@ function on_completion { # Writes a line indicating successful job completing to
   [[ ${JSUB_JOB_TIMESTAMP} = true ]] && local dateTime=`date +%Y%m%d_%H%M%S` || local dateTime=""
   [[ ${JSUB_FLAG_FAIL} == false ]] && echo ${JSUB_SUCCESSFUL_COMPLETION}" "${dateTime} >> ${JSUB_SUMMARY_COMPLETED}
 }
-# Function used to try to keep track of the versions of arbitrary software on the system by checking the which command and checking for the existance of git repositories.
-function version_control {
-  : # do nothing
-}
 
-# Commands taken from summary file: summaries/summaryPrefix_sample0001A.summary
+# Commands taken from summary file: summaries/echo06_vars06_fvars06_2.summary
 
 #JSUB<begin-job>
-#JGROUP first
-bash ${BASH_SCRIPTS}/concat.sh ${RESULTS}/"outPrefix_"sample0001A_first.txt sub01X sub01Y
-jcheck_file_not_empty  ${RESULTS}/"outPrefix_"sample0001A_first.txt
-bash ${BASH_SCRIPTS}/concat.sh ${RESULTS}/"outPrefix_"sample0001A_first.txt sub01Y sub01Z
-jcheck_file_not_empty  ${RESULTS}/"outPrefix_"sample0001A_first.txt
+# Example protocol using only echo
+echo row2col1 > ${DIR_OUT}/"results_A"num2.txt
+echo " " > ${DIR_OUT}/"results_B"num2.txt
+jcheck_file_not_empty ${DIR_OUT}/"results_A"num2.txt ${DIR_OUT}/"results_Bnum2.txt"
+echo "After going past jcheck_file_not_empty" >> ${DIR_OUT}/"results_A"num2.txt
+echo "After going past jcheck_file_not_empty" >> ${DIR_OUT}/"results_B"num2.txt
 
 #JSUB<finish-job>
 process_job
-
-# EOF
+on_completion

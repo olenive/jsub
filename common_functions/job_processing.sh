@@ -15,9 +15,10 @@ JSUB_SUCCESSFUL_COMPLETION="#JSUB Successfully ran job on:"
 JSUB_PREVIOUS_END=0
 JSUB_FLAG_FAIL=false
 function process_job { # This function reads the job file line by line and writes to log and summray (completed and incomplete) files.
+  ## Determine time stamp, if any
   local dateTime=""
   [[ ${JSUB_JOB_TIMESTAMP} = true ]] && dateTime=`date +%Y%m%d_%H%M%S`
-  rm -f ${JSUB_SUMMARY_INCOMPLETE} # Clean out the summary.incomplete file so that it is ready to accept a new text from the start
+  rm -f ${JSUB_SUMMARY_INCOMPLETE} # clear the *.incomplete file
   ## Loop over this job file and process lines
   local jline=0 # Line number within the job commands section
   local flagInJob=false
@@ -31,7 +32,7 @@ function process_job { # This function reads the job file line by line and write
       jline=$((jline+1))
       flagInJob=false
     fi
-    ## Only process the line if it originated form a summary file
+    ## Only process the line if it is between the tags, ie it originated form a summary file
     if [ ${flagInJob} = true ]; then
       jline=$((jline+1)) # Increment line numbers inside job
       ## Determin current line type
@@ -55,8 +56,8 @@ function process_job { # This function reads the job file line by line and write
           [[ ${JSUB_VERSION_CONTROL} = true ]] && version_control # Do version control
         fi
       else # A line after the block of code that has just been executed
-        echo ${line} >> ${JSUB_SUMMARY_INCOMPLETE}
-      fi
+        echo ${line} >> ${JSUB_SUMMARY_INCOMPLETE} # Write all remaining blocks of code to *.incomplete (in case the job crashes during the next block)
+      fi      
     fi
   done < ${JSUB_PATH_TO_THIS_JOB}
   [[ ${JSUB_FLAG_FAIL} = true ]] && kill_this_job ${JSUB_PATH_TO_THIS_JOB} # Kill the job if a checkpoint fail occured (but let this function do logging etc first)

@@ -1,0 +1,45 @@
+#!/bin/bash
+set -eu
+
+#BSUB -J echo06_vars06_fvars06_2_2
+#BSUB -e lsf_out/echo06_vars06_fvars06_2_2.error
+#BSUB -o lsf_out/echo06_vars06_fvars06_2_2.output
+#BSUB -P prepay-houlston
+#BSUB -q short
+
+## Unit test that tries to reproduce the problem of repeated entries in the *.complete and missing entries in *.incomplete file that was found in the initial implementation of example 6
+DIR_EXPECTEDS="bash_function_test_files/job_mocks//based_on_example_06/"
+FILE_EXPECTED_LOG=${DIR_EXPECTEDS}/"echo06_vars06_fvars06_1.log"
+mkdir -p ${DIR_EXPECTEDS}/"progress"/completed
+mkdir -p ${DIR_EXPECTEDS}/"progress"/incomplete
+FILE_EXPECTED_COMPLETED_01=${DIR_EXPECTEDS}/"progress"/"completed"/echo06_vars06_fvars06_1_1.completed
+FILE_EXPECTED_COMPLETED_02=${DIR_EXPECTEDS}/"progress"/"completed"/echo06_vars06_fvars06_2_2.completed
+FILE_EXPECTED_INCOMPLETE_01=${DIR_EXPECTEDS}/"progress"/"incomplete"/echo06_vars06_fvars06_1_1.incomplete
+FILE_EXPECTED_INCOMPLETE_02=${DIR_EXPECTEDS}/"progress"/"incomplete"/echo06_vars06_fvars06_2_2.incomplete
+DIR_OUT="bash_function_test_files/test_outputs/job_processing/based_on_example_06/"
+mkdir -p ${DIR_OUT}"/results"
+mkdir -p ${DIR_OUT}"/jobs"
+mkdir -p ${DIR_OUT}"/progress/completed"
+mkdir -p ${DIR_OUT}"/progress/incomplete"
+FILE_TEST_JOB_01=${DIR_EXPECTEDS}/"echo06_vars06_fvars06_1_1.lsf"
+FILE_TEST_JOB_02=${DIR_EXPECTEDS}/"echo06_vars06_fvars06_2_2.lsf"
+RESULTS=${DIR_OUT}/"results"
+FILE_JOB_RESULT_A1=${DIR_OUT}/"results_A1.txt"
+FILE_JOB_RESULT_B1=${DIR_OUT}/"results_B1.txt"
+FILE_JOB_RESULT_A2=${DIR_OUT}/"results_A2.txt"
+FILE_JOB_RESULT_B2=${DIR_OUT}/"results_B2.txt"
+FILE_LOG_01=${DIR_OUT}/jobs/"echo06_vars06_fvars06_1.log"
+FILE_LOG_02=${DIR_OUT}/jobs/"echo06_vars06_fvars06_2.log"
+FILE_COMPLETED_01=${DIR_OUT}"/progress/completed"/"echo06_vars06_fvars06_1_1.completed"
+FILE_COMPLETED_02=${DIR_OUT}"/progress/completed"/"echo06_vars06_fvars06_2_2.completed"
+FILE_INCOMPLETE_01=${DIR_OUT}"/progress/completed"/"echo06_vars06_fvars06_1_1.incomplete"
+FILE_INCOMPLETE_02=${DIR_OUT}"/progress/completed"/"echo06_vars06_fvars06_2_2.incomplete"
+
+# Job file variables:
+JSUB_PATH_TO_THIS_JOB=${DIR_EXPECTEDS}/"echo06_vars06_fvars06_2_2.lsf"
+JSUB_JOB_ID="echo06_vars06_fvars06_2_2"
+JSUB_LOG_FILE=${DIR_OUT}/jobs/"echo06_vars06_fvars06_2.log"
+JSUB_SUMMARY_COMPLETED=${DIR_OUT}"/progress/completed"/"echo06_vars06_fvars06_2_2.completed"
+JSUB_SUMMARY_INCOMPLETE=${DIR_OUT}"/progress/completed"/"echo06_vars06_fvars06_2_2.incomplete"
+JSUB_VERSION_CONTROL=false
+JSUB_JOB_TIMESTAMP=false

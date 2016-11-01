@@ -18,6 +18,6 @@ function jcheck_file_not_empty {
     else
       echo "$dateTime ""$JSUB_JOB_ID"" - Passed checkpoint jcheck_file_not_empty for file: ""$var" >> ${JSUB_LOG_FILE}
     fi
-    process_job "$dateTime"
   done
+  process_job "$dateTime"
 }

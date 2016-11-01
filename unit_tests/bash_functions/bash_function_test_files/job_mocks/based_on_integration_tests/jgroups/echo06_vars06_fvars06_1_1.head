@@ -1,0 +1,21 @@
+#!/bin/bash
+set -eu
+
+#BSUB -J echo06_vars06_fvars06_1_1
+#BSUB -e lsf_out/echo06_vars06_fvars06_1_1.error
+#BSUB -o lsf_out/echo06_vars06_fvars06_1_1.output
+#BSUB -P prepay-houlston
+#BSUB -q short
+
+
+# Job file variables:
+JSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>
+JSUB_JOB_ID="echo06_vars06_fvars06_1_1"
+JSUB_LOG_FILE="jobs/echo06_vars06_fvars06_1.log"
+JSUB_SUMMARY_COMPLETED="progoress/completed/echo06_vars06_fvars06_1_1.completed"
+JSUB_SUMMARY_INCOMPLETE="progoress/incomplete/echo06_vars06_fvars06_1_1.incomplete"
+JSUB_VERSION_CONTROL=false
+JSUB_JOB_TIMESTAMP=false
+
+# Contents inserted from other files (this section is intended to be used only for functions):
+

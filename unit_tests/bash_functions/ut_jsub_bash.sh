@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+# set -e
 
 # Unit tests for bash functions using the lehmannro/assert.sh framework
 . assert.sh
@@ -171,7 +171,7 @@ FILE_EXPECTED_COMPLETED=${DIR_EXPECTEDS}/"jobPrefix_summaryPrefix_sample0001A_fi
 FILE_EXPECTED_INCOMPLETE=${DIR_EXPECTEDS}/"jobPrefix_summaryPrefix_sample0001A_first.incomplete"
 DIR_OUT="bash_function_test_files/test_outputs/job_processing/based_on_integration_tests/jgroups/"
 mkdir -p ${DIR_OUT}/results
-mkdir -p ${DIR_OUT}/jbos
+mkdir -p ${DIR_OUT}/jobs
 FILE_TEST_JOB=${DIR_EXPECTEDS}/"jobPrefix_summaryPrefix_sample0001A_first.lsf"
 RESULTS="bash_function_test_files/test_outputs/job_processing/based_on_integration_tests/jgroups/results"
 FILE_JOB_RESULT=${RESULTS}/"outPrefix_"sample0001A_first.txt
@@ -197,8 +197,82 @@ assert "compare_contents ${FILE_COMPLETED} ${FILE_EXPECTED_COMPLETED}" ""
 assert "file_exists ${FILE_INCOMPLETE}" "no"
 # 57
 
+## Unit test that tries to reproduce the problem of repeated entries in the *.complete and missing entries in *.incomplete file that was found in the initial implementation of example 6
+DIR_EXPECTEDS="bash_function_test_files/job_mocks//based_on_example_06/"
+FILE_EXPECTED_LOG=${DIR_EXPECTEDS}/"echo06_vars06_fvars06_1.log"
+mkdir -p ${DIR_EXPECTEDS}/"progress"/completed
+mkdir -p ${DIR_EXPECTEDS}/"progress"/incomplete
+FILE_EXPECTED_COMPLETED_01=${DIR_EXPECTEDS}/"progress"/"completed"/echo06_vars06_fvars06_1_1.completed
+FILE_EXPECTED_COMPLETED_02=${DIR_EXPECTEDS}/"progress"/"completed"/echo06_vars06_fvars06_2_2.completed
+FILE_EXPECTED_INCOMPLETE_01=${DIR_EXPECTEDS}/"progress"/"incomplete"/echo06_vars06_fvars06_1_1.incomplete
+FILE_EXPECTED_INCOMPLETE_02=${DIR_EXPECTEDS}/"progress"/"incomplete"/echo06_vars06_fvars06_2_2.incomplete
+DIR_OUT="bash_function_test_files/test_outputs/job_processing/based_on_example_06/"
+mkdir -p ${DIR_OUT}"/results"
+mkdir -p ${DIR_OUT}"/jobs"
+mkdir -p ${DIR_OUT}"/progress/completed"
+mkdir -p ${DIR_OUT}"/progress/incomplete"
+FILE_TEST_JOB_01=${DIR_EXPECTEDS}/"echo06_vars06_fvars06_1_1.lsf"
+PRE_FILE_TEST_JOB_02=${DIR_EXPECTEDS}/"echo06_vars06_fvars06_2_2.lsf.with_kill"
+FILE_TEST_JOB_02=${DIR_EXPECTEDS}/"echo06_vars06_fvars06_2_2.lsf"
+RESULTS=${DIR_OUT}/"results"
+FILE_JOB_RESULT_A1=${DIR_OUT}/"results_A1.txt"
+FILE_JOB_RESULT_B1=${DIR_OUT}/"results_B1.txt"
+FILE_JOB_RESULT_A2=${DIR_OUT}/"results_A2.txt"
+FILE_JOB_RESULT_B2=${DIR_OUT}/"results_B2.txt"
+FILE_LOG_01=${DIR_OUT}/jobs/"echo06_vars06_fvars06_1.log"
+FILE_LOG_02=${DIR_OUT}/jobs/"echo06_vars06_fvars06_2.log"
+FILE_COMPLETED_01=${DIR_OUT}"/progress/completed"/"echo06_vars06_fvars06_1_1.completed"
+FILE_COMPLETED_02=${DIR_OUT}"/progress/completed"/"echo06_vars06_fvars06_2_2.completed"
+FILE_INCOMPLETE_01=${DIR_OUT}"/progress/completed"/"echo06_vars06_fvars06_1_1.incomplete"
+FILE_INCOMPLETE_02=${DIR_OUT}"/progress/completed"/"echo06_vars06_fvars06_2_2.incomplete"
+# Remove output files produced by previous test runs
+rm -f ${FILE_TEST_JOB_01} ${FILE_TEST_JOB_02} ${PRE_FILE_TEST_JOB_02} \
+      ${FILE_JOB_RESULT_A1} ${FILE_JOB_RESULT_A2} ${FILE_JOB_RESULT_B1} ${FILE_JOB_RESULT_B2} \
+      ${FILE_LOG_01} ${FILE_LOG_02} \
+      ${FILE_COMPLETED_01} ${FILE_COMPLETED_02} \
+      ${FILE_INCOMPLETE_01} ${FILE_INCOMPLETE_02}
+# Concatenate test job file header, job_processing function and tail.
+cat ${DIR_EXPECTEDS}/"echo06_vars06_fvars06_1_1.head" \
+  "../../common_functions/jcheck_file_not_empty.sh" \
+  "../../common_functions/job_processing.sh" \
+  ${DIR_EXPECTEDS}/"echo06_vars06_fvars06_1_1.tail" > ${FILE_TEST_JOB_01}
+# Run
+bash ${FILE_TEST_JOB_01}
+## Now again for job 2
+# Concatenate test job file header, job_processing function and tail.
+cat ${DIR_EXPECTEDS}/"echo06_vars06_fvars06_2_2.head" \
+  "../../common_functions/jcheck_file_not_empty.sh" \
+  "../../common_functions/job_processing.sh" \
+  ${DIR_EXPECTEDS}/"echo06_vars06_fvars06_2_2.tail" > ${FILE_TEST_JOB_02}
+# Run
+bash ${FILE_TEST_JOB_02} > ${FILE_TEST_JOB_02}.run-log
+# Make sure that $FILE_COMPLETED_01 only contains two lines with "After going past jcheck_file_not_empty..."
+assert "file_exists ${FILE_COMPLETED_01}" "yes"
+assert "compare_contents ${FILE_COMPLETED_01} ${FILE_EXPECTED_COMPLETED_01}" ""
+assert "file_exists ${FILE_INCOMPLETE_01}" "no" # Should completed 01 exist??
+# 59
+# Make sure that $FILE_INCOMPLETE_02 contains commands before jcheck_file_not_empty as well as after
+assert "file_exists ${FILE_COMPLETED_02}" "no"
+# assert "compare_contents ${FILE_COMPLETED_02} ${FILE_EXPECTED_COMPLETED_02}" ""
+assert "file_exists ${FILE_INCOMPLETE_02}" "yes"
+assert "compare_contents ${FILE_INCOMPLETE_02} ${FILE_EXPECTED_INCOMPLETE_02}" ""
+# 63
+
+
+
 ####################################################
 ## end of test suite
 assert_end
 echo ""
 # EOF
+
+
+
+
+
+
+
+
+
+
+
