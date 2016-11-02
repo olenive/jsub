@@ -26,6 +26,7 @@ function jcheck_resume {
   process_job "YYYYMMDD_HHMMSS"
 }
 
+initialise_job
 #JSUB<begin-job>
 #JGROUP second first third fourth fifth
 echo "cmd 21" >> ${JSUB_LOG_FILE}

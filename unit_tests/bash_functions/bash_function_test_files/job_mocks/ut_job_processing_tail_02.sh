@@ -31,6 +31,7 @@ function fail_checkpoint {
   exit
 }
 
+initialise_job
 #JSUB<begin-job>
 #JGROUP second first third fourth fifth
 echo "cmd 21" >> ${JSUB_LOG_FILE}

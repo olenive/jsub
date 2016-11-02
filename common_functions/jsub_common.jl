@@ -1244,7 +1244,8 @@ function create_job_file_(outFilePath, jobArray, functionsDictionary::Dict; summ
       write(stream, string(functionsDictionary[key]));
     end
     # Append commands
-    write(stream, "\n\n# Commands taken from summary file: $summaryFileOfOrigin\n");
+    write(stream, string("\n\ninitialise_job"));
+    write(stream, "\n# Commands taken from summary file: $summaryFileOfOrigin");
     write(stream, string("\n", tagBegin));
 
     check_completion_command = cmd_check_completed(prefixCompleted, suffixCompleted, get_groupparents(jobArray, jobID; root=root, tagSplit=tagSplit, jobDate=jobDate));

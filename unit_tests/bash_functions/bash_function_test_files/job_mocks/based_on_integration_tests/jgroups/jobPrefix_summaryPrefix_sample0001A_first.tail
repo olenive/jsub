@@ -3,8 +3,8 @@ function version_control {
   : # do nothing
 }
 
+initialise_job
 # Commands taken from summary file: summaries/summaryPrefix_sample0001A.summary
-
 #JSUB<begin-job>
 #JGROUP first
 bash ${BASH_SCRIPTS}/concat.sh ${RESULTS}/"outPrefix_"sample0001A_first.txt sub01X sub01Y

@@ -78,7 +78,7 @@ function process_job { # This function reads the job file line by line and write
     ## Check if we have entered or left the job commands section
     if [[ ${line} == ${JSUB_BEGIN_JOB_TAG}* ]]; then
       flagInJob=true
-      continue
+      continue # so that the tag is not written to the summary files
     elif [[ ${line} == ${JSUB_FINISH_JOB_TAG}* ]]; then
       jline=$((jline+1))
       flagInJob=false
@@ -114,6 +114,23 @@ function process_job { # This function reads the job file line by line and write
   [[ ${JSUB_FLAG_FAIL} = true ]] && kill_this_job ${JSUB_PATH_TO_THIS_JOB} # Kill the job if a checkpoint fail occured (but let this function do logging etc first)
   return 0
 }
+function initialise_job { # Function that will be run before any of the job commands
+  ## In this version this function simply populates the *.incomplete file in case the job crashes before process_job is called
+  local flagInJob=false
+  while read -r line || [[ -n "$line" ]]; do # Read every line of this job
+    ## Check if we have entered or left the job commands section
+    if [[ ${line} == ${JSUB_BEGIN_JOB_TAG}* ]]; then
+      flagInJob=true
+      continue # so that the tag is not written to the summary files
+    elif [[ ${line} == ${JSUB_FINISH_JOB_TAG}* ]]; then
+      flagInJob=false
+    fi
+    ## Only process the line if it is between the tags, ie it originated form a summary file
+    if [ ${flagInJob} = true ]; then
+      echo ${line} >> ${JSUB_SUMMARY_INCOMPLETE}
+    fi
+  done < ${JSUB_PATH_TO_THIS_JOB}
+}
 function check_completion { # Check that the input file ends a string indicating successful job completion
   [[ ${JSUB_JOB_TIMESTAMP} = true ]] && local dateTime=`date +%Y%m%d_%H%M%S` || local dateTime=""
   if [[ $(tail -n1 "$1") != "$JSUB_SUCCESSFUL_COMPLETION"* ]]; then 
@@ -130,8 +147,8 @@ function version_control {
   : # do nothing
 }
 
+initialise_job
 # Commands taken from summary file: summaries/summaryPrefix_sample0001A.summary
-
 #JSUB<begin-job>
 #JGROUP first
 bash ${BASH_SCRIPTS}/concat.sh ${RESULTS}/"outPrefix_"sample0001A_first.txt sub01X sub01Y

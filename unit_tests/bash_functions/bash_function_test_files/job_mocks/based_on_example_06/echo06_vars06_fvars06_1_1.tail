@@ -1,6 +1,6 @@
 
+initialise_job
 # Commands taken from summary file: summaries/echo06_vars06_fvars06_1.summary
-
 #JSUB<begin-job>
 # Example protocol using only echo
 echo row1col1 > ${DIR_OUT}/"results_A"num1.txt
