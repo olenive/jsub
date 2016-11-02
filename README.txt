@@ -179,15 +179,62 @@ jsub --generate-summaries --generate-jobs \
 
 jsub --submit-jobs --list-jobs jobs/echo06_vars06_fvars06.list-jobs
 
+Inspecting the results*.txt files shows that only job number 1 successfully executed all the supplied commands.
+Looking in jobs/echo06_vars06_fvars06_2.log tells us that the checkpoing jcheck_file_not_empty was passed for the file results_Anum2.txt (ie that file was not empty) but failed for the file results_Bnum2.txt.
+The remaining lines in the log file indicate the commands that were run but did not produce a satisfactory result (according to the checkpoint used).
+The files in progress/complete and progress/incomplete list the commands that were 
 
 
-Example 7 *.incomplete
-When a job fails
+Example 7 resuming a failed job
 
-...
+In some cases we may want to re-run the job that failed.  Depending on the circumstances it may be a better idea to fix the root of the problem and generate a new set of summary and job files.  However, the *.incomplete files can be used as summary files for a new job if it is considered apropriate.
 
+In the following example, two jobs are generated and run.  One completes successfully but the second one fails due to a missing input file.
+
+cd examples/example_07
+
+mkdir -p dummy_output # create the directory for job results as indicated in the vars07.vars file
+
+jsub --generate-summaries --generate-jobs \
+     --protocol cat07.protocol \
+     --vars vars07.vars \
+     --fvars fvars07.fvars \
+     --header-from-file "my_job_header_file.txt" \
+     --summary-prefix "summaries/" \
+     --job-prefix "jobs/" \
+     --prefix-lsf-out "lsf_out/" \
+     --prefix-completed "progoress/completed/" \
+     --prefix-incomplete "progoress/incomplete/" 
+
+jsub --submit-jobs --list-jobs jobs/cat07_vars07_fvars07.list-jobs
+
+By inspecting the files in dummy_output/*, jobs/*.log and progress/incomplete/*, we can see that the second job failed to complete due to a missing file "dummy_data/data_2B.txt".
+The missing file is hidden in dummy_data/missing.
+
+mv dummy_data/missing/data_2B.txt dummy_data/data_2B.txt
+
+We can now either re-run both jobs, only the failed job or we can create a new job containing only the steps that may not have completed successfully during our initial attempt.
+This can be done using the file "progress/incomplete/cat07_vars07_fvars07_2_2.incomplete".
+The most appropriate course of action will depend on your particular circumstances but in this example we will create a new job.  First we will need to create a list of summary files (just one in this case) to pass to Stage 2 of jsub.
+
+echo progoress/incomplete/cat07_vars07_fvars07_2_2.incomplete > resumed.list-summaries
+
+jsub --generate-jobs \
+     --list-summaries resumed.list-summaries \
+     --header-from-file "my_job_header_file.txt" \
+     --job-prefix "re_jobs/re_" \
+     --prefix-lsf-out "re_lsf_out/lsf_" \
+     --prefix-completed "re_progoress/completed/" \
+     --prefix-incomplete "re_progoress/incomplete/"
+
+jsub --submit-jobs --list-jobs re_jobs/re_resumed.list-jobs
+
+Now the contents of dummy_output/result_2C.txt is analgous to that of dummy_output/result_1C.txt
+
+Note: Care should be taken when using this method of resuming incomplete jobs since the incomplete steps may have generated some data already.  If this data is not overwritten when the commands are called again, the results may not be as expected.
 
 Example 8 job groups
+
 
 ...
 
@@ -209,6 +256,8 @@ function clean {
   mv TRASH/*.fvars .
   mv TRASH/list_file.txt .
   mv TRASH/list_* .
+  mv TRASH/dummy_* .
+  mv dummy_data/data_2B.txt dummy_data/missing
 }
 
 

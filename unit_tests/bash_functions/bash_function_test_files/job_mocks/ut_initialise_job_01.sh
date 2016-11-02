@@ -1,50 +1,19 @@
 #!/bin/bash
-set -eu
+set -e
 
-#BSUB -J echo06_vars06_fvars06_1_1
-#BSUB -e lsf_out/echo06_vars06_fvars06_1_1.error
-#BSUB -o lsf_out/echo06_vars06_fvars06_1_1.output
-#BSUB -P prepay-houlston
-#BSUB -q short
+#BSUB header sutff
 
+# General job options
+JSUB_FLAG_TIMESTAMP=false
+JSUB_FLAG_CHECK_VERSIONS=true
 
-# Job file variables:
-JSUB_PATH_TO_THIS_JOB=<to-be-replaced-by-the-path-to-this-file>
-JSUB_JOB_ID="echo06_vars06_fvars06_1_1"
-JSUB_LOG_FILE="jobs/echo06_vars06_fvars06_1.log"
-JSUB_SUMMARY_COMPLETED="progoress/completed/echo06_vars06_fvars06_1_1.completed"
-JSUB_SUMMARY_INCOMPLETE="progoress/incomplete/echo06_vars06_fvars06_1_1.incomplete"
-JSUB_VERSION_CONTROL=false
-JSUB_JOB_TIMESTAMP=false
+# Log and summary file paths
+JSUB_PATH_TO_THIS_JOB="$0" # Note: using this will not work on the HPC, "$0" is for testing only, provide the actual file name when running LSF jobs.
+JSUB_JOB_ID="unit_test_job"
+JSUB_LOG_FILE="$1"
+JSUB_SUMMARY_COMPLETED="$2"
+JSUB_SUMMARY_INCOMPLETE="$3"
 
-# Contents inserted from other files (this section is intended to be used only for functions):
-
-# --- From file: /Users/olenive/work/jsub_pipeliner/common_functions/jcheck_file_not_empty.sh
-function file_contains_nonwhitespace {
-  while read -r line || [[ -n "$line" ]]; do
-    if [[ "$line" = *[![:space:]]* ]]; then
-      echo "yes"
-      return 0
-    fi
-  done < "$1"
-  echo "no"
-}
-function jcheck_file_not_empty {
-  local dateTime=""
-  [[ ${JSUB_JOB_TIMESTAMP} = true ]] && dateTime=`date +%Y%m%d_%H%M%S`
-  for var in "$@"; do
-    if [[ ! -s "$var" ]] || [[ $(file_contains_nonwhitespace "$var") = "no" ]]; then
-      JSUB_FLAG_FAIL=true
-      echo "$dateTime ""$JSUB_JOB_ID"" - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: ""$var"
-      echo "$dateTime ""$JSUB_JOB_ID"" - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: ""$var" >> ${JSUB_LOG_FILE}
-    else
-      echo "$dateTime ""$JSUB_JOB_ID"" - Passed checkpoint jcheck_file_not_empty for file: ""$var" >> ${JSUB_LOG_FILE}
-    fi
-    process_job "$dateTime"
-  done
-}
-
-# --- From file: /Users/olenive/work/jsub_pipeliner/common_functions/job_processing.sh
 ## job_processing parses the job file, writes to log and summary files, and calls version control functions.
 # Function allowing job script termination
 trap "exit 1" TERM
@@ -62,9 +31,10 @@ JSUB_SUCCESSFUL_COMPLETION="#JSUB Successfully ran job on:"
 JSUB_PREVIOUS_END=0
 JSUB_FLAG_FAIL=false
 function process_job { # This function reads the job file line by line and writes to log and summray (completed and incomplete) files.
+  ## Determine time stamp, if any
   local dateTime=""
   [[ ${JSUB_JOB_TIMESTAMP} = true ]] && dateTime=`date +%Y%m%d_%H%M%S`
-  rm -f ${JSUB_SUMMARY_INCOMPLETE} # Clean out the summary.incomplete file so that it is ready to accept a new text from the start
+  rm -f ${JSUB_SUMMARY_INCOMPLETE} # clear the *.incomplete file
   ## Loop over this job file and process lines
   local jline=0 # Line number within the job commands section
   local flagInJob=false
@@ -73,12 +43,12 @@ function process_job { # This function reads the job file line by line and write
     ## Check if we have entered or left the job commands section
     if [[ ${line} == ${JSUB_BEGIN_JOB_TAG}* ]]; then
       flagInJob=true
-      continue
+      continue # so that the tag is not written to the summary files
     elif [[ ${line} == ${JSUB_FINISH_JOB_TAG}* ]]; then
       jline=$((jline+1))
       flagInJob=false
     fi
-    ## Only process the line if it originated form a summary file
+    ## Only process the line if it is between the tags, ie it originated form a summary file
     if [ ${flagInJob} = true ]; then
       jline=$((jline+1)) # Increment line numbers inside job
       ## Determin current line type
@@ -102,12 +72,29 @@ function process_job { # This function reads the job file line by line and write
           [[ ${JSUB_VERSION_CONTROL} = true ]] && version_control # Do version control
         fi
       else # A line after the block of code that has just been executed
-        echo ${line} >> ${JSUB_SUMMARY_INCOMPLETE}
-      fi
+        echo ${line} >> ${JSUB_SUMMARY_INCOMPLETE} # Write all remaining blocks of code to *.incomplete (in case the job crashes during the next block)
+      fi      
     fi
   done < ${JSUB_PATH_TO_THIS_JOB}
   [[ ${JSUB_FLAG_FAIL} = true ]] && kill_this_job ${JSUB_PATH_TO_THIS_JOB} # Kill the job if a checkpoint fail occured (but let this function do logging etc first)
   return 0
+}
+function initialise_job { # Function that will be run before any of the job commands
+  ## In this version this function simply populates the *.incomplete file in case the job crashes before process_job is called
+  local flagInJob=false
+  while read -r line || [[ -n "$line" ]]; do # Read every line of this job
+    ## Check if we have entered or left the job commands section
+    if [[ ${line} == ${JSUB_BEGIN_JOB_TAG}* ]]; then
+      flagInJob=true
+      continue # so that the tag is not written to the summary files
+    elif [[ ${line} == ${JSUB_FINISH_JOB_TAG}* ]]; then
+      flagInJob=false
+    fi
+    ## Only process the line if it is between the tags, ie it originated form a summary file
+    if [ ${flagInJob} = true ]; then
+      echo ${line} >> ${JSUB_SUMMARY_INCOMPLETE}
+    fi
+  done < ${JSUB_PATH_TO_THIS_JOB}
 }
 function check_completion { # Check that the input file ends a string indicating successful job completion
   [[ ${JSUB_JOB_TIMESTAMP} = true ]] && local dateTime=`date +%Y%m%d_%H%M%S` || local dateTime=""
@@ -120,23 +107,13 @@ function on_completion { # Writes a line indicating successful job completing to
   [[ ${JSUB_JOB_TIMESTAMP} = true ]] && local dateTime=`date +%Y%m%d_%H%M%S` || local dateTime=""
   [[ ${JSUB_FLAG_FAIL} == false ]] && echo ${JSUB_SUCCESSFUL_COMPLETION}" "${dateTime} >> ${JSUB_SUMMARY_COMPLETED}
 }
+# This mock job file is used for the unit test that asserts if initialise_job writes to a *.incomplete file as expected
 
-# --- From file: /Users/olenive/work/jsub_pipeliner/common_functions/version_control.sh
-# Function used to try to keep track of the versions of arbitrary software on the system by checking the which command and checking for the existance of git repositories.
-function version_control {
-  echo "called version_control"
-}
-
-# Commands taken from summary file: summaries/echo06_vars06_fvars06_1.summary
-
+initialise_job
 #JSUB<begin-job>
-# Example protocol using only echo
-echo row1col1 > "results_A"num1.txt
-echo row1col2 > "results_B"num1.txt
-jcheck_file_not_empty "results_A"num1.txt "results_Bnum1.txt"
-echo "After going past jcheck_file_not_empty" >> "results_A"num1.txt
-echo "After going past jcheck_file_not_empty" >> "results_B"num1.txt
-
+# "Test line 1"
+# "Test line 2"
 #JSUB<finish-job>
-process_job
-on_completion
+# process_job (not called here because this test simulates a job that crashed or was terminated before the end)
+
+# EOF

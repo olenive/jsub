@@ -1,6 +1,0 @@
-# Example protocol using only echo
-echo row2col1 > "results_A"num2.txt
-echo " " > "results_B"num2.txt
-jcheck_file_not_empty "results_A"num2.txt "results_Bnum2.txt"
-echo "After going past jcheck_file_not_empty" >> "results_A"num2.txt
-echo "After going past jcheck_file_not_empty" >> "results_B"num2.txt

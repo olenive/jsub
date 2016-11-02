@@ -256,6 +256,24 @@ assert "file_exists ${FILE_COMPLETED_02}" "no"
 # assert "compare_contents ${FILE_COMPLETED_02} ${FILE_EXPECTED_COMPLETED_02}" ""
 assert "file_exists ${FILE_INCOMPLETE_02}" "yes"
 assert "compare_contents ${FILE_INCOMPLETE_02} ${FILE_EXPECTED_INCOMPLETE_02}" ""
+# 62
+
+## Test to see if initialise_job populates a *.incomplete file as expected
+DIR_EXPECTEDS="bash_function_test_files/job_mocks/"
+DIR_OUT="bash_function_test_files/test_outputs/"
+FILE_TEST_JOB=${DIR_OUT}/"ut_initialise_job_01.sh"
+# FILE_COMPLETED=${DIR_OUT}/"ut_initialise_job_01.completed"
+FILE_INCOMPLETE=${DIR_OUT}/"ut_initialise_job_01.incomplete"
+FILE_EXPECTED_INCOMPLETE=${DIR_EXPECTEDS}/"ut_initialise_job_01.incomplete"
+# Remove previous test job
+rm -f ${FILE_TEST_JOB} ${FILE_INCOMPLETE}
+# Create a new test job using the current job_processing.sh file
+cat ${DIR_EXPECTEDS}/"ut_job_processing_head.sh" \
+    "../../common_functions/job_processing.sh" \
+    ${DIR_EXPECTEDS}/"ut_initialise_job_01_tail.sh" > ${FILE_TEST_JOB}
+# Run test job
+bash ${FILE_TEST_JOB} "dummy.log" "dummy.completed" ${FILE_INCOMPLETE}
+assert "compare_contents ${FILE_INCOMPLETE} ${FILE_EXPECTED_INCOMPLETE_01}" ""
 # 63
 
 
