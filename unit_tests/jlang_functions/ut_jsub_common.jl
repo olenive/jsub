@@ -725,6 +725,9 @@ Test.with_handler(ut_handler) do
   @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "va\"lue"; adapt_quotation=true) == "out0\"in1\"out1\"\"va\"lue\"out2\"in2\"out3"
   @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "value\""; adapt_quotation=true) == "out0\"in1\"out1\"\"value\"\"out2\"in2\"out3"
   @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"v\"\"a\"\"l\"\"u\"\"e\""; adapt_quotation=true) == "out0\"in1\"out1\"\"\"v\"\"a\"\"l\"\"u\"\"e\"\"\"out2\"in2\"out3"
+  # Test created in response to an error in example 7
+  line = "cat dummy_output/pre_\"\$OUT_A\" dummy_data/\"\"data_1A.txt\"\" > dummy_output/\"\$OUT_A\""
+  @test expandnameafterdollar(line, "OUT_A", "result_1A.txt", adapt_quotation=true, returnTF=false) == "cat dummy_output/pre_\"\"result_1A.txt\"\" dummy_data/\"\"data_1A.txt\"\" > dummy_output/\"\"result_1A.txt\"\""
 
   ## expandmanyafterdollars
   testString = "start in\$VAR1 string \"\${VAR2}\"/unit_tests/ foo\${VAR0#*} bar\${VAR0%afd} baz\${VAR0:?asdf} boo\${VAR0?!*} moo\${VAR0\$!*} \"sample\"\"\$VAR3\"\".txt\""
@@ -740,8 +743,13 @@ Test.with_handler(ut_handler) do
   @test expandmanyafterdollars("\$FOO\"\"", ["FOO"], ["BAR"]; keepSuperfluousQuotes=false) == "BAR"
   @test expandmanyafterdollars("\$FOO\"\"xx", ["FOO"], ["BAR"]; keepSuperfluousQuotes=false) == "BARxx"
   @test expandmanyafterdollars("\$FOO\"\"\"xx", ["FOO"], ["BAR"]; keepSuperfluousQuotes=false) == "BAR\"xx"
+  # Test created in response to an error in example 7
+  inString = "cat dummy_output/pre_\"\$OUT_A\" dummy_data/\"\$FILE_A\" > dummy_output/\"\$OUT_A\"";
+  varNames = ["FILE_A","OUT_A","FILE_B","OUT_B","OUT_C"];
+  varVals = ["data_1A.txt","result_1A.txt","data_1B.txt","result_1B.txt","result_1C.txt"];
+  @test expandmanyafterdollars(inString, varNames, varVals, adapt_quotation=true, returnTF=false, keepSuperfluousQuotes=false) == "cat dummy_output/pre_\"\"result_1A.txt\"\" dummy_data/\"\"data_1A.txt\"\" > dummy_output/\"\"result_1A.txt\"\""
 
-  remove_superfluous_quotes("BAR\"\"xx", '\"', 2, 1)
+  # remove_superfluous_quotes("BAR\"\"xx", '\"', 2, 1)
 
   ## enforce_closingquote
   @test enforce_closingquote("a", '\"') == "a"

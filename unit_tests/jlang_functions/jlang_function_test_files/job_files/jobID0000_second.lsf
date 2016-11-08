@@ -42,8 +42,8 @@ echo Running_dummy_function_3
 contents of jcheck_resume.sh
 
 
+initialise_job
 # Commands taken from summary file: dir/name/is/ignored/jobID0000.summary
-
 #JSUB<begin-job>
 check_completion "jlang_function_test_files/job_files/JOBDATE0_000000_jobID0000_root.completed"
 check_completion "jlang_function_test_files/job_files/JOBDATE0_000000_jobID0000_first.completed"

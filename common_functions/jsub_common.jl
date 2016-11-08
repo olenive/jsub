@@ -305,9 +305,9 @@ function processcandidatename(candidate, terminatingLabelSet, name, value; retur
   testName = prefix*name*suffix;
   # println(testName, " vs ", candidate)
   if testName == candidate
-    returnTrueOrFalse ? true : return value
+    returnTrueOrFalse ? (return true) : (return value)
   else
-    returnTrueOrFalse ? false : return candidate
+    returnTrueOrFalse ? (return false) : (return candidate)
   end
 end
 
@@ -318,7 +318,8 @@ function expandnameafterdollar(inString, name, value; adapt_quotation=false, ret
   # Initialise
   outString = "";
   candidate = ""; # potential variable name
-  istart = 0;
+  # istart = 0;
+  resultString = inString;
 
   charLabels = assignlabels(inString); # Get vector of character label sets
   inclusive_start = 0; inclusive_finish = 0;
@@ -344,13 +345,21 @@ function expandnameafterdollar(inString, name, value; adapt_quotation=false, ret
         if processedCandidate != candidate && adapt_quotation
           inclusive_start = length(outString)+1;
           inclusive_finish = length(outString)+length(candidate); 
-          processedCandidate = enforce_quote_consistency(inString, processedCandidate, inclusive_start, inclusive_finish; charQuote='\"');
+          println(" from expandnameafterdollar calling enforce_quote_consistency");
+          println(" resultString = ", resultString);
+          println(" processedCandidate = ", processedCandidate);
+          println(" inclusive_start = ", inclusive_start);
+          println(" inclusive_finish = ", inclusive_finish);
+          processedCandidate = enforce_quote_consistency(resultString, processedCandidate, inclusive_start, inclusive_finish; charQuote='\"', verbose=false);
         end
       end
       # println("B Appending: ", processedCandidate )
+      idxUnprocessed = length(outString)+length(candidate)+1; # Determine the index of the rest of the string after value substitution
+      idxUnprocessed > length(inString) ? (unprocessedString = "") : (unprocessedString = inString[idxUnprocessed:end])
+      resultString = outString * processedCandidate * unprocessedString; # Update string after substitution
       outString = outString * processedCandidate; ## Add candidate string or variable value to output
       candidate = ""; 
-      istart = 1;
+      # istart = 1;
     elseif !("curly_close" in charLabels[ichr]) # closing curly braces are added to the candidate in the lines above
       candidate = candidate * string(char); # Add to candidate name string # println("3 added to candidate: ", string(candidate[end]));
     end
@@ -438,6 +447,13 @@ end
 
 ## Check that substitution of part of a string does not change the inside/outside quote status of other parts of the string
 function check_quote_consistency(inString, subString, inclusive_start, inclusive_finish; charQuote='\"', verbose=false, quotes_before=0, quotes_after=0)
+  # println("called check_quote_consistency");
+  # println(" in ------ check_quote_consistency ---  inString = ", inString);
+  # println(" in ------ check_quote_consistency ---  subString = ", subString);
+  # println(" in ------ check_quote_consistency ---  inclusive_start = ", inclusive_start);
+  # println(" in ------ check_quote_consistency ---  inclusive_finish = ", inclusive_finish);
+
+
   ## Get indices of prefix, suffix (before and after) and substituted string
   idx_prefix = collect(1:inclusive_start-1);
   # idx_suffix_in = collect(inclusive_finish+1:end);
@@ -445,8 +461,11 @@ function check_quote_consistency(inString, subString, inclusive_start, inclusive
   idx_subbed = collect(inclusive_start+quotes_before:inclusive_start+quotes_before+length(subString)-1);
   ## Get quote patterns for inString, the string into which subString will be substituted at the positions indicated by inclusive_start and inclusive_finish
   pattern_inString = assign_quote_state(inString, charQuote);
+  # print(" --- in check_quote_consistency  pattern_inString = ", pattern_inString);
   pattern_prefix_in = pattern_inString[idx_prefix];
+  # print(" --- in check_quote_consistency  pattern_prefix_in = ", pattern_prefix_in);
   pattern_suffix_in = pattern_inString[inclusive_finish+1:end];
+  # print(" --- in check_quote_consistency  pattern_suffix_in = ", pattern_suffix_in);
   ## Get quote pattern for the string resulting from the substitution (including additional quotes added using the quotes_before and quotes_after options)
   outString = substitute_string(inString, subString, inclusive_start, inclusive_finish, quotes_before=quotes_before, quotes_after=quotes_after);
   pattern_outString = assign_quote_state(outString, charQuote);
@@ -502,6 +521,7 @@ function enforce_quote_consistency(inString, subString, inclusive_start, inclusi
   ## Try adding different quote permutations until one gives a consistent result
   for num_before in [0,1,2]
     for num_after in [0,1,2]
+      # println(" from enforce_quote_consistency calling check_quote_consistency ");
       consistent = check_quote_consistency(inString, subString, inclusive_start, inclusive_finish, quotes_before=num_before, quotes_after=num_after, charQuote=charQuote, verbose=verbose);
       if verbose # For debugging
         println("    Verbose output of enforce_quote_consistency:")
@@ -532,6 +552,7 @@ function expandmanyafterdollars(inString, varNames, varVals; adapt_quotation=fal
   end
   outString = inString; # initialize, to be overwritten at each iteration of the loop
   for idx = 1:size(varNames)[1]
+    # println(string(idx, " of ", size(varNames)[1] ) );
     name = sanitizestring(string(varNames[idx]));
     value = sanitizestring(string(varVals[idx]));
     outString = expandnameafterdollar(outString, name, value, adapt_quotation=adapt_quotation, returnTF=returnTF);
@@ -580,6 +601,7 @@ function expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=false, 
     icol = 0;
     for col in arrRow
       icol += 1;
+      # println(string("  expandmanyafterdollars(\n", col, "\n, \n", varNames, "\n, \n", varVals, "\n, \n", "adapt_quotation=", adapt_quotation, ", ",  "returnTF=", returnTF, ", ", "keepSuperfluousQuotes=", keepSuperfluousQuotes, ")"));
       expanded = expandmanyafterdollars(col, varNames, varVals, adapt_quotation=adapt_quotation, returnTF=returnTF, keepSuperfluousQuotes=keepSuperfluousQuotes)
       if adapt_quotation # Add closing quote to string
         expanded = enforce_closingquote(expanded, '\"');

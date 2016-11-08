@@ -57,8 +57,8 @@ echo Running_dummy_function_3
 }
 
 
+initialise_job
 # Commands taken from summary file: 
-
 #JSUB<begin-job>
 check_completion "jlang_function_test_files/job_files/ut_generated_job_ID002_root.completed"
 check_completion "jlang_function_test_files/job_files/ut_generated_job_ID002_first.completed"

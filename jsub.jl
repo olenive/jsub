@@ -350,7 +350,9 @@ function run_stage1_(pathProtocol, pathVars, pathFvars; processName="", summaryP
   flagVerbose && println("Creating summary files...");
   arrArrExpFvars = [];
   if length(keys(dictListArr)) != 0 && length(keys(dictCmdLineIdxs)) != 0
-    arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs; verbose=false, adapt_quotation=adapt_quotation, keepSuperfluousQuotes=keepSuperfluousQuotes);
+    println("1 #########");
+    arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs; verbose=true, adapt_quotation=adapt_quotation, keepSuperfluousQuotes=keepSuperfluousQuotes);
+    println("2 #########");
   else
     push!(arrArrExpFvars, arrProtExpVars); # If there is no data from list files, simply proceed using the protocol with expanded varibles (if applicable)
   end

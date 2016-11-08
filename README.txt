@@ -1,13 +1,23 @@
 This is a light weight tool for creating and submitting job file to the LSF queuing system.  Its purpose is to automate job file generation in cases where the same processing steps need to be applied to different sets of input data.
 
+
 Dependencies
 The code for generating job files is written in Julia (version 0.4.0) and uses the ArgParse package (v0.3.1).  Job files use bash shell command and have been tested with LSF version 9.1.2.0 in a Linux environment.
 
 
 Aims
-Traceability: Job files produced by jsub contain bash shell functions that write to log files as the job proceeds. This creates a record of the steps taken to obtain the resulting output data.
+Transparency: Job files produced by jsub contain bash shell functions that write to log files as the job proceeds. This creates a record of the steps taken to obtain the resulting output data.
+
+Reproduceablitiy: Re-running the analysis should be easy given a protocol file and files listing variable values.
 
 Modularity: Paths to the input data and the steps taken to process it can be specified in separate files.
+
+User friendliness: No need to learn a new language, the process is based on variable declaration using bash syntax and supplying the relevant files via a command line interface.
+
+
+Installation
+For Julia installation instructions see:
+To install the ArgParse package...
 
 
 Example 1 - minimal
@@ -43,8 +53,7 @@ Running this example should produce the following files:
 
 Here is the order of events, jsub runs in three disticnt stages that may be run together or separately.
 
-STAGE 1) 
-The file "echo.protocol" is parsed and the file "echo_1.summary" is generated from it.
+STAGE 1) The file "echo.protocol" is parsed and the file "echo_1.summary" is generated from it.
 In this simple case the two files are identical but in more complex situations variables in *.protocol files are substituted for values in other files resulting in multiple *.summary files per *.protocol file (see below).
 The file echo.list-summaries contains a list of the summary files generated (just one in this case).
 
@@ -195,10 +204,12 @@ cd examples/example_07
 
 mkdir -p dummy_output # create the directory for job results as indicated in the vars07.vars file
 
-jsub --generate-summaries --generate-jobs \
-     --protocol cat07.protocol \
+jsub --generate-summaries --protocol cat07.protocol \
      --vars vars07.vars \
-     --fvars fvars07.fvars \
+     --fvars fvars07.fvars
+
+
+jsub --generate-jobs \
      --header-from-file "my_job_header_file.txt" \
      --summary-prefix "summaries/" \
      --job-prefix "jobs/" \
