@@ -22,5 +22,5 @@ examples/example_01/echo.list-jobs
 examples/example_01/echo.list-summaries
 examples/example_01/echo_1.summary
 examples/example_01/echo_1_1.lsf
-my_job_header_file.txt
+my_job_header.txt
 
