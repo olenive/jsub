@@ -345,11 +345,6 @@ function expandnameafterdollar(inString, name, value; adapt_quotation=false, ret
         if processedCandidate != candidate && adapt_quotation
           inclusive_start = length(outString)+1;
           inclusive_finish = length(outString)+length(candidate); 
-          println(" from expandnameafterdollar calling enforce_quote_consistency");
-          println(" resultString = ", resultString);
-          println(" processedCandidate = ", processedCandidate);
-          println(" inclusive_start = ", inclusive_start);
-          println(" inclusive_finish = ", inclusive_finish);
           processedCandidate = enforce_quote_consistency(resultString, processedCandidate, inclusive_start, inclusive_finish; charQuote='\"', verbose=false);
         end
       end

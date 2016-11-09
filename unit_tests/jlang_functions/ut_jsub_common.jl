@@ -727,7 +727,7 @@ Test.with_handler(ut_handler) do
   @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"v\"\"a\"\"l\"\"u\"\"e\""; adapt_quotation=true) == "out0\"in1\"out1\"\"\"v\"\"a\"\"l\"\"u\"\"e\"\"\"out2\"in2\"out3"
   # Test created in response to an error in example 7
   line = "cat dummy_output/pre_\"\$OUT_A\" dummy_data/\"\"data_1A.txt\"\" > dummy_output/\"\$OUT_A\""
-  @test expandnameafterdollar(line, "OUT_A", "result_1A.txt", adapt_quotation=true, returnTF=false) == "cat dummy_output/pre_\"\"result_1A.txt\"\" dummy_data/\"\"data_1A.txt\"\" > dummy_output/\"\"result_1A.txt\"\""
+  @test expandnameafterdollar(line, "OUT_A", "result_1A.txt", adapt_quotation=true, returnTF=false) == "cat dummy_output/pre_\"\"result_1A.txt\"\" dummy_data/\"\"data_1A.txt\"\" > dummy_output/\"\"result_1A.txt\""
 
   ## expandmanyafterdollars
   testString = "start in\$VAR1 string \"\${VAR2}\"/unit_tests/ foo\${VAR0#*} bar\${VAR0%afd} baz\${VAR0:?asdf} boo\${VAR0?!*} moo\${VAR0\$!*} \"sample\"\"\$VAR3\"\".txt\""
@@ -745,9 +745,10 @@ Test.with_handler(ut_handler) do
   @test expandmanyafterdollars("\$FOO\"\"\"xx", ["FOO"], ["BAR"]; keepSuperfluousQuotes=false) == "BAR\"xx"
   # Test created in response to an error in example 7
   inString = "cat dummy_output/pre_\"\$OUT_A\" dummy_data/\"\$FILE_A\" > dummy_output/\"\$OUT_A\"";
+  expected = "cat dummy_output/pre_result_1A.txt dummy_data/data_1A.txt > dummy_output/result_1A.txt";
   varNames = ["FILE_A","OUT_A","FILE_B","OUT_B","OUT_C"];
   varVals = ["data_1A.txt","result_1A.txt","data_1B.txt","result_1B.txt","result_1C.txt"];
-  @test expandmanyafterdollars(inString, varNames, varVals, adapt_quotation=true, returnTF=false, keepSuperfluousQuotes=false) == "cat dummy_output/pre_\"\"result_1A.txt\"\" dummy_data/\"\"data_1A.txt\"\" > dummy_output/\"\"result_1A.txt\"\""
+  @test expandmanyafterdollars(inString, varNames, varVals, adapt_quotation=true, returnTF=false, keepSuperfluousQuotes=false) == expected;
 
   # remove_superfluous_quotes("BAR\"\"xx", '\"', 2, 1)
 
@@ -2121,7 +2122,7 @@ Test.with_handler(ut_handler) do
     "function dummy2 {\necho Running_dummy_function_2\n}\nfunction dummy2_1 {\necho Running_dummy_function_2_1\n}\nfunction dummy2_2 {\necho Running_dummy_function_2_2\n}\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy3.sh", "\n",
     "function dummy3 {\necho Running_dummy_function_3\n}\n",
-    "\n\n# Commands taken from summary file: ""\n",
+    "\n\ninitialise_job\n# Commands taken from summary file: ",
     "\n#JSUB<begin-job>",
     "\ncheck_completion \"jlang_function_test_files/job_files/ut_generated_job_root.completed\"",
     "\ncheck_completion \"jlang_function_test_files/job_files/ut_generated_job_first.completed\"", 
@@ -2205,7 +2206,7 @@ Test.with_handler(ut_handler) do
     "function dummy2 {\necho Running_dummy_function_2\n}\nfunction dummy2_1 {\necho Running_dummy_function_2_1\n}\nfunction dummy2_2 {\necho Running_dummy_function_2_2\n}\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/dummy3.sh", "\n",
     "function dummy3 {\necho Running_dummy_function_3\n}\n",
-    "\n\n# Commands taken from summary file: ""\n",
+    "\n\ninitialise_job\n# Commands taken from summary file: ",
     "\n#JSUB<begin-job>",
     "\ncheck_completion \"jlang_function_test_files/job_files/ut_generated_job_ID002_root.completed\"",
     "\ncheck_completion \"jlang_function_test_files/job_files/ut_generated_job_ID002_first.completed\"", 
@@ -2225,9 +2226,9 @@ Test.with_handler(ut_handler) do
     "\n"
   )
   @test expected_file_contents == readall(filePath)
-  arr1 = split(readall(filePath), '\n')
-  arr2 = split(expected_file_contents, '\n')
-  compare_arrays(arr1, arr2)
+  # arr1 = split(readall(filePath), '\n')
+  # arr2 = split(expected_file_contents, '\n')
+  # compare_arrays(arr1, arr2)
 
   # Test to make sure create_job_file_ does not create a job file if the array of commands is empty
   filePath = "jlang_function_test_files/job_files/ut_generated_empty_job.lsf";
@@ -2452,7 +2453,7 @@ Test.with_handler(ut_handler) do
     "function dummy3 {\necho Running_dummy_function_3\n}\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/jcheck_resume.sh", "\n",
     "contents of jcheck_resume.sh", "\n",
-    "\n\n# Commands taken from summary file: dir/name/is/ignored/jobID0000.summary""\n",
+    "\n\ninitialise_job\n# Commands taken from summary file: dir/name/is/ignored/jobID0000.summary",
     "\n#JSUB<begin-job>\n",
     "# This data would come from reading summary files.", "\n",
     "#JSUB<summary-name>ProtocolName", "\n",
@@ -2496,7 +2497,7 @@ Test.with_handler(ut_handler) do
     "function dummy3 {\necho Running_dummy_function_3\n}\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/jcheck_resume.sh", "\n",
     "contents of jcheck_resume.sh", "\n",
-    "\n\n# Commands taken from summary file: dir/name/is/ignored/jobID0000.summary""\n",
+    "\n\ninitialise_job\n# Commands taken from summary file: dir/name/is/ignored/jobID0000.summary",
     "\n#JSUB<begin-job>\n",
     "check_completion \"jlang_function_test_files/job_files/JOBDATE0_000000_jobID0000_root.completed\"\n",
     "#JGROUP first", "\n",
@@ -2539,7 +2540,7 @@ Test.with_handler(ut_handler) do
     "function dummy3 {\necho Running_dummy_function_3\n}\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/jcheck_resume.sh", "\n",
     "contents of jcheck_resume.sh", "\n",
-    "\n\n# Commands taken from summary file: dir/name/is/ignored/jobID0000.summary""\n",
+    "\n\ninitialise_job\n# Commands taken from summary file: dir/name/is/ignored/jobID0000.summary",
     "\n#JSUB<begin-job>",
     "\ncheck_completion \"jlang_function_test_files/job_files/JOBDATE0_000000_jobID0000_root.completed\"",
     "\ncheck_completion \"jlang_function_test_files/job_files/JOBDATE0_000000_jobID0000_first.completed\"",
@@ -2566,9 +2567,9 @@ Test.with_handler(ut_handler) do
     "first"  => "jlang_function_test_files/job_files/jobID0000_first.lsf",
   )
   @test expectedFileContents01 == readall(expectedFilePath01)
-  # O=split(readall(expectedFilePath01), '\n');
-  # E=split(expectedFileContents01, '\n');
-  # compare_arrays(split(readall(expectedFilePath01), '\n'), split(expectedFileContents01, '\n'));
+  O=split(readall(expectedFilePath01), '\n');
+  E=split(expectedFileContents01, '\n');
+  compare_arrays(split(readall(expectedFilePath01), '\n'), split(expectedFileContents01, '\n'));
   @test expectedFileContents02 == readall(expectedFilePath02)
   O=split(readall(expectedFilePath02), '\n');
   E=split(expectedFileContents02, '\n');
@@ -2617,7 +2618,7 @@ Test.with_handler(ut_handler) do
     "function dummy3 {\necho Running_dummy_function_3\n}\n",
     "\n# --- From file: jlang_function_test_files/dummy_bash_functions/jcheck_resume.sh", "\n",
     "contents of jcheck_resume.sh", "\n",
-    "\n\n# Commands taken from summary file: dir/name/is/ignored/jobID0000.summary""\n",
+    "\n\ninitialise_job\n# Commands taken from summary file: dir/name/is/ignored/jobID0000.summary",
     "\n#JSUB<begin-job>\n",
     "# This data would come from reading summary files.", "\n",
     "#JSUB<summary-name>ProtocolName", "\n",
