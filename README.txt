@@ -190,7 +190,7 @@ Example 6 checkpoints
 
 To assert that a job is progressing successfully, checkpoint functions can be added to job files.  These are functions that set the environment variable JSUB_FLAG_FAIL to true if some condition is not satisfied.  This in turns causes the job to stop and relevant information to be written to log files.
 
-Here we look at an example using the checkpoint function jcheck_file_not_empty.  This function takes a list of files and flags the job as failing if at least one of the files is empty (or only contains whitespace).
+Here we look at an example using the checkpoint function jcheck_file_not_empty.  This function takes a list of files and flags the job as failing if at least one of the files does not exist, is empty or only contains whitespace.
 
 cd examples/example_06
 
@@ -223,28 +223,25 @@ cd examples/example_07
 
 mkdir -p dummy_output # create the directory for job results as indicated in the vars07.vars file
 
-jsub --generate-summaries --protocol cat07.protocol \
+jsub --protocol cat07.protocol \
      --vars vars07.vars \
-     --fvars fvars07.fvars
-
-jsub --generate-jobs \
+     --fvars fvars07.fvars \
+     --list-summaries "" \
      --header-from-file "../my_job_header.txt" \
      --summary-prefix "summaries/" \
      --job-prefix "jobs/" \
      --prefix-lsf-out "lsf_out/" \
      --prefix-completed "progoress/completed/" \
-     --prefix-incomplete "progoress/incomplete/" 
-
-jsub --submit-jobs --list-jobs jobs/cat07_vars07_fvars07.list-jobs
+     --prefix-incomplete "progoress/incomplete/"
 
 By inspecting the files in dummy_output/*, jobs/*.log and progress/incomplete/*, we can see that the second job failed to complete due to a missing file "dummy_data/data_2B.txt".
 The missing file is hidden in dummy_data/missing.
 
-mv dummy_data/missing/data_2B.txt dummy_data/data_2B.txt
+cp dummy_data/missing/data_2B.txt dummy_data/data_2B.txt
 
 We can now either re-run both jobs, only the failed job or we can create a new job containing only the steps that may not have completed successfully during our initial attempt.
 This can be done using the file "progress/incomplete/cat07_vars07_fvars07_2_2.incomplete".
-The most appropriate course of action will depend on your particular circumstances but in this example we will create a new job.  First we will need to create a list of summary files (just one in this case) to pass to Stage 2 of jsub.
+The most appropriate course of action will depend on your particular circumstances but in this example we will create a new job.  First we will need to create a list of summary files (just one in this case) to pass to stage 2 of jsub.
 
 echo progoress/incomplete/cat07_vars07_fvars07_2_2.incomplete > resumed.list-summaries
 
@@ -260,7 +257,7 @@ jsub --submit-jobs --list-jobs re_jobs/re_resumed.list-jobs
 
 Now the contents of dummy_output/result_2C.txt is analgous to that of dummy_output/result_1C.txt
 
-Note: Care should be taken when using this method of resuming incomplete jobs since the incomplete steps may have generated some data already.  If this data is not overwritten when the commands are called again, the results may not be as expected.
+Note: Care should be taken when using this method of resuming incomplete jobs since the incomplete steps may have generated some data already.  If this data is not overwritten when the commands in the job file are called again, the results may not be as expected.
 
 Example 8 job groups
 
@@ -272,22 +269,6 @@ Example 9 job and summary name tags in the protocol file
 
 ...
 
-
-
-# A handy function for resetting example directories
-function clean {
-  mkdir -p TRASH
-  mv * TRASH/
-  mv TRASH/README.txt .
-  mv TRASH/*.protocol .
-  mv TRASH/my_job_header.txt .
-  mv TRASH/*.vars .
-  mv TRASH/*.fvars .
-  mv TRASH/list_file.txt .
-  mv TRASH/list_* .
-  mv TRASH/dummy_* .
-  mv dummy_data/data_2B.txt dummy_data/missing
-}
 
 
 
