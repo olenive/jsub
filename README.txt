@@ -149,8 +149,7 @@ jsub --protocol echo03.protocol \
      --job-prefix "jobs/jobpre_" \
      --prefix-lsf-out "lsf_out/lsf_" \
      --prefix-completed "progoress/completed/" \
-     --prefix-incomplete "progoress/incomplete/" \
-     --timestamp-files
+     --prefix-incomplete "progoress/incomplete/"
 
 
 Example 5 stages
@@ -176,7 +175,7 @@ jsub --generate-jobs \
      --job-prefix "jobs/jobpre_" \
      --prefix-lsf-out "lsf_out/lsf_" \
      --prefix-completed "progoress/completed/" \
-     --prefix-incomplete "progoress/incomplete/" \
+     --prefix-incomplete "progoress/incomplete/"
      
 The job files can now be submitted to the queue.  The preferred way of doing this is to call jsub with the --submit-jobs flag and providing a path to the file listing the job file paths.
 

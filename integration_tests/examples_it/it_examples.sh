@@ -203,7 +203,7 @@ assert "file_exists summaries/sumpre_echo03_vars02_fvars03_1.summary" "yes"
 assert "file_exists summaries/sumpre_echo03_vars02_fvars03_2.summary" "yes"
 assert "file_exists summaries/sumpre_echo03_vars02_fvars03_3.summary" "yes"
 assert "file_exists summaries/sumpre_echo03_vars02_fvars03.list-summaries" "yes"
-# 78
+# 102
 bash clear_example_05.sh
 cd "$DIR_ORIGIN"
 
@@ -241,11 +241,41 @@ assert "file_exists summaries/sumpre_echo03_vars02_fvars03_1.summary" "yes"
 assert "file_exists summaries/sumpre_echo03_vars02_fvars03_2.summary" "yes"
 assert "file_exists summaries/sumpre_echo03_vars02_fvars03_3.summary" "yes"
 assert "file_exists summaries/sumpre_echo03_vars02_fvars03.list-summaries" "yes"
-# 102
+# 126
 bash clear_example_05.sh
 cd "$DIR_ORIGIN"
 
-
+echo ""; echo " Testing example 6"
+cd "$DIR_EXAMPLES"/"example_06"
+# Clear out previously generated files and run the example
+bash clear_example_06.sh
+bash run_example_06.sh
+bjobs
+awaitJobNameCompletion echo06_vars06_fvars06_1_1
+awaitJobNameCompletion echo06_vars06_fvars06_2_2
+# Check that the expected files were generated
+assert "file_exists jobs/echo06_vars06_fvars06_1_1.lsf" "yes"
+assert "file_exists jobs/echo06_vars06_fvars06_1.log" "yes"
+assert "file_exists jobs/echo06_vars06_fvars06_2_2.lsf" "yes"
+assert "file_exists jobs/echo06_vars06_fvars06_2.log" "yes"
+assert "file_exists jobs/echo06_vars06_fvars06.list-jobs" "yes"
+assert "file_exists jobs/echo06_vars06_fvars06.list-jobs.submitted" "yes"
+assert "file_exists lsf_out/echo06_vars06_fvars06_1_1.error" "yes"
+assert "file_exists lsf_out/echo06_vars06_fvars06_1_1.output" "yes"
+assert "file_exists lsf_out/echo06_vars06_fvars06_2_2.error" "yes"
+assert "file_exists lsf_out/echo06_vars06_fvars06_2_2.output" "yes"
+assert "file_exists progoress/completed/echo06_vars06_fvars06_1_1.completed" "yes"
+assert "file_exists progoress/incomplete/echo06_vars06_fvars06_2_2.incomplete" "yes"
+assert "file_exists results_Anum1.txt" "yes"
+assert "file_exists results_Anum2.txt" "yes"
+assert "file_exists results_Bnum1.txt" "yes"
+assert "file_exists results_Bnum2.txt" "yes"
+assert "file_exists summaries/echo06_vars06_fvars06_1.summary" "yes"
+assert "file_exists summaries/echo06_vars06_fvars06_2.summary" "yes"
+assert "file_exists summaries/echo06_vars06_fvars06.list-summaries" "yes"
+# 145
+bash clear_example_06.sh
+cd "$DIR_ORIGIN"
 
 ## end of test suite
 assert_end
