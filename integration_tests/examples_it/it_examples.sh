@@ -169,44 +169,82 @@ assert "file_exists summaries/sumpre_echo03_vars02_fvars03.list-summaries" "yes"
 bash clear_example_04.sh
 cd "$DIR_ORIGIN"
 
+echo ""; echo " Testing example 5"
+cd "$DIR_EXAMPLES"/"example_05"
+# Clear out previously generated files and run the example
+bash clear_example_05.sh
+bash run_example_05.sh
+bjobs
+awaitJobNameCompletion sumpre_echo03_vars02_fvars03_1_1
+awaitJobNameCompletion sumpre_echo03_vars02_fvars03_2_2
+awaitJobNameCompletion sumpre_echo03_vars02_fvars03_3_3
+# Check that the expected files were generated
+assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03_1_1.lsf" "yes"
+assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03_1.log" "yes"
+assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03_2_2.lsf" "yes"
+assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03_2.log" "yes"
+assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03_3_3.lsf" "yes"
+assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03_3.log" "yes"
+assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03.list-jobs" "yes"
+assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03.list-jobs.submitted" "yes"
+assert "file_exists lsf_out/lsf_sumpre_echo03_vars02_fvars03_1_1.error" "yes"
+assert "file_exists lsf_out/lsf_sumpre_echo03_vars02_fvars03_1_1.output" "yes"
+assert "file_exists lsf_out/lsf_sumpre_echo03_vars02_fvars03_2_2.error" "yes"
+assert "file_exists lsf_out/lsf_sumpre_echo03_vars02_fvars03_2_2.output" "yes"
+assert "file_exists lsf_out/lsf_sumpre_echo03_vars02_fvars03_3_3.error" "yes"
+assert "file_exists lsf_out/lsf_sumpre_echo03_vars02_fvars03_3_3.output" "yes"
+assert "file_exists outfile1.txt" "yes"
+assert "file_exists outfile2.txt" "yes"
+assert "file_exists outfile3.txt" "yes"
+assert "file_exists progoress/completed/sumpre_echo03_vars02_fvars03_1_1.completed" "yes"
+assert "file_exists progoress/completed/sumpre_echo03_vars02_fvars03_2_2.completed" "yes"
+assert "file_exists progoress/completed/sumpre_echo03_vars02_fvars03_3_3.completed" "yes"
+assert "file_exists summaries/sumpre_echo03_vars02_fvars03_1.summary" "yes"
+assert "file_exists summaries/sumpre_echo03_vars02_fvars03_2.summary" "yes"
+assert "file_exists summaries/sumpre_echo03_vars02_fvars03_3.summary" "yes"
+assert "file_exists summaries/sumpre_echo03_vars02_fvars03.list-summaries" "yes"
+# 78
+bash clear_example_05.sh
+cd "$DIR_ORIGIN"
 
-# echo ""; echo " Testing example 4"
-# cd "$DIR_EXAMPLES"/"example_04"
-# # Clear out previously generated files and run the example
-# bash clear_example_04.sh
-# bash run_example_04.sh
-# bjobs
-# awaitJobNameCompletion sumpre_echo03_vars02_fvars03_1_1
-# awaitJobNameCompletion sumpre_echo03_vars02_fvars03_2_2
-# awaitJobNameCompletion sumpre_echo03_vars02_fvars03_3_3
-# # Check that the expected files were generated
-# assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03_1_1.lsf" "yes"
-# assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03_1.log" "yes"
-# assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03_2_2.lsf" "yes"
-# assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03_2.log" "yes"
-# assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03_3_3.lsf" "yes"
-# assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03_3.log" "yes"
-# assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03.list-jobs" "yes"
-# assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03.list-jobs.submitted" "yes"
-# assert "file_exists lsf_out/lsf_sumpre_echo03_vars02_fvars03_1_1.error" "yes"
-# assert "file_exists lsf_out/lsf_sumpre_echo03_vars02_fvars03_1_1.output" "yes"
-# assert "file_exists lsf_out/lsf_sumpre_echo03_vars02_fvars03_2_2.error" "yes"
-# assert "file_exists lsf_out/lsf_sumpre_echo03_vars02_fvars03_2_2.output" "yes"
-# assert "file_exists lsf_out/lsf_sumpre_echo03_vars02_fvars03_3_3.error" "yes"
-# assert "file_exists lsf_out/lsf_sumpre_echo03_vars02_fvars03_3_3.output" "yes"
-# assert "file_exists outfile1.txt" "yes"
-# assert "file_exists outfile2.txt" "yes"
-# assert "file_exists outfile3.txt" "yes"
-# assert "file_exists progoress/completed/sumpre_echo03_vars02_fvars03_1_1.completed" "yes"
-# assert "file_exists progoress/completed/sumpre_echo03_vars02_fvars03_2_2.completed" "yes"
-# assert "file_exists progoress/completed/sumpre_echo03_vars02_fvars03_3_3.completed" "yes"
-# assert "file_exists summaries/sumpre_echo03_vars02_fvars03_1.summary" "yes"
-# assert "file_exists summaries/sumpre_echo03_vars02_fvars03_2.summary" "yes"
-# assert "file_exists summaries/sumpre_echo03_vars02_fvars03_3.summary" "yes"
-# assert "file_exists summaries/sumpre_echo03_vars02_fvars03.list-summaries" "yes"
-# # 78
-# bash clear_example_04.sh
-# cd "$DIR_ORIGIN"
+echo ""; echo " Testing example 5"
+cd "$DIR_EXAMPLES"/"example_05"
+# Clear out previously generated files and run the example
+bash clear_example_05.sh
+bash run_example_05.sh
+bjobs
+awaitJobNameCompletion sumpre_echo03_vars02_fvars03_1_1
+awaitJobNameCompletion sumpre_echo03_vars02_fvars03_2_2
+awaitJobNameCompletion sumpre_echo03_vars02_fvars03_3_3
+# Check that the expected files were generated
+assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03_1_1.lsf" "yes"
+assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03_1.log" "yes"
+assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03_2_2.lsf" "yes"
+assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03_2.log" "yes"
+assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03_3_3.lsf" "yes"
+assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03_3.log" "yes"
+assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03.list-jobs" "yes"
+assert "file_exists jobs/jobpre_sumpre_echo03_vars02_fvars03.list-jobs.submitted" "yes"
+assert "file_exists lsf_out/lsf_sumpre_echo03_vars02_fvars03_1_1.error" "yes"
+assert "file_exists lsf_out/lsf_sumpre_echo03_vars02_fvars03_1_1.output" "yes"
+assert "file_exists lsf_out/lsf_sumpre_echo03_vars02_fvars03_2_2.error" "yes"
+assert "file_exists lsf_out/lsf_sumpre_echo03_vars02_fvars03_2_2.output" "yes"
+assert "file_exists lsf_out/lsf_sumpre_echo03_vars02_fvars03_3_3.error" "yes"
+assert "file_exists lsf_out/lsf_sumpre_echo03_vars02_fvars03_3_3.output" "yes"
+assert "file_exists outfile1.txt" "yes"
+assert "file_exists outfile2.txt" "yes"
+assert "file_exists outfile3.txt" "yes"
+assert "file_exists progoress/completed/sumpre_echo03_vars02_fvars03_1_1.completed" "yes"
+assert "file_exists progoress/completed/sumpre_echo03_vars02_fvars03_2_2.completed" "yes"
+assert "file_exists progoress/completed/sumpre_echo03_vars02_fvars03_3_3.completed" "yes"
+assert "file_exists summaries/sumpre_echo03_vars02_fvars03_1.summary" "yes"
+assert "file_exists summaries/sumpre_echo03_vars02_fvars03_2.summary" "yes"
+assert "file_exists summaries/sumpre_echo03_vars02_fvars03_3.summary" "yes"
+assert "file_exists summaries/sumpre_echo03_vars02_fvars03.list-summaries" "yes"
+# 102
+bash clear_example_05.sh
+cd "$DIR_ORIGIN"
+
 
 
 ## end of test suite
