@@ -2,10 +2,12 @@ This is a light weight tool for creating and submitting job file to the LSF queu
 
 
 Dependencies
+
 The code for generating job files is written in Julia (version 0.4.0) and uses the ArgParse package (v0.3.1).  Job files use bash shell command and have been tested with LSF version 9.1.2.0 in a Linux environment.
 
 
 Aims
+
 Transparency: Job files produced by jsub contain bash shell functions that write to log files as the job proceeds. This creates a record of the steps taken to obtain the resulting output data.
 
 Reproduceablitiy: Re-running the analysis should be easy given a protocol file and files listing variable values.
@@ -16,12 +18,12 @@ User friendliness: No need to learn a new language, the process is based on vari
 
 
 Installation
+
 For Julia installation instructions see:
 To install the ArgParse package...
 
 
-Example 1 - minimal
-The most basic use of jsub is to pass a file listing bash commands as an argument to --protocol.  The tool will create the required files and submit an LSF job.
+Examples
 
 Depending on your LSF setup you may need to provide specific options to LSF, such as a grant code or a queue length.  The prefered way of doing this is to write the desired options into a text file (in the same format as you would in an LSF job file) and provide the path to this file as an argument to the "--header-from-file" option.
 For a full list of options run jsub with the "--help" flag.
@@ -36,6 +38,10 @@ Assuming both Julia and LSF are running in the current environment and Julia is 
 From the jsub directory:
 
 alias jsub="julia $(pwd)/jsub.jl "
+
+
+Example 1 - minimal
+The most basic use of jsub is to pass a file listing bash commands as an argument to --protocol.  The tool will create the required files and submit an LSF job.
 
 cd examples/example_01
 
@@ -75,13 +81,25 @@ NOTE: While it is possible to declare variables in the protocol as you would in 
 
 If we want to try a different set of values we don't need to change the echo_vars.protocol file, instead we can supply a different file to --vars.
 
-NOTE: The expected format for a file passed to --vars is two, tab-delimited columns with the variable names in the left column.
+NOTE: The expected format for a file passed to --vars is two, tab-delimited columns with the variable names in the left column and corresponding values in the right.
 
 cd examples/example_02
 
 jsub --protocol echo02.protocol \
      --header-from-file "../my_job_header.txt" \
-     --vars vars02.vars
+     --vars vars02_A.vars
+
+The result of the job can be seen in "example_02_output.txt".
+
+To reset the example and re-run it with a different set of values:
+
+bash clear_example_02.sh
+
+jsub --protocol echo02.protocol \
+     --header-from-file "../my_job_header.txt" \
+     --vars vars02_B.vars
+
+The contents of "example_02_output.txt" should now match the values supplied in vars02_B.vars.
 
 
 Example 3 - fvars

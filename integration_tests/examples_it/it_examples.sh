@@ -32,7 +32,7 @@ alias jsub="julia $(pwd)/jsub.jl "
 cd "$DIR_ORIGIN"
 
 # Begin running tests
-echo " Testing example 1"
+echo ""; echo " Testing example 1"
 cd "$DIR_EXAMPLES"/"example_01"
 # Clear out previously generated files and run the example
 bash clear_example_01.sh
@@ -54,29 +54,47 @@ assert "file_exists example_01_output.txt" "yes"
 bash clear_example_01.sh
 cd "$DIR_ORIGIN"
 
-# echo " Testing example 1"
-# cd "$DIR_EXAMPLES"/"example_01"
-# bash clear_example_01.sh
-# bash run_example_01.sh
+echo ""; echo " Testing example 2"
+cd "$DIR_EXAMPLES"/"example_02"
+# Clear out previously generated files and run the example
+bash clear_example_02.sh
+bash run_example_02_A.sh
+bjobs
+awaitJobNameCompletion echo02_vars02_A_1_1
+# Check that the expected files were generated
+assert "file_exists  echo02_vars02_A_1_1.completed" "yes"
+assert "file_exists  echo02_vars02_A_1_1.error" "yes"
+assert "file_exists  echo02_vars02_A_1_1.lsf" "yes"
+assert "file_exists  echo02_vars02_A_1_1.output" "yes"
+assert "file_exists  echo02_vars02_A_1.log" "yes"
+assert "file_exists  echo02_vars02_A_1.summary" "yes"
+assert "file_exists  echo02_vars02_A.list-jobs" "yes"
+assert "file_exists  echo02_vars02_A.list-jobs.submitted" "yes"
+assert "file_exists  echo02_vars02_A.list-summaries" "yes"
+assert "file_exists  example_02_output.txt" "yes"
+# 20
+# Clear out previously generated files and run the example
+bash clear_example_02.sh
+bash run_example_02_B.sh
+bjobs
+awaitJobNameCompletion echo02_vars02_B_1_1
+# Check that the expected files were generated
+assert "file_exists  echo02_vars02_B_1_1.completed" "yes"
+assert "file_exists  echo02_vars02_B_1_1.error" "yes"
+assert "file_exists  echo02_vars02_B_1_1.lsf" "yes"
+assert "file_exists  echo02_vars02_B_1_1.output" "yes"
+assert "file_exists  echo02_vars02_B_1.log" "yes"
+assert "file_exists  echo02_vars02_B_1.summary" "yes"
+assert "file_exists  echo02_vars02_B.list-jobs" "yes"
+assert "file_exists  echo02_vars02_B.list-jobs.submitted" "yes"
+assert "file_exists  echo02_vars02_B.list-summaries" "yes"
+assert "file_exists  example_02_output.txt" "yes"
+# 20
+bash clear_example_02.sh
+cd "$DIR_ORIGIN"
 
-# bash clear_example_01.sh
-# cd "$DIR_ORIGIN"
 
-# echo " Testing example 1"
-# cd "$DIR_EXAMPLES"/"example_01"
-# bash clear_example_01.sh
-# bash run_example_01.sh
 
-# bash clear_example_01.sh
-# cd "$DIR_ORIGIN"
-
-# echo " Testing example 1"
-# cd "$DIR_EXAMPLES"/"example_01"
-# bash clear_example_01.sh
-# bash run_example_01.sh
-
-# bash clear_example_01.sh
-# cd "$DIR_ORIGIN"
 
 ## end of test suite
 assert_end
