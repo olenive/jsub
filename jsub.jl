@@ -329,12 +329,12 @@ function run_stage1_(pathProtocol, pathVars, pathFvars; processName="", summaryP
   namesFvars = []; infileColumnsFvars = []; filePathsFvars = [];
   if pathFvars != ""
     flagVerbose && println(string("Expanding variables in data from \"--fvars\" file using names and values from the \"--vars\" file: ", pathFvars));
-    namesFvars, infileColumnsFvars, filePathsFvars = parse_expandvars_fvarsfile_(pathFvars, namesVars, valuesVars; dlmFvars=delimiterFvars, adapt_quotation=adapt_quotation, tagsExpand=tagsExpand, keepSuperfluousQuotes=keepSuperfluousQuotes);
+    namesFvars, infileColumnsFvars, filePathsFvars = parse_expandvars_fvarsfile_(pathFvars, namesVars, valuesVars; dlmFvars=delimiterFvars, verbose=false, adapt_quotation=adapt_quotation, tagsExpand=tagsExpand, keepSuperfluousQuotes=keepSuperfluousQuotes);
   end
 
   # Read .protocol file (of 1 column ) and expand variables from .vars
   (flagVerbose && length(namesVars) > 0) && println("Expanding variables in protocol file using values from the --vars file.");
-  arrProtExpVars, cmdRowsProt = parse_expandvars_protocol_(pathProtocol, namesVars, valuesVars, adapt_quotation=adapt_quotation, tagsExpand=tagsExpand, keepSuperfluousQuotes=keepSuperfluousQuotes);
+  arrProtExpVars, cmdRowsProt = parse_expandvars_protocol_(pathProtocol, namesVars, valuesVars, adapt_quotation=adapt_quotation, verbose=false, tagsExpand=tagsExpand, keepSuperfluousQuotes=keepSuperfluousQuotes);
 
   dictListArr = Dict(); dictCmdLineIdxs = Dict();
   if pathFvars != ""
@@ -350,9 +350,7 @@ function run_stage1_(pathProtocol, pathVars, pathFvars; processName="", summaryP
   flagVerbose && println("Creating summary files...");
   arrArrExpFvars = [];
   if length(keys(dictListArr)) != 0 && length(keys(dictCmdLineIdxs)) != 0
-    println("1 #########");
-    arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs; verbose=true, adapt_quotation=adapt_quotation, keepSuperfluousQuotes=keepSuperfluousQuotes);
-    println("2 #########");
+    arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs; verbose=false, adapt_quotation=adapt_quotation, keepSuperfluousQuotes=keepSuperfluousQuotes);
   else
     push!(arrArrExpFvars, arrProtExpVars); # If there is no data from list files, simply proceed using the protocol with expanded varibles (if applicable)
   end

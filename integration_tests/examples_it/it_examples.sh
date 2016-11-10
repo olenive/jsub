@@ -89,10 +89,47 @@ assert "file_exists  echo02_vars02_B.list-jobs" "yes"
 assert "file_exists  echo02_vars02_B.list-jobs.submitted" "yes"
 assert "file_exists  echo02_vars02_B.list-summaries" "yes"
 assert "file_exists  example_02_output.txt" "yes"
-# 20
+# 30
 bash clear_example_02.sh
 cd "$DIR_ORIGIN"
 
+echo ""; echo " Testing example 3"
+cd "$DIR_EXAMPLES"/"example_03"
+# Clear out previously generated files and run the example
+bash clear_example_03.sh
+bash run_example_03.sh
+bjobs
+awaitJobNameCompletion echo03_vars02_fvars03_1_1
+awaitJobNameCompletion echo03_vars02_fvars03_2_2
+awaitJobNameCompletion echo03_vars02_fvars03_3_3
+# Check that the expected files were generated
+assert "file_exists echo03_vars02_fvars03_1_1.completed" "yes"
+assert "file_exists echo03_vars02_fvars03_1_1.error" "yes"
+assert "file_exists echo03_vars02_fvars03_1_1.lsf" "yes"
+assert "file_exists echo03_vars02_fvars03_1_1.output" "yes"
+assert "file_exists echo03_vars02_fvars03_1.log" "yes"
+assert "file_exists echo03_vars02_fvars03_1.summary" "yes"
+assert "file_exists echo03_vars02_fvars03_2_2.completed" "yes"
+assert "file_exists echo03_vars02_fvars03_2_2.error" "yes"
+assert "file_exists echo03_vars02_fvars03_2_2.lsf" "yes"
+assert "file_exists echo03_vars02_fvars03_2_2.output" "yes"
+assert "file_exists echo03_vars02_fvars03_2.log" "yes"
+assert "file_exists echo03_vars02_fvars03_2.summary" "yes"
+assert "file_exists echo03_vars02_fvars03_3_3.completed" "yes"
+assert "file_exists echo03_vars02_fvars03_3_3.error" "yes"
+assert "file_exists echo03_vars02_fvars03_3_3.lsf" "yes"
+assert "file_exists echo03_vars02_fvars03_3_3.output" "yes"
+assert "file_exists echo03_vars02_fvars03_3.log" "yes"
+assert "file_exists echo03_vars02_fvars03_3.summary" "yes"
+assert "file_exists echo03_vars02_fvars03.list-jobs" "yes"
+assert "file_exists echo03_vars02_fvars03.list-jobs.submitted" "yes"
+assert "file_exists echo03_vars02_fvars03.list-summaries" "yes"
+assert "file_exists outfile1.txt" "yes"
+assert "file_exists outfile2.txt" "yes"
+assert "file_exists outfile3.txt" "yes"
+# 54
+bash clear_example_03.sh
+cd "$DIR_ORIGIN"
 
 
 
