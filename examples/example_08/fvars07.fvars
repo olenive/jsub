@@ -1,0 +1,5 @@
+FILE_A	1	list_dummy_data.txt 
+OUT_A	1	list_dummy_output.txt
+FILE_B	2	list_dummy_data.txt
+OUT_B	2	list_dummy_output.txt
+OUT_C	3	list_dummy_output.txt

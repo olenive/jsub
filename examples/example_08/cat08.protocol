@@ -1,0 +1,22 @@
+# In this example protocol data from files on disc is used for two hypothetical processing steps (A, B and C).
+
+# Preliminary steps
+echo "Initial steps output for file A" > "$DIR_OUTPUT"/pre_"$OUT_A"
+echo "Initial steps output for file B" > "$DIR_OUTPUT"/pre_"$OUT_B"
+echo "Initial steps output for file C" > "$DIR_OUTPUT"/pre_"$OUT_C"
+echo "" >> "$DIR_OUTPUT"/"$OUT_C"  
+
+#JGROUP processA
+# Process A
+jcheck_file_not_empty "$DIR_DATA"/"$FILE_A"
+cat "$DIR_OUTPUT"/pre_"$OUT_A" "$DIR_DATA"/"$FILE_A" > "$DIR_OUTPUT"/"$OUT_A" 
+
+#JGROUP processB
+# Process B
+jcheck_file_not_empty "$DIR_DATA"/"$FILE_B"
+cat "$DIR_OUTPUT"/pre_"$OUT_B" "$DIR_DATA"/"$FILE_B" > "$DIR_OUTPUT"/"$OUT_B" 
+
+#JGROUP processC processA processB
+# Process C
+cat "$DIR_OUTPUT"/pre_"$OUT_C" "$DIR_OUTPUT"/"$OUT_A" "$DIR_OUTPUT"/"$OUT_B" > "$DIR_OUTPUT"/"$OUT_C"
+
