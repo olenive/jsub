@@ -1,0 +1,7 @@
+FILE_A	1	list_dummy_data.txt 
+OUT_A	1	list_dummy_output_09.txt
+FILE_B	2	list_dummy_data.txt
+OUT_B	2	list_dummy_output_09.txt
+OUT_C	3	list_dummy_output_09.txt
+MY_SUMMARY_NAME	4	list_dummy_output_09.txt
+MY_JOBID	5	list_dummy_output_09.txt

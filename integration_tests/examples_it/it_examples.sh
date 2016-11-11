@@ -338,16 +338,16 @@ cd "$DIR_EXAMPLES"/"example_08"
 bash clear_example_08.sh
 bash run_example_08.sh
 bjobs
-awaitJobNameCompletioncat08_vars07_fvars07_1_1_processA
-awaitJobNameCompletioncat08_vars07_fvars07_1_1_processB
-awaitJobNameCompletioncat08_vars07_fvars07_1_1_processC
-awaitJobNameCompletioncat08_vars07_fvars07_1_1_root
-awaitJobNameCompletioncat08_vars07_fvars07_2_2_processA
-awaitJobNameCompletioncat08_vars07_fvars07_2_2_processB
-awaitJobNameCompletioncat08_vars07_fvars07_2_2_processC
-awaitJobNameCompletioncat08_vars07_fvars07_2_2_root
+awaitJobNameCompletion cat08_vars07_fvars07_1_1_processA
+awaitJobNameCompletion cat08_vars07_fvars07_1_1_processB
+awaitJobNameCompletion cat08_vars07_fvars07_1_1_processC
+awaitJobNameCompletion cat08_vars07_fvars07_1_1_root
+awaitJobNameCompletion cat08_vars07_fvars07_2_2_processA
+awaitJobNameCompletion cat08_vars07_fvars07_2_2_processB
+awaitJobNameCompletion cat08_vars07_fvars07_2_2_processC
+awaitJobNameCompletion cat08_vars07_fvars07_2_2_root
 # Check that the expected files were generated
-assert "file_exists ./cat08_vars07_fvars07.list-jobs.submitted" "yes"
+assert "file_exists ./jobs/cat08_vars07_fvars07.list-jobs.submitted" "yes"
 assert "file_exists ./dummy_output/pre_result_1A.txt" "yes"
 assert "file_exists ./dummy_output/pre_result_1B.txt" "yes"
 assert "file_exists ./dummy_output/pre_result_1C.txt" "yes"

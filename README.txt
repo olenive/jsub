@@ -152,7 +152,7 @@ jsub --protocol echo03.protocol \
      --prefix-incomplete "progoress/incomplete/"
 
 
-Example 5 stages
+Example 5 - stages
 In the above examples all the stages were run together.  Here we run them one at a time.
 
 cd examples/example_05
@@ -186,7 +186,7 @@ Submission is actually handled by a shell script (common_functions/submit_lsf_jo
 It is possible to submit jobs without calling jsub but instead passing a list of job files to submit_lsf_jobs.sh.  This may be useful if Julia is not available on the system where the jobs are to be run.  To facilitate this the --portable flag can be used to create a single directory containing the relevant job files instead of submitting the jobs directly.
 
 
-Example 6 checkpoints
+Example 6 - checkpoints
 
 To assert that a job is progressing successfully, checkpoint functions can be added to job files.  These are functions that set the environment variable JSUB_FLAG_FAIL to true if some condition is not satisfied.  This in turns causes the job to stop and relevant information to be written to log files.
 
@@ -213,7 +213,7 @@ The remaining lines in the log file indicate the commands that were run but did 
 The files in progress/complete and progress/incomplete list the commands that were 
 
 
-Example 7 resuming a failed job
+Example 7 - resuming a failed job
 
 In some cases we may want to re-run the job that failed.  Depending on the circumstances it may be a better idea to fix the root of the problem and generate a new set of summary and job files.  However, the *.incomplete files can be used as summary files for a new job if it is considered apropriate.
 
@@ -259,7 +259,7 @@ Now the contents of dummy_output/result_2C.txt is analgous to that of dummy_outp
 Note: Care should be taken when using this method of resuming incomplete jobs since the incomplete steps may have generated some data already.  If this data is not overwritten when the commands in the job file are called again, the results may not be as expected.
 
 
-Example 8 job groups
+Example 8 - job groups
 
 The protocol from the previous example contains steps that do not depend on eachother (process A and process B).  These could be run in parallel.  However, in order to do this we need to explicitly specify which commands need to be run together in a group.
 
@@ -294,6 +294,8 @@ root          processC
 
 For this example, we will generate the summary and job files first.
 
+cd examples/example_08
+
 jsub --generate-summaries --generate-jobs \
      --protocol cat08.protocol \
      --vars vars07.vars \
@@ -311,16 +313,36 @@ However, in the "jobs" directory we can see that four jobs (one for each group) 
 jsub --submit-jobs --list-jobs "cat08_vars07_fvars07.list-jobs"
 
 
+Example 9 - summary name tags in the protocol file
 
+So far all the summary and job file names we have used consisted of a concatentation of the input file names and a number indicating the relevant row in the list files.  To spcify more informative summary file names we can use a #JSUB<summary-name> tag to the protocol, for example
 
+#JSUB<summary-name> $MY_SUMMARY_NAME
 
-Example 9 job and summary name tags in the protocol file
+We can also specify job names using the #JSUB<job-id> tag, for example
 
-...
+#JSUB<job-id> $MY_JOBID
 
+where the variable after the tag will have a unique value for each summary or job file.  To create these unique values we use a list file.  In this example, the fourth and fifth columns in the "list_dummy_output_09.txt" file.  We also need to add the name of the variable to the *fvars file as before.  In this case the last two line of the file fvars09.fvars looks like this:
 
+MY_SUMMARY_NAME	4	list_dummy_output_09.txt
+MY_JOBID	5	list_dummy_output_09.txt
 
+Running the example we can see that the names of the summary and job files are now base on the values in the "list_dummy_output_09.txt" file.
 
+cd examples/example_09
 
+jsub --generate-summaries --generate-jobs \
+     --protocol cat09.protocol \
+     --vars vars07.vars \
+     --fvars fvars09.fvars \
+     --header-from-file "../my_job_header.txt" \
+     --summary-prefix "summaries/" \
+     --job-prefix "jobs/" \
+     --prefix-lsf-out "lsf_out/" \
+     --prefix-completed "progoress/completed/" \
+     --prefix-incomplete "progoress/incomplete/"
+
+jsub --submit-jobs --list-jobs "jobs"/"cat09_vars07_fvars09.list-jobs"
 
 
