@@ -286,9 +286,9 @@ bjobs
 awaitJobNameCompletion cat07_vars07_fvars07_1_1
 awaitJobNameCompletion cat07_vars07_fvars07_2_2
 # Check that the expected files were generated
-assert "file_exists  cat07_vars07_fvars07_1.summary" "yes"
-assert "file_exists  cat07_vars07_fvars07_2.summary" "yes"
-assert "file_exists  cat07_vars07_fvars07.list-summaries" "yes"
+assert "file_exists  summaries/cat07_vars07_fvars07_1.summary" "yes"
+assert "file_exists  summaries/cat07_vars07_fvars07_2.summary" "yes"
+assert "file_exists  summaries/cat07_vars07_fvars07.list-summaries" "yes"
 assert "file_exists  dummy_output/pre_result_1A.txt" "yes"
 assert "file_exists  dummy_output/pre_result_1B.txt" "yes"
 assert "file_exists  dummy_output/pre_result_1C.txt" "yes"
@@ -320,16 +320,14 @@ assert "file_exists  summaries/cat07_vars07_fvars07.list-summaries" "yes"
 # re-run with the missing file now where it is expected
 bash rerun_example_07.sh
 bjobs
-awaitJobNameCompletion re_cat07_vars07_fvars07_2_2
-awaitJobNameCompletion re_cat07_vars07_fvars07_2_2
+awaitJobNameCompletion cat07_vars07_fvars07_2_2.incomplete_1
 assert "file_exists  re_jobs/re_cat07_vars07_fvars07_2_2.incomplete_1.lsf" "yes"
 assert "file_exists  re_jobs/re_cat07_vars07_fvars07_2_2.incomplete.log" "yes"
 assert "file_exists  re_jobs/re_resumed.list-jobs" "yes"
 assert "file_exists  re_jobs/re_resumed.list-jobs.submitted" "yes"
 assert "file_exists  re_lsf_out/lsf_cat07_vars07_fvars07_2_2.incomplete_1.error" "yes"
 assert "file_exists  re_lsf_out/lsf_cat07_vars07_fvars07_2_2.incomplete_1.output" "yes"
-assert "file_exists  re_progoress/completed" "yes"
-assert "file_exists  re_progoress/incomplete" "yes"
+assert "file_exists  re_progoress/completed/cat07_vars07_fvars07_2_2.incomplete_1.completed" "yes"
 
 bash clear_example_07.sh
 cd "$DIR_ORIGIN"
