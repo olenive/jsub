@@ -332,6 +332,87 @@ assert "file_exists  re_progoress/completed/cat07_vars07_fvars07_2_2.incomplete_
 bash clear_example_07.sh
 cd "$DIR_ORIGIN"
 
+echo ""; echo " Testing example 8"
+cd "$DIR_EXAMPLES"/"example_08"
+# Clear out previously generated files and run the example
+bash clear_example_08.sh
+bash run_example_08.sh
+bjobs
+awaitJobNameCompletioncat08_vars07_fvars07_1_1_processA
+awaitJobNameCompletioncat08_vars07_fvars07_1_1_processB
+awaitJobNameCompletioncat08_vars07_fvars07_1_1_processC
+awaitJobNameCompletioncat08_vars07_fvars07_1_1_root
+awaitJobNameCompletioncat08_vars07_fvars07_2_2_processA
+awaitJobNameCompletioncat08_vars07_fvars07_2_2_processB
+awaitJobNameCompletioncat08_vars07_fvars07_2_2_processC
+awaitJobNameCompletioncat08_vars07_fvars07_2_2_root
+# Check that the expected files were generated
+assert "file_exists ./cat08_vars07_fvars07.list-jobs.submitted" "yes"
+assert "file_exists ./dummy_output/pre_result_1A.txt" "yes"
+assert "file_exists ./dummy_output/pre_result_1B.txt" "yes"
+assert "file_exists ./dummy_output/pre_result_1C.txt" "yes"
+assert "file_exists ./dummy_output/pre_result_2A.txt" "yes"
+assert "file_exists ./dummy_output/pre_result_2B.txt" "yes"
+assert "file_exists ./dummy_output/pre_result_2C.txt" "yes"
+assert "file_exists ./dummy_output/result_1A.txt" "yes"
+assert "file_exists ./dummy_output/result_1B.txt" "yes"
+assert "file_exists ./dummy_output/result_1C.txt" "yes"
+assert "file_exists ./dummy_output/result_2A.txt" "yes"
+assert "file_exists ./dummy_output/result_2B.txt" "yes"
+assert "file_exists ./dummy_output/result_2C.txt" "yes"
+assert "file_exists ./jobs/cat08_vars07_fvars07_1_1_processA.lsf" "yes"
+assert "file_exists ./jobs/cat08_vars07_fvars07_1_1_processB.lsf" "yes"
+assert "file_exists ./jobs/cat08_vars07_fvars07_1_1_processC.lsf" "yes"
+assert "file_exists ./jobs/cat08_vars07_fvars07_1_1_root.lsf" "yes"
+assert "file_exists ./jobs/cat08_vars07_fvars07_1.log" "yes"
+assert "file_exists ./jobs/cat08_vars07_fvars07_2_2_processA.lsf" "yes"
+assert "file_exists ./jobs/cat08_vars07_fvars07_2_2_processB.lsf" "yes"
+assert "file_exists ./jobs/cat08_vars07_fvars07_2_2_processC.lsf" "yes"
+assert "file_exists ./jobs/cat08_vars07_fvars07_2_2_root.lsf" "yes"
+assert "file_exists ./jobs/cat08_vars07_fvars07_2.log" "yes"
+assert "file_exists ./jobs/cat08_vars07_fvars07.list-jobs" "yes"
+assert "file_exists ./jobs/cat08_vars07_fvars07.list-jobs.submitted" "yes"
+assert "file_exists ./lsf_out/cat08_vars07_fvars07_1_1_processA.error" "yes"
+assert "file_exists ./lsf_out/cat08_vars07_fvars07_1_1_processA.output" "yes"
+assert "file_exists ./lsf_out/cat08_vars07_fvars07_1_1_processB.error" "yes"
+assert "file_exists ./lsf_out/cat08_vars07_fvars07_1_1_processB.output" "yes"
+assert "file_exists ./lsf_out/cat08_vars07_fvars07_1_1_processC.error" "yes"
+assert "file_exists ./lsf_out/cat08_vars07_fvars07_1_1_processC.output" "yes"
+assert "file_exists ./lsf_out/cat08_vars07_fvars07_1_1_root.error" "yes"
+assert "file_exists ./lsf_out/cat08_vars07_fvars07_1_1_root.output" "yes"
+assert "file_exists ./lsf_out/cat08_vars07_fvars07_2_2_processA.error" "yes"
+assert "file_exists ./lsf_out/cat08_vars07_fvars07_2_2_processA.output" "yes"
+assert "file_exists ./lsf_out/cat08_vars07_fvars07_2_2_processB.error" "yes"
+assert "file_exists ./lsf_out/cat08_vars07_fvars07_2_2_processB.output" "yes"
+assert "file_exists ./lsf_out/cat08_vars07_fvars07_2_2_processC.error" "yes"
+assert "file_exists ./lsf_out/cat08_vars07_fvars07_2_2_processC.output" "yes"
+assert "file_exists ./lsf_out/cat08_vars07_fvars07_2_2_root.error" "yes"
+assert "file_exists ./lsf_out/cat08_vars07_fvars07_2_2_root.output" "yes"
+
+assert "file_exists ./progoress/completed/cat08_vars07_fvars07_1_1_processA.completed" "yes"
+assert "file_exists ./progoress/completed/cat08_vars07_fvars07_1_1_processB.completed" "yes"
+assert "file_exists ./progoress/completed/cat08_vars07_fvars07_1_1_processC.completed" "yes"
+assert "file_exists ./progoress/completed/cat08_vars07_fvars07_1_1_root.completed" "yes"
+assert "file_exists ./progoress/completed/cat08_vars07_fvars07_2_2_processA.completed" "yes"
+assert "file_exists ./progoress/completed/cat08_vars07_fvars07_2_2_processB.completed" "yes"
+assert "file_exists ./progoress/completed/cat08_vars07_fvars07_2_2_processC.completed" "yes"
+assert "file_exists ./progoress/completed/cat08_vars07_fvars07_2_2_root.completed" "yes"
+# Check that no .incomplete files were generated (i.e. that all steps of the protocol were completed as expected)
+assert "file_exists ./progoress/incomplete/cat08_vars07_fvars07_1_1_processA.incomplete" "no"
+assert "file_exists ./progoress/incomplete/cat08_vars07_fvars07_1_1_processB.incomplete" "no"
+assert "file_exists ./progoress/incomplete/cat08_vars07_fvars07_1_1_processC.incomplete" "no"
+assert "file_exists ./progoress/incomplete/cat08_vars07_fvars07_1_1_root.incomplete" "no"
+assert "file_exists ./progoress/incomplete/cat08_vars07_fvars07_2_2_processA.incomplete" "no"
+assert "file_exists ./progoress/incomplete/cat08_vars07_fvars07_2_2_processB.incomplete" "no"
+assert "file_exists ./progoress/incomplete/cat08_vars07_fvars07_2_2_processC.incomplete" "no"
+assert "file_exists ./progoress/incomplete/cat08_vars07_fvars07_2_2_root.completed" "no"
+
+assert "file_exists ./summaries/cat08_vars07_fvars07_1.summary" "yes"
+assert "file_exists ./summaries/cat08_vars07_fvars07_2.summary" "yes"
+assert "file_exists ./summaries/cat08_vars07_fvars07.list-summaries" "yes"
+# 145
+bash clear_example_08.sh
+cd "$DIR_ORIGIN"
 
 
 ## end of test suite

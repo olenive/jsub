@@ -15,4 +15,4 @@ $jsub --generate-summaries --generate-jobs \
      --prefix-completed "progoress/completed/" \
      --prefix-incomplete "progoress/incomplete/"
 
-$jsub --submit-jobs --list-jobs "cat08_vars07_fvars07.list-jobs"
+$jsub --submit-jobs --list-jobs "jobs"/"cat08_vars07_fvars07.list-jobs"

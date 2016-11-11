@@ -226,7 +226,6 @@ mkdir -p dummy_output # create the directory for job results as indicated in the
 jsub --protocol cat07.protocol \
      --vars vars07.vars \
      --fvars fvars07.fvars \
-     --list-summaries "" \
      --header-from-file "../my_job_header.txt" \
      --summary-prefix "summaries/" \
      --job-prefix "jobs/" \
@@ -259,10 +258,60 @@ Now the contents of dummy_output/result_2C.txt is analgous to that of dummy_outp
 
 Note: Care should be taken when using this method of resuming incomplete jobs since the incomplete steps may have generated some data already.  If this data is not overwritten when the commands in the job file are called again, the results may not be as expected.
 
+
 Example 8 job groups
 
+The protocol from the previous example contains steps that do not depend on eachother (process A and process B).  These could be run in parallel.  However, in order to do this we need to explicitly specify which commands need to be run together in a group.
 
-...
+Commands are grouped together in separate job files by putting the "#JGROUP" tag in the protocol file, followed by the name of the group and the groups of commands that need to be run before the commands in this group.
+
+For example the line:
+
+#JGROUP processC processA processB
+
+indicates the start of a new group of commands called "processC".  The "processC" commands will be run after the commands in both the "processA" and "processB" groups have been executed.  Whether "processA" or "processB" is completed first is not important and neither is the order in which they are listed after the #JGROUP tag, "processC" will wait for both to be completed.
+
+All commands before the first #JGROUP tag are automatically considered one group.  Commands between a #JGROUP tag and another #JGROUP tag or the end of the protocol constitute the remaining groups.  For example:
+
+first command in the root group
+second command in the root group
+#JGROUP processA
+first command in the processA group
+second command in the processA group
+#JGROUP processB
+first command in the processB group
+second command in the processB group
+#JGROUP processC processB processA
+first command in the processC group
+
+These dpendencies betweeen groups can be represented diagrmatically
+
+     processA
+    /        \
+root          processC
+    \        /
+     processB
+
+For this example, we will generate the summary and job files first.
+
+jsub --generate-summaries --generate-jobs \
+     --protocol cat08.protocol \
+     --vars vars07.vars \
+     --fvars fvars07.fvars \
+     --header-from-file "../my_job_header.txt" \
+     --summary-prefix "summaries/" \
+     --job-prefix "jobs/" \
+     --prefix-lsf-out "lsf_out/" \
+     --prefix-completed "progoress/completed/" \
+     --prefix-incomplete "progoress/incomplete/"
+
+Looking in the "summaries" directory we can see that there is one summary for each row of the list files as before.
+However, in the "jobs" directory we can see that four jobs (one for each group) are generated for each summary file.
+
+jsub --submit-jobs --list-jobs "cat08_vars07_fvars07.list-jobs"
+
+
+
 
 
 Example 9 job and summary name tags in the protocol file
