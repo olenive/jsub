@@ -415,6 +415,88 @@ bash clear_example_08.sh
 cd "$DIR_ORIGIN"
 
 
+echo ""; echo " Testing example 9"
+cd "$DIR_EXAMPLES"/"example_09"
+# Clear out previously generated files and run the example
+bash clear_example_09.sh
+bash run_example_09.sh
+bjobs
+awaitJobNameCompletion job1_processA
+awaitJobNameCompletion job1_processB
+awaitJobNameCompletion job1_processC
+awaitJobNameCompletion job1_root
+awaitJobNameCompletion job2_processA
+awaitJobNameCompletion job2_processB
+awaitJobNameCompletion job2_processC
+awaitJobNameCompletion job2_root
+# Check that the expected files were generated
+assert "file_exists ./dummy_output/pre_result_1A.txt" "yes"
+assert "file_exists ./dummy_output/pre_result_1B.txt" "yes"
+assert "file_exists ./dummy_output/pre_result_1C.txt" "yes"
+assert "file_exists ./dummy_output/pre_result_2A.txt" "yes"
+assert "file_exists ./dummy_output/pre_result_2B.txt" "yes"
+assert "file_exists ./dummy_output/pre_result_2C.txt" "yes"
+assert "file_exists ./dummy_output/result_1A.txt" "yes"
+assert "file_exists ./dummy_output/result_1B.txt" "yes"
+assert "file_exists ./dummy_output/result_1C.txt" "yes"
+assert "file_exists ./dummy_output/result_2A.txt" "yes"
+assert "file_exists ./dummy_output/result_2B.txt" "yes"
+assert "file_exists ./dummy_output/result_2C.txt" "yes"
+assert "file_exists ./jobs/1A_1B.log" "yes"
+assert "file_exists ./jobs/2A_2B.log" "yes"
+assert "file_exists ./jobs/cat09_vars07_fvars09.list-jobs" "yes"
+assert "file_exists ./jobs/cat09_vars07_fvars09.list-jobs.submitted" "yes"
+assert "file_exists ./jobs/job1_processA.lsf" "yes"
+assert "file_exists ./jobs/job1_processB.lsf" "yes"
+assert "file_exists ./jobs/job1_processC.lsf" "yes"
+assert "file_exists ./jobs/job1_root.lsf" "yes"
+assert "file_exists ./jobs/job2_processA.lsf" "yes"
+assert "file_exists ./jobs/job2_processB.lsf" "yes"
+assert "file_exists ./jobs/job2_processC.lsf" "yes"
+assert "file_exists ./jobs/job2_root.lsf" "yes"
+assert "file_exists ./lsf_out/job1_processA.error" "yes"
+assert "file_exists ./lsf_out/job1_processA.output" "yes"
+assert "file_exists ./lsf_out/job1_processB.error" "yes"
+assert "file_exists ./lsf_out/job1_processB.output" "yes"
+assert "file_exists ./lsf_out/job1_processC.error" "yes"
+assert "file_exists ./lsf_out/job1_processC.output" "yes"
+assert "file_exists ./lsf_out/job1_root.error" "yes"
+assert "file_exists ./lsf_out/job1_root.output" "yes"
+assert "file_exists ./lsf_out/job2_processA.error" "yes"
+assert "file_exists ./lsf_out/job2_processA.output" "yes"
+assert "file_exists ./lsf_out/job2_processB.error" "yes"
+assert "file_exists ./lsf_out/job2_processB.output" "yes"
+assert "file_exists ./lsf_out/job2_processC.error" "yes"
+assert "file_exists ./lsf_out/job2_processC.output" "yes"
+assert "file_exists ./lsf_out/job2_root.error" "yes"
+assert "file_exists ./lsf_out/job2_root.output" "yes"
+
+assert "file_exists ./progoress/completed/job1_processA.completed" "yes"
+assert "file_exists ./progoress/completed/job1_processB.completed" "yes"
+assert "file_exists ./progoress/completed/job1_processC.completed" "yes"
+assert "file_exists ./progoress/completed/job1_root.completed" "yes"
+assert "file_exists ./progoress/completed/job2_processA.completed" "yes"
+assert "file_exists ./progoress/completed/job2_processB.completed" "yes"
+assert "file_exists ./progoress/completed/job2_processC.completed" "yes"
+assert "file_exists ./progoress/completed/job2_root.completed" "yes"
+# Check that no .incomplete files were generated (i.e. that all steps of the protocol were completed as expected)
+assert "file_exists ./progoress/incomplete/job1_processA.incomplete" "no"
+assert "file_exists ./progoress/incomplete/job1_processB.incomplete" "no"
+assert "file_exists ./progoress/incomplete/job1_processC.incomplete" "no"
+assert "file_exists ./progoress/incomplete/job1_root.incomplete" "no"
+assert "file_exists ./progoress/incomplete/job2_processA.incomplete" "no"
+assert "file_exists ./progoress/incomplete/job2_processB.incomplete" "no"
+assert "file_exists ./progoress/incomplete/job2_processC.incomplete" "no"
+assert "file_exists ./progoress/incomplete/job2_root.incomplete" "no"
+
+assert "file_exists ./summaries/1A_1B.summary" "yes"
+assert "file_exists ./summaries/2A_2B.summary" "yes"
+assert "file_exists ./summaries/cat09_vars07_fvars09.list-summaries" "yes"
+
+# 145
+bash clear_example_09.sh
+cd "$DIR_ORIGIN"
+
 ## end of test suite
 assert_end
 

@@ -284,18 +284,23 @@ second command in the processB group
 #JGROUP processC processB processA
 first command in the processC group
 
-These dpendencies betweeen groups can be represented diagrmatically
+These dpendencies betweeen groups can be represented diagrmatically as
 
-     processA
-    /        \
-root          processC
-    \        /
-     processB
+        root
+       ^ ^ ^
+       | | |
+processA |  processB
+      ^  |  ^
+      |  |  |
+      processC
+
+Note: all job groups will depend on the root group if one exists.
 
 For this example, we will generate the summary and job files first.
 
 cd examples/example_08
 
+mkdir -p dummy_output # Create the directory where job output will be written
 jsub --generate-summaries --generate-jobs \
      --protocol cat08.protocol \
      --vars vars07.vars \
@@ -332,6 +337,7 @@ Running the example we can see that the names of the summary and job files are n
 
 cd examples/example_09
 
+mkdir -p dummy_output # Create the directory where job output will be written
 jsub --generate-summaries --generate-jobs \
      --protocol cat09.protocol \
      --vars vars07.vars \

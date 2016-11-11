@@ -388,7 +388,6 @@ function run_stage2_(pathSummariesList, pathJobsList; jobFilePrefix="", flagVerb
   jobIDTag = "#JSUB<job-id>";
   flagVerbose && println("Getting job ID prefixes from summary file lines starting with: ", jobIDTag);
   preArrJobIDs = map((x) -> get_taggedunique(x[1], jobIDTag), summaryFilesData );
-  println("preArrJobIDs:"); println(preArrJobIDs);
   # Create an array of summary file basenames concatenated with a padded index
   replaceWith = map((x, y) -> stick_together(basename(remove_suffix(x, ".summary")), dec(y, length(dec(length(summaryPaths2)))), "_"), 
     summaryPaths2, collect(1:length(summaryPaths2))
