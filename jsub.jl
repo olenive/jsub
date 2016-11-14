@@ -247,9 +247,9 @@ include("./common_functions/jsub_common.jl")
   "-l", "--header-from-file"
     help = "Path to a file containing text to be included in every job file header.  This is included after any string specified in the --common-header option."
 
-  # "-y", "--no-version-control"
-  #   action = :store_false
-  #   help = "Do not call the bash function which does version control inside these jobs."
+  "-y", "--no-version-control"
+    action = :store_false
+    help = "Do not call the bash function which does version control inside these jobs."
 
   "-d", "--no-logging-timestamp"
     action = :store_false
@@ -518,7 +518,7 @@ if requiredStages[2] == '1'
     string(inputJobsPrefix, basename(remove_suffix(pathExistingSummariesList, ".list-summaries")), ".list-jobs"); # Determine path to the *.list-jobs file
     flagVerbose=flagVerbose, tagsExpand=tagsExpand, checkpointsDict=checkpointsDict, commonFunctions=commonFunctions, 
     jobFilePrefix=inputJobsPrefix,
-    doJsubVersionControl=false, #get_argument(parsed_args, "no-version-control"; verbose=flagVerbose, optional=true, default=true), 
+    doJsubVersionControl=get_argument(parsed_args, "no-version-control"; verbose=flagVerbose, optional=true, default=true), 
     stringBoolFlagLoggingTimestamp=( get_argument(parsed_args, "no-logging-timestamp"; verbose=flagVerbose, optional=true, default=false) ? "false" : "true" ), # Indicates if bash scripts should create a timestamp in the logging file, default is "true" (this is a string because it is written into a bash script)
     headerPrefix=get_argument(parsed_args, "common-header"; verbose=flagVerbose, optional=true, default="#!/bin/bash\nset -eu\n"),
     prefixOutputError=get_argument(parsed_args, "prefix-lsf-out", verbose=flagVerbose, optional=true, default=""), # Get prefix for *.error and *.output files (written by the LSF job)

@@ -122,7 +122,7 @@ function process_job { # This function reads the job file line by line and write
             echo "$dateTime ""$JSUB_JOB_ID"" incomplete - "${line} >> ${JSUB_LOG_FILE}
             echo ${line} >> ${JSUB_SUMMARY_INCOMPLETE}
           fi
-          [[ ${JSUB_VERSION_CONTROL} = true ]] && version_control # Do version control
+          [[ ${JSUB_VERSION_CONTROL} = true ]] && version_control ${line} # Do version control
         fi
       else # A line after the block of code that has just been executed
         echo ${line} >> ${JSUB_SUMMARY_INCOMPLETE} # Write all remaining blocks of code to *.incomplete (in case the job crashes during the next block)

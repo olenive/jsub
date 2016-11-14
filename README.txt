@@ -1,4 +1,4 @@
-This is a light weight tool for creating and submitting job file to the LSF queuing system.  Its purpose is to automate job file generation in cases where the same processing steps need to be applied to different sets of input data.
+This is a light weight tool for creating and submitting job files to the LSF queuing system.  Its purpose is to automate job file generation in cases where the same processing steps need to be applied to different sets of input data.
 
 
 Dependencies
@@ -21,6 +21,13 @@ Installation
 
 For Julia installation instructions see:
 To install the ArgParse package...
+
+
+Running
+
+To run call the jsub.jl julia script, for example:
+
+julia jsub.jl --help
 
 
 Examples
