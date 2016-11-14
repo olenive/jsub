@@ -221,8 +221,6 @@ In the following example, two jobs are generated and run.  One completes success
 
 cd examples/example_07
 
-mkdir -p dummy_output # create the directory for job results as indicated in the vars07.vars file
-
 jsub --protocol cat07.protocol \
      --vars vars07.vars \
      --fvars fvars07.fvars \
@@ -300,7 +298,6 @@ For this example, we will generate the summary and job files first.
 
 cd examples/example_08
 
-mkdir -p dummy_output # Create the directory where job output will be written
 jsub --generate-summaries --generate-jobs \
      --protocol cat08.protocol \
      --vars vars07.vars \
@@ -337,7 +334,6 @@ Running the example we can see that the names of the summary and job files are n
 
 cd examples/example_09
 
-mkdir -p dummy_output # Create the directory where job output will be written
 jsub --generate-summaries --generate-jobs \
      --protocol cat09.protocol \
      --vars vars07.vars \

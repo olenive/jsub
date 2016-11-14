@@ -5,6 +5,7 @@
 #JSUB<job-id> $MY_JOBID
 
 # Preliminary steps
+mkdir -p dummy_output # create the directory for job results as indicated in the vars07.vars file
 echo "Initial steps output for file A" > "$DIR_OUTPUT"/pre_"$OUT_A"
 echo "Initial steps output for file B" > "$DIR_OUTPUT"/pre_"$OUT_B"
 echo "Initial steps output for file C" > "$DIR_OUTPUT"/pre_"$OUT_C"
