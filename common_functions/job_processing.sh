@@ -47,10 +47,10 @@ function process_job { # This function reads the job file line by line and write
           fi
           ## Write to log and summary files
           if [ ${JSUB_FLAG_FAIL} = false ]; then
-            echo "$dateTime ""$JSUB_JOB_ID"" completed - ""$line" >> ${JSUB_LOG_FILE}
+            echo "$dateTime ""$JSUB_JOB_ID"" completed - ""$line" >> ${JSUB_LOG_FILE}; echo "" >> ${JSUB_LOG_FILE}
             echo "$line" >> ${JSUB_SUMMARY_COMPLETED}
           else
-            echo "$dateTime ""$JSUB_JOB_ID"" incomplete - ""$line" >> ${JSUB_LOG_FILE}
+            echo "$dateTime ""$JSUB_JOB_ID"" incomplete - ""$line" >> ${JSUB_LOG_FILE}; echo "" >> ${JSUB_LOG_FILE}
             echo "$line" >> ${JSUB_SUMMARY_INCOMPLETE}
           fi
           [[ ${JSUB_VERSION_CONTROL} = true ]] && [[ "$line" != "" ]] && version_control "$line" # Do version control

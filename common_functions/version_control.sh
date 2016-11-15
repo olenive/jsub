@@ -19,28 +19,11 @@ function log_file_gitrepo { # Write status of git repository to a log file
     git --git-dir=${pathRepo}/.git --work-tree=${pathRepo} status >> ${logFile}
   fi
 }
-function has_dashdash_version {
-  "$1" --version  > /dev/null 2>&1
-  [ "$?" = 0 ] && echo "yes" || echo "no"
-}
-function has_dash_version {
-  "$1" -version  > /dev/null 2>&1
-  [ "$?" = 0 ] && echo "yes" || echo "no"
-}
 function has_which {
   which "$1"  > /dev/null 2>&1
   [ "$?" = 0 ] && echo "yes" || echo "no"
 }
 function log_version { # $1 = word $2 = log file
-  if [ $(has_dashdash_version "$1") = "yes" ]; then
-    echo "" >> "$2"
-    echo "$dateTime ""$JSUB_JOB_ID"" version - ""$1"" --version" >> "$2"
-    echo $("$1" --version) >> "$2"
-  elif [ $(has_dash_version "$1") = "yes" ]; then
-    echo "" >> "$2"
-    echo "$dateTime ""$JSUB_JOB_ID"" version - ""$1"" -version" >> "$2"
-    echo $("$1" -version) >> "$2"
-  fi
   if [ $(has_which "$1") = "yes" ]; then
     echo "" >> "$2"
     echo "$dateTime ""$JSUB_JOB_ID"" version - ""which $1" >> "$2"
