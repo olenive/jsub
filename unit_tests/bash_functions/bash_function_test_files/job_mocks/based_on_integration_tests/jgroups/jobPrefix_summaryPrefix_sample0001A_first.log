@@ -1,8 +1,14 @@
  summaryPrefix_sample0001A_first - Passed checkpoint jcheck_file_not_empty for file: bash_function_test_files/test_outputs/job_processing/based_on_integration_tests/jgroups/results/outPrefix_sample0001A_first.txt
  summaryPrefix_sample0001A_first completed - #JGROUP first
+
  summaryPrefix_sample0001A_first completed - bash ${BASH_SCRIPTS}/concat.sh ${RESULTS}/"outPrefix_"sample0001A_first.txt sub01X sub01Y
- summaryPrefix_sample0001A_first completed - jcheck_file_not_empty ${RESULTS}/"outPrefix_"sample0001A_first.txt
+
+ summaryPrefix_sample0001A_first completed - jcheck_file_not_empty  ${RESULTS}/"outPrefix_"sample0001A_first.txt
+
  summaryPrefix_sample0001A_first - Passed checkpoint jcheck_file_not_empty for file: bash_function_test_files/test_outputs/job_processing/based_on_integration_tests/jgroups/results/outPrefix_sample0001A_first.txt
  summaryPrefix_sample0001A_first completed - bash ${BASH_SCRIPTS}/concat.sh ${RESULTS}/"outPrefix_"sample0001A_first.txt sub01Y sub01Z
- summaryPrefix_sample0001A_first completed - jcheck_file_not_empty ${RESULTS}/"outPrefix_"sample0001A_first.txt
+
+ summaryPrefix_sample0001A_first completed - jcheck_file_not_empty  ${RESULTS}/"outPrefix_"sample0001A_first.txt
+
  summaryPrefix_sample0001A_first completed - 
+

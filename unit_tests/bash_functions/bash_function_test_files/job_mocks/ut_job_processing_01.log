@@ -2,27 +2,43 @@ cmd 21
 Running_dummy_function_1
 Running jcheck_resume 
  unit_test_job completed - #JGROUP second first third fourth fifth
+
  unit_test_job completed - echo "cmd 21" >> ${JSUB_LOG_FILE}
+
  unit_test_job completed - dummy1
+
  unit_test_job completed - jcheck_resume
+
 cmd 22
 Running_dummy_function_2
 Running jcheck_resume 
  unit_test_job completed - #BSUB -J jobID
+
  unit_test_job completed - echo "cmd 22" >> ${JSUB_LOG_FILE}
+
  unit_test_job completed - dummy2
+
  unit_test_job completed - jcheck_resume
+
 Running_dummy_function_2_1
 cmd 23
 Running jcheck_resume 
  unit_test_job completed - dummy2_1
+
  unit_test_job completed - #BSUB -o out.pj.output
+
  unit_test_job completed - echo "cmd 23" >> ${JSUB_LOG_FILE}
+
  unit_test_job completed - jcheck_resume
+
 Running_dummy_function_3
 Running jcheck_resume 
  unit_test_job completed - dummy3
+
  unit_test_job completed - #BSUB -e out.pj.error
+
  unit_test_job completed - jcheck_resume
+
 final executed command
  unit_test_job completed - echo "final executed command" >> ${JSUB_LOG_FILE}
+

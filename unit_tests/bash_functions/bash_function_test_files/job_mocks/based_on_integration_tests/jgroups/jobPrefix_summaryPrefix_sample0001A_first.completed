@@ -1,6 +1,6 @@
 #JGROUP first
 bash ${BASH_SCRIPTS}/concat.sh ${RESULTS}/"outPrefix_"sample0001A_first.txt sub01X sub01Y
-jcheck_file_not_empty ${RESULTS}/"outPrefix_"sample0001A_first.txt
+jcheck_file_not_empty  ${RESULTS}/"outPrefix_"sample0001A_first.txt
 bash ${BASH_SCRIPTS}/concat.sh ${RESULTS}/"outPrefix_"sample0001A_first.txt sub01Y sub01Z
-jcheck_file_not_empty ${RESULTS}/"outPrefix_"sample0001A_first.txt
+jcheck_file_not_empty  ${RESULTS}/"outPrefix_"sample0001A_first.txt
 

@@ -278,7 +278,7 @@ assert "compare_contents ${FILE_INCOMPLETE} ${FILE_EXPECTED_INCOMPLETE}" ""
 ## Test version_control.sh functions
 source "../../common_functions/version_control.sh"
 ## Test is_special_word function
-assert "is_special_word #" "yes"
+assert "is_special_word \#" "yes"
 assert "is_special_word [" "yes"
 assert "is_special_word done" "yes"
 assert "is_special_word bob" "no"

@@ -43,12 +43,10 @@ function is_special_word { # Used to skip words for which version control should
 }
 function version_control {
   local cmdString="$1"
-  echo "Running version_control on cmdString: ""$cmdString" >> ${JSUB_LOG_FILE}
   for word in ${cmdString[@]}; do
     [[ ${cmdString[0]} = \#* ]] && break # Ignore commented lines
-    echo "current word: ""$word" >> ${JSUB_LOG_FILE}
     if [ $(is_special_word "$word") = "yes" ]; then
-      echo "...nothing to be done" >> ${JSUB_LOG_FILE}
+      : # echo "...nothing to be done" >> ${JSUB_LOG_FILE}
     else
       log_version "$word" ${JSUB_LOG_FILE}
       log_file_gitrepo "$word" ${JSUB_LOG_FILE}
