@@ -90,7 +90,7 @@ echo ""
 # Run jsub - stage 3 but instead of submitting copy jobs to a directory and zip it
 rm -fr ${GENERATED_PORTABLE_ZIP}
 ${CALL_JSUB} -b -z -a ${GENERATED_PORTABLE_DIR} -o ${GENERATED_JOB_LIST}
-awaitJobNameCompletion "$LSF_JOB_NAME"
+# awaitJobNameCompletion "$LSF_JOB_NAME"
 assert "file_exists ${GENERATED_PORTABLE_DIR}/${GENERATED_JOB_IN}" "yes"
 assert "file_exists ${GENERATED_PORTABLE_DIR}/${GENERATED_JOB_LIST}" "yes"
 assert "file_exists ${GENERATED_PORTABLE_DIR}/submit_lsf_jobs.sh" "yes"

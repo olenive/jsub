@@ -10,7 +10,7 @@ function log_file_gitrepo { # Write status of git repository to a log file
   local logFile="$2"
   if [ -f "$pathSrc" ] && [ $(is_in_gitrepo "$pathSrc") = "yes" ]; then
     local pathRepo=$(cd $(dirname "$pathSrc"); git rev-parse --show-toplevel) # Get root of repository
-    echo "Found git repository associated with: "${pathSrc} >> ${logFile}
+    echo "$dateTime ""$JSUB_JOB_ID"" git - repository associated with: "${pathSrc} >> ${logFile}
     # Get the hash of the last commit.
     echo "Date and hash in repository: "${pathRepo} >> ${logFile}
     echo $(git --git-dir ${pathRepo}/.git  show -s --format=%ci HEAD)" "$(git --git-dir ${pathRepo}/.git rev-parse HEAD) >> ${logFile}
@@ -33,37 +33,43 @@ function has_which {
 }
 function log_version { # $1 = word $2 = log file
   if [ $(has_dashdash_version "$1") = "yes" ]; then
-    echo "### ""$1"" --version" >> "$2"
+    echo "" >> "$2"
+    echo "$dateTime ""$JSUB_JOB_ID"" version - ""$1"" --version" >> "$2"
     echo $("$1" --version) >> "$2"
-    echo "" >> "$2"
   elif [ $(has_dash_version "$1") = "yes" ]; then
-    echo "### ""$1"" -version" >> "$2"
-    echo $("$1" -version) >> "$2"
     echo "" >> "$2"
+    echo "$dateTime ""$JSUB_JOB_ID"" version - ""$1"" -version" >> "$2"
+    echo $("$1" -version) >> "$2"
   fi
   if [ $(has_which "$1") = "yes" ]; then
-    echo "### which $1" >> "$2"
-    echo $(which "$1") >> "$2"
     echo "" >> "$2"
+    echo "$dateTime ""$JSUB_JOB_ID"" version - ""which $1" >> "$2"
+    echo $(which "$1") >> "$2"
   fi
 }
 function is_special_word { # Used to skip words for which version control should not be attempted
-  declare -a exclude=('[' ']' '{' '}' '$?' 'if' 'then' 'else' 'elif' 'fi' 'for' 'while' 'do' 'done')
+  declare -a exclude=('#' '=' '[' ']' '{' '}' '$?' 'if' 'then' 'else' 'elif' 'fi' 'for' 'while' 'do' 'done')
+  local flagYes=false
   for word in "${exclude[@]}"; do
     if [ "$word" = "$1" ]; then
-      echo "yes"
+      flagYes=true
       break
     fi
   done
+  [ "$flagYes" = true ] && echo "yes" || echo "no"
 }
 function version_control {
-  if [ $(is_special_word "$1") = "yes" ]; then
-    :
-  else
-    for word in "$1"; do
-      # echo "Running version_control on word: ""$word" >> ${JSUB_LOG_FILE}
+  local cmdString="$1"
+  echo "Running version_control on cmdString: ""$cmdString" >> ${JSUB_LOG_FILE}
+  for word in ${cmdString[@]}; do
+    [[ ${cmdString[0]} = \#* ]] && break # Ignore commented lines
+    echo "current word: ""$word" >> ${JSUB_LOG_FILE}
+    if [ $(is_special_word "$word") = "yes" ]; then
+      echo "...nothing to be done" >> ${JSUB_LOG_FILE}
+    else
       log_version "$word" ${JSUB_LOG_FILE}
       log_file_gitrepo "$word" ${JSUB_LOG_FILE}
-    done
-  fi
+      echo "" >> ${JSUB_LOG_FILE}
+    fi
+  done
 }
