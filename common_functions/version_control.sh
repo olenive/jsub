@@ -10,13 +10,14 @@ function log_file_gitrepo { # Write status of git repository to a log file
   local logFile="$2"
   if [ -f "$pathSrc" ] && [ $(is_in_gitrepo "$pathSrc") = "yes" ]; then
     local pathRepo=$(cd $(dirname "$pathSrc"); git rev-parse --show-toplevel) # Get root of repository
-    echo "$dateTime ""$JSUB_JOB_ID"" git - repository associated with: "${pathSrc} >> ${logFile}
+    echo "$dateTime ""$JSUB_JOB_ID"" git - repository associated with: "${pathSrc} >> "$logFile"
     # Get the hash of the last commit.
-    echo "Date and hash in repository: "${pathRepo} >> ${logFile}
-    echo $(git --git-dir ${pathRepo}/.git  show -s --format=%ci HEAD)" "$(git --git-dir ${pathRepo}/.git rev-parse HEAD) >> ${logFile}
+    echo "Date and hash in repository: "${pathRepo} >> "$logFile"
+    echo $(git --git-dir ${pathRepo}/.git  show -s --format=%ci HEAD)" "$(git --git-dir ${pathRepo}/.git rev-parse HEAD) >> "$logFile"
     # Write git status to log file
-    echo "Status of repository at date_time: "`date +%Y%m%d_%H%M%S` >> ${logFile}
-    git --git-dir=${pathRepo}/.git --work-tree=${pathRepo} status >> ${logFile}
+    echo "Status of repository at date_time: "`date +%Y%m%d_%H%M%S` >> "$logFile"
+    git --git-dir=${pathRepo}/.git --work-tree=${pathRepo} status >> "$logFile"
+    echo "" >> "$logFile"
   fi
 }
 function has_which {
@@ -31,7 +32,7 @@ function log_version { # $1 = word $2 = log file
   fi
 }
 function is_special_word { # Used to skip words for which version control should not be attempted
-  declare -a exclude=('#' '=' '[' ']' '{' '}' '$?' 'if' 'then' 'else' 'elif' 'fi' 'for' 'while' 'do' 'done')
+  declare -a exclude=('#' '=' '[' ']' '{' '}' '$?' 'if' 'then' 'else' 'elif' 'fi' 'for' 'while' 'do' 'done' 'file')
   local flagYes=false
   for word in "${exclude[@]}"; do
     if [ "$word" = "$1" ]; then
@@ -50,7 +51,6 @@ function version_control {
     else
       log_version "$word" ${JSUB_LOG_FILE}
       log_file_gitrepo "$word" ${JSUB_LOG_FILE}
-      echo "" >> ${JSUB_LOG_FILE}
     fi
   done
 }

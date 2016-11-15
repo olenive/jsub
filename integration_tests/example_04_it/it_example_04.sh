@@ -59,9 +59,9 @@ function clear_generated {
   rm -rf "results"
   rm -f *".error"
   rm -f *".output"
-  rm outfile1.txt
-  rm outfile2.txt
-  rm outfile3.txt
+  rm -f outfile1.txt
+  rm -f outfile2.txt
+  rm -f outfile3.txt
 }
 #################
 
