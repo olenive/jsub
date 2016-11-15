@@ -19,13 +19,15 @@ User friendliness: No need to learn a new language, the process is based on vari
 
 Installation
 
-For Julia installation instructions see:
-To install the ArgParse package...
+For Julia installation instructions see: http://julialang.org/downloads/platform.html
+To install the ArgParse package run Julia and enter
+
+Pkg.add("ArgParse")
 
 
 Running
 
-To run call the jsub.jl julia script, for example:
+To run, call the jsub.jl julia script, for example:
 
 julia jsub.jl --help
 
