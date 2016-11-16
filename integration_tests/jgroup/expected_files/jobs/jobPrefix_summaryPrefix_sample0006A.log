@@ -1,33 +1,816 @@
-20161027_140106 summaryPrefix_sample0006A_06_root completed - #JSUB<summary-name> sample0006A
-20161027_140106 summaryPrefix_sample0006A_06_root completed - echo "Processing summary data from: "sample0006A
-20161027_140106 summaryPrefix_sample0006A_06_root completed - # root group
-20161027_140106 summaryPrefix_sample0006A_06_root completed - OUTFILE="results/outPrefix_"sample0006A # Note: this is an example of what not to do! After the protocol is split OUTFILE will be undeclared in subsequent groups unless it is declared there again using variables from vars and fvars but NOT variables from the top of the script.
-20161027_140106 summaryPrefix_sample0006A_06_root completed - bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
-20161027_140106 summaryPrefix_sample0006A_06_root completed - bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
-20161027_140106 summaryPrefix_sample0006A_06_root completed - 
-20161027_140122 summaryPrefix_sample0006A_06_first completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0006A_06_root.completed"
-20161027_140122 summaryPrefix_sample0006A_06_second completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0006A_06_root.completed"
-20161027_140122 summaryPrefix_sample0006A_06_third completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0006A_06_root.completed"
-20161027_140122 summaryPrefix_sample0006A_06_second completed - #JGROUP second
-20161027_140122 summaryPrefix_sample0006A_06_first completed - #JGROUP first
-20161027_140122 summaryPrefix_sample0006A_06_third completed - #JGROUP third
-20161027_140122 summaryPrefix_sample0006A_06_first completed - OUTFILE="results/outPrefix_"sample0006A
-20161027_140122 summaryPrefix_sample0006A_06_second completed - OUTFILE="results/outPrefix_"sample0006A
-20161027_140122 summaryPrefix_sample0006A_06_third completed - OUTFILE="results/outPrefix_"sample0006A
-20161027_140122 summaryPrefix_sample0006A_06_first completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub06X sub06Y
-20161027_140122 summaryPrefix_sample0006A_06_third completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub06Z sub06X
-20161027_140122 summaryPrefix_sample0006A_06_second completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub06Y sub06Z
-20161027_140122 summaryPrefix_sample0006A_06_first completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub06Y sub06Z
-20161027_140122 summaryPrefix_sample0006A_06_third completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub06X sub06Y
-20161027_140122 summaryPrefix_sample0006A_06_second completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub06Z sub06X
-20161027_140122 summaryPrefix_sample0006A_06_first completed - 
-20161027_140122 summaryPrefix_sample0006A_06_third completed - 
-20161027_140122 summaryPrefix_sample0006A_06_second completed - 
-20161027_140148 summaryPrefix_sample0006A_06_last completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0006A_06_root.completed"
-20161027_140148 summaryPrefix_sample0006A_06_last completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0006A_06_first.completed"
-20161027_140148 summaryPrefix_sample0006A_06_last completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0006A_06_second.completed"
-20161027_140148 summaryPrefix_sample0006A_06_last completed - check_completion "jobs/jobPrefix_summaryPrefix_sample0006A_06_third.completed"
-20161027_140148 summaryPrefix_sample0006A_06_last completed - #JGROUP last first second third
-20161027_140148 summaryPrefix_sample0006A_06_last completed - OUTFILE="results/outPrefix_"sample0006A
-20161027_140148 summaryPrefix_sample0006A_06_last completed - bash ../../bash_scripts/catfiles.sh "$OUTFILE".txt "$OUTFILE"_first.txt "$OUTFILE"_second.txt "$OUTFILE"_third.txt
-20161027_140148 summaryPrefix_sample0006A_06_last completed - 
+ summaryPrefix_sample0006A_06_root completed - #JSUB<summary-name> sample0006A
+
+ summaryPrefix_sample0006A_06_root completed - echo "Processing summary data from: "sample0006A
+
+
+ summaryPrefix_sample0006A_06_root version - which echo
+/bin/echo
+ summaryPrefix_sample0006A_06_root completed - # root group
+
+ summaryPrefix_sample0006A_06_root completed - OUTFILE="results/outPrefix_"sample0006A # Note: this is an example of what not to do! After the protocol is split OUTFILE will be undeclared in subsequent groups unless it is declared there again using variables from vars and fvars but NOT variables from the top of the script.
+
+
+ summaryPrefix_sample0006A_06_root version - which split
+/usr/bin/split
+
+ summaryPrefix_sample0006A_06_root version - which groups
+/usr/bin/groups
+
+ summaryPrefix_sample0006A_06_root version - which top
+/usr/bin/top
+ summaryPrefix_sample0006A_06_root completed - bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
+
+
+ summaryPrefix_sample0006A_06_root version - which bash
+/bin/bash
+ summaryPrefix_sample0006A_06_root git - repository associated with: ../../bash_scripts/trivial.sh
+Date and hash in repository: <path to repo>
+2016-11-16 15:48:17 +0000 dfebc4e178ace2789d05cb1ef0beed82aa6fe40e
+Status of repository at date_time: 20161116_160515
+# On branch cyberdev
+# Changed but not updated:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_jgroupP_jgroupV_jgroupFV.list-jobs.submitted
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_third.lsf
+#
+no changes added to commit (use "git add" and/or "git commit -a")
+
+ summaryPrefix_sample0006A_06_root completed - bash ../../bash_scripts/trivial.sh "$OUTFILE".txt
+
+
+ summaryPrefix_sample0006A_06_root version - which bash
+/bin/bash
+ summaryPrefix_sample0006A_06_root git - repository associated with: ../../bash_scripts/trivial.sh
+Date and hash in repository: <path to repo>
+2016-11-16 15:48:17 +0000 dfebc4e178ace2789d05cb1ef0beed82aa6fe40e
+Status of repository at date_time: 20161116_160515
+# On branch cyberdev
+# Changed but not updated:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_jgroupP_jgroupV_jgroupFV.list-jobs.submitted
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_third.lsf
+#
+no changes added to commit (use "git add" and/or "git commit -a")
+
+ summaryPrefix_sample0006A_06_root completed - 
+
+ summaryPrefix_sample0006A_06_second completed - check_completion "summaryPrefix_sample0006A_06_root.completed"
+
+ summaryPrefix_sample0006A_06_first completed - check_completion "summaryPrefix_sample0006A_06_root.completed"
+
+ summaryPrefix_sample0006A_06_second completed - #JGROUP second
+ summaryPrefix_sample0006A_06_third completed - check_completion "summaryPrefix_sample0006A_06_root.completed"
+
+
+ summaryPrefix_sample0006A_06_second completed - OUTFILE="results/outPrefix_"sample0006A
+
+ summaryPrefix_sample0006A_06_second completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub06Y sub06Z
+
+
+ summaryPrefix_sample0006A_06_first completed - #JGROUP first
+ summaryPrefix_sample0006A_06_second version - which bash
+
+/bin/bash
+ summaryPrefix_sample0006A_06_first completed - OUTFILE="results/outPrefix_"sample0006A
+
+ summaryPrefix_sample0006A_06_first completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub06X sub06Y
+
+
+ summaryPrefix_sample0006A_06_first version - which bash
+/bin/bash
+ summaryPrefix_sample0006A_06_second git - repository associated with: ../../bash_scripts/concat.sh
+Date and hash in repository: <path to repo>
+ summaryPrefix_sample0006A_06_first git - repository associated with: ../../bash_scripts/concat.sh
+Date and hash in repository: <path to repo>
+ summaryPrefix_sample0006A_06_third completed - #JGROUP third
+
+ summaryPrefix_sample0006A_06_third completed - OUTFILE="results/outPrefix_"sample0006A
+
+ summaryPrefix_sample0006A_06_third completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub06Z sub06X
+
+
+ summaryPrefix_sample0006A_06_third version - which bash
+/bin/bash
+2016-11-16 15:48:17 +0000 dfebc4e178ace2789d05cb1ef0beed82aa6fe40e
+Status of repository at date_time: 20161116_160519
+2016-11-16 15:48:17 +0000 dfebc4e178ace2789d05cb1ef0beed82aa6fe40e
+ summaryPrefix_sample0006A_06_third git - repository associated with: ../../bash_scripts/concat.sh
+Date and hash in repository: <path to repo>
+Status of repository at date_time: 20161116_160519
+2016-11-16 15:48:17 +0000 dfebc4e178ace2789d05cb1ef0beed82aa6fe40e
+Status of repository at date_time: 20161116_160519
+# On branch cyberdev
+# Changed but not updated:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_jgroupP_jgroupV_jgroupFV.list-jobs.submitted
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_third.lsf
+#
+no changes added to commit (use "git add" and/or "git commit -a")
+
+ summaryPrefix_sample0006A_06_second completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_second.txt sub06Z sub06X
+
+
+ summaryPrefix_sample0006A_06_second version - which bash
+# On branch cyberdev
+# Changed but not updated:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_jgroupP_jgroupV_jgroupFV.list-jobs.submitted
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_third.lsf
+#
+no changes added to commit (use "git add" and/or "git commit -a")
+
+/bin/bash
+# On branch cyberdev
+# Changed but not updated:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_jgroupP_jgroupV_jgroupFV.list-jobs.submitted
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_third.lsf
+#
+no changes added to commit (use "git add" and/or "git commit -a")
+
+ summaryPrefix_sample0006A_06_first completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_first.txt sub06Y sub06Z
+
+
+ summaryPrefix_sample0006A_06_first version - which bash
+ summaryPrefix_sample0006A_06_third completed - bash ../../bash_scripts/concat.sh "$OUTFILE"_third.txt sub06X sub06Y
+/bin/bash
+
+ summaryPrefix_sample0006A_06_second git - repository associated with: ../../bash_scripts/concat.sh
+Date and hash in repository: <path to repo>
+
+ summaryPrefix_sample0006A_06_third version - which bash
+/bin/bash
+ summaryPrefix_sample0006A_06_first git - repository associated with: ../../bash_scripts/concat.sh
+Date and hash in repository: <path to repo>
+ summaryPrefix_sample0006A_06_third git - repository associated with: ../../bash_scripts/concat.sh
+Date and hash in repository: <path to repo>
+2016-11-16 15:48:17 +0000 dfebc4e178ace2789d05cb1ef0beed82aa6fe40e
+Status of repository at date_time: 20161116_160519
+2016-11-16 15:48:17 +0000 dfebc4e178ace2789d05cb1ef0beed82aa6fe40e
+Status of repository at date_time: 20161116_160519
+2016-11-16 15:48:17 +0000 dfebc4e178ace2789d05cb1ef0beed82aa6fe40e
+Status of repository at date_time: 20161116_160519
+# On branch cyberdev
+# Changed but not updated:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_jgroupP_jgroupV_jgroupFV.list-jobs.submitted
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_third.lsf
+#
+no changes added to commit (use "git add" and/or "git commit -a")
+
+# On branch cyberdev
+# Changed but not updated:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_jgroupP_jgroupV_jgroupFV.list-jobs.submitted
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_third.lsf
+#
+no changes added to commit (use "git add" and/or "git commit -a")
+
+ summaryPrefix_sample0006A_06_second completed - 
+
+# On branch cyberdev
+# Changed but not updated:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_jgroupP_jgroupV_jgroupFV.list-jobs.submitted
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_third.lsf
+#
+no changes added to commit (use "git add" and/or "git commit -a")
+
+ summaryPrefix_sample0006A_06_third completed - 
+
+ summaryPrefix_sample0006A_06_first completed - 
+
+ summaryPrefix_sample0006A_06_last completed - check_completion "summaryPrefix_sample0006A_06_root.completed"
+
+ summaryPrefix_sample0006A_06_last completed - check_completion "summaryPrefix_sample0006A_06_first.completed"
+
+ summaryPrefix_sample0006A_06_last completed - check_completion "summaryPrefix_sample0006A_06_second.completed"
+
+ summaryPrefix_sample0006A_06_last completed - check_completion "summaryPrefix_sample0006A_06_third.completed"
+
+ summaryPrefix_sample0006A_06_last completed - #JGROUP last first second third
+
+ summaryPrefix_sample0006A_06_last completed - OUTFILE="results/outPrefix_"sample0006A
+
+ summaryPrefix_sample0006A_06_last completed - bash ../../bash_scripts/catfiles.sh "$OUTFILE".txt "$OUTFILE"_first.txt "$OUTFILE"_second.txt "$OUTFILE"_third.txt
+
+
+ summaryPrefix_sample0006A_06_last version - which bash
+/bin/bash
+ summaryPrefix_sample0006A_06_last git - repository associated with: ../../bash_scripts/catfiles.sh
+Date and hash in repository: <path to repo>
+2016-11-16 15:48:17 +0000 dfebc4e178ace2789d05cb1ef0beed82aa6fe40e
+Status of repository at date_time: 20161116_160526
+# On branch cyberdev
+# Changed but not updated:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_jgroupP_jgroupV_jgroupFV.list-jobs.submitted
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0001A_01_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0002A_02_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0003A_03_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0004A_04_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0005A_05_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0006A_06_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0007A_07_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0008A_08_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0009A_09_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0010A_10_third.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A.log
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_first.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_last.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_root.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_second.lsf
+#	modified:   ../expected_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_third.lsf
+#
+no changes added to commit (use "git add" and/or "git commit -a")
+
+ summaryPrefix_sample0006A_06_last completed - 
+
