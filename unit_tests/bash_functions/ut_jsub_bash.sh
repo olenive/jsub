@@ -98,9 +98,10 @@ assert "isAbsolutePath hello/rel" "relative"
 ## checkForDuplicateLines "path to file" "suppress warnings" "strict"
 assert "checkForDuplicateLines ../data/list_without_duplicate_lines.txt true false" ""
 assert "checkForDuplicateLines ../data/list_without_duplicate_lines.txt false false" "Checking for duplicates in  ../data/list_without_duplicate_lines.txt"
-assert "checkForDuplicateLines ../data/list_with_duplicate_lines.txt false false" "Checking for duplicates in  ../data/list_with_duplicate_lines.txt\nWARNING (in checkForDuplicateLines): Found duplicate entries in list of job files to be submitted:\n   4 \n   2 this is the second line\n   3 this is the third line"
+assert "checkForDuplicateLines ../data/list_with_duplicate_lines.txt false false" "Checking for duplicates in  ../data/list_with_duplicate_lines.txt\nWARNING (in checkForDuplicateLines): Found duplicate entries in list of job files to be submitted:\n4 \n2 this is the second line\n3 this is the third line"
 assert "checkForDuplicateLines ../data/list_with_duplicate_lines.txt true false" ""
-assert "checkForDuplicateLines ../data/list_with_duplicate_lines.txt true true" "TERMINATING (in checkForDuplicateLines) after finding duplicate entries in list of job files to be submitted:\n   4 \n   2 this is the second line\n   3 this is the third line"
+assert "checkForDuplicateLines ../data/list_with_duplicate_lines.txt true true" "TERMINATING (in checkForDuplicateLines) after finding duplicate entries in list of job files to be submitted:\n4 \n2 this is the second line\n3 this is the third line"
+# 22
 ## linePresentInFile "path to file" "text string"
 assert "isLineInFile '../data/list_with_duplicate_lines.txt' ''" "yes"
 assert "isLineInFile '../data/list_with_duplicate_lines.txt' '    '" "no"
@@ -110,6 +111,9 @@ assert "isLineInFile '../data/list_with_duplicate_lines.txt' 'this is the second
 # 26
 ## Unit tests for checkpoint functions
 source "../../common_functions/jcheck_file_not_empty.sh"
+function process_job {
+  echo "Called dummy process_job function."
+}
 NON_EXISTANT_FILE="path/to/non/existant/file"
 EMPTY_FILE="bash_function_test_files/empty_file"
 WHITESPACE_FILE="bash_function_test_files/jcheck_file_not_empty/whitespace_only.txt"
@@ -125,23 +129,25 @@ assert "file_exists ${NON_EXISTANT_FILE}" "no"
 assert "file_exists ${EMPTY_FILE}" "yes"
 assert "file_contains_nonwhitespace ${WHITESPACE_FILE}" "no"
 assert "file_contains_nonwhitespace ${NONWHITESPACE_FILE}" "yes"
-rm "$JSUB_LOG_FILE" # Clear log file
+# 30
+rm -f "$JSUB_LOG_FILE" # Clear log file
 assert "file_exists ${JSUB_LOG_FILE}" "no"
-assert "jcheck_file_not_empty ${EMPTY_FILE}" " jcheck_file_not_empty_jobID - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: ""$EMPTY_FILE"
+assert "jcheck_file_not_empty ${EMPTY_FILE}" " jcheck_file_not_empty_jobID - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: ""$EMPTY_FILE""\nCalled dummy process_job function."
 assert "compare_contents ${JSUB_LOG_FILE} ${EXPECTED_EMPTY_FAIL}" ""
-rm "$JSUB_LOG_FILE" # Clear log file
+rm -f "$JSUB_LOG_FILE" # Clear log file
 assert "file_exists ${JSUB_LOG_FILE}" "no"
-assert "jcheck_file_not_empty ${WHITESPACE_FILE}" " jcheck_file_not_empty_jobID - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: ""$WHITESPACE_FILE"
+assert "jcheck_file_not_empty ${WHITESPACE_FILE}" " jcheck_file_not_empty_jobID - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: ""$WHITESPACE_FILE""\nCalled dummy process_job function."
 assert "compare_contents ${JSUB_LOG_FILE} ${EXPECTED_WHITESPACE_FAIL}" ""
-rm "$JSUB_LOG_FILE" # Clear log file
+# 36
+rm -f "$JSUB_LOG_FILE" # Clear log file
 assert "file_exists ${JSUB_LOG_FILE}" "no"
-assert "jcheck_file_not_empty ${NONWHITESPACE_FILE}" ""
+assert "jcheck_file_not_empty ${NONWHITESPACE_FILE}" "Called dummy process_job function."
 assert "compare_contents ${JSUB_LOG_FILE} ${EXPECTED_SUCCESS}" ""
 # 39
 # Test cases with multiple arguments
-rm "$JSUB_LOG_FILE" # Clear log file
+rm -f "$JSUB_LOG_FILE" # Clear log file
 assert "file_exists ${JSUB_LOG_FILE}" "no"
-assert "jcheck_file_not_empty ${EMPTY_FILE} ${WHITESPACE_FILE} ${NONWHITESPACE_FILE}" " jcheck_file_not_empty_jobID - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: ""$EMPTY_FILE""\n"" jcheck_file_not_empty_jobID - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: ""$WHITESPACE_FILE"
+assert "jcheck_file_not_empty ${EMPTY_FILE} ${WHITESPACE_FILE} ${NONWHITESPACE_FILE}" " jcheck_file_not_empty_jobID - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: ""$EMPTY_FILE""\n"" jcheck_file_not_empty_jobID - Failed checkpoint jcheck_file_not_empty due to empty (or whitespace) file: ""$WHITESPACE_FILE""\nCalled dummy process_job function."
 assert "compare_contents ${JSUB_LOG_FILE} ${EXPECTED_MULTIPLE}" ""
 # 42
 

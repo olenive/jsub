@@ -15,12 +15,12 @@ function checkForDuplicateLines {
   if [ ${#DUPLICATES} -ne 0 ]; then
     if [[ ${_strict} == true ]]; then
       echo "TERMINATING (in checkForDuplicateLines) after finding duplicate entries in list of job files to be submitted:"
-      sort "$file" | uniq -c | awk '$1>1'
+      sort "$file" | uniq -c | awk '$1>1' | sed -e 's/^[ \t]*//' # sed to remove leading white space
       exit 1
     fi
     if [[ ${_suppress_warnings} == false ]] && [[ ${_suppress_warnings} == false ]]; then
       echo "WARNING (in checkForDuplicateLines): Found duplicate entries in list of job files to be submitted:"
-      sort "$file" | uniq -c | awk '$1>1'
+      sort "$file" | uniq -c | awk '$1>1' | sed -e 's/^[ \t]*//' # sed to remove leading white space
     fi
   fi
 }
