@@ -1,5 +1,5 @@
 # In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file
 bash ${a_bash_script_dot_sh} Lane61 Sample006 fileA_Sample006
 python ${a_python_script_dot_py}                       fileA_Sample006  fileB_Sample006
-./path/to/binary.exe  fileB_Sample006  ""../../../jsub_pipeliner""/"unit_tests/data/header_coordinate" ""../../../jsub_pipeliner""/"unit_tests/data/hg19.chrom.sizes" 
+./path/to/binary.exe  fileB_Sample006  ""../../""/"unit_tests/data/header_coordinate" ""../../""/"unit_tests/data/hg19.chrom.sizes" 
 # The end

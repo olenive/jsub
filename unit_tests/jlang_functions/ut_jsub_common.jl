@@ -124,7 +124,7 @@ Test.with_handler(ut_handler) do
   # ************************************************************************
   # This file contains the common variables in using refs_samples.protocol
 
-  # DIR_BASE        "../../../jsub_pipeliner"
+  # DIR_BASE        "../../"
   # DIR_OUTPUT      "../../../output_testing_jsub"
 
   # PRE_REF_FILE1   "$DIR_BASE"/"unit_tests/data/header_coordinate"
@@ -146,7 +146,7 @@ Test.with_handler(ut_handler) do
   expCmdRowsVars = [2,3,4,5,6,7,8,11,13] # Rows in expArrVars that contain commands and not comments
   expArrVars = []#Array(Array{AbstractString} (7,))
   push!(expArrVars, ["# This file contains the common variables in using refs_samples.protocol"])
-  push!(expArrVars, ["DIR_BASE", "\"../../../jsub_pipeliner\""])
+  push!(expArrVars, ["DIR_BASE", "\"../../\""])
   push!(expArrVars, ["DIR_OUTPUT", "\"\$DIR_BASE/output_testing_jsub\""])
   push!(expArrVars, ["PRE_REF_FILE1", "\"\$DIR_BASE\"/\"unit_tests/data/header_coordinate\""])
   push!(expArrVars, ["PRE_REF_FILE2", "\"\$DIR_BASE\"/\"unit_tests/data/hg19.chrom.sizes\""])
@@ -823,7 +823,7 @@ Test.with_handler(ut_handler) do
    "HELLO"
   ]
   varVals=[
-   "\"../../../jsub_pipeliner/\""
+   "\"../..//\""
    "\"utbash space.sh\""                    
    "\"\$dolla\""                            
    "\"Hello spaces and tabs\tand...\"" 
@@ -831,9 +831,9 @@ Test.with_handler(ut_handler) do
   expArr = []
   push!(expArr, ["# This file contains the names of varibales, column numbers and source file paths from which the value of the variable should be taken."])
   push!(expArr, ["# <variable name>\t<column in file>\t<file path>"])
-  push!(expArr, ["LANE_NUM","0","\"\"../../../jsub_pipeliner/\"\"/\"unit_tests/lists/multiLane_\"'\"1\"'\"col.txt\""])
+  push!(expArr, ["LANE_NUM","0","\"\"../..//\"\"/\"unit_tests/lists/multiLane_\"'\"1\"'\"col.txt\""])
   push!(expArr, ["# The zero in the <column in file> field indicates that all columns shold be used (or treated as one column)"])
-  push!(expArr, ["SAMPLEID","1","\"\"../../../jsub_pipeliner/\"\"/\"unit_tests/lists/sampleIDs_1col.txt\""])
+  push!(expArr, ["SAMPLEID","1","\"\"../..//\"\"/\"unit_tests/lists/sampleIDs_1col.txt\""])
   push!(expArr, ["# The value of DIR_BASE is declared in refs_samples.vars"])
   @test expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=false) == expArr
   # arrArr=arrFvars; rows=cmdRowsFvars; varNames=namesVars; varVals=valuesVars; verbose=true;
@@ -854,7 +854,7 @@ Test.with_handler(ut_handler) do
    "HELLO"
   ]
   varVals=[
-   "\"../../../jsub_pipeliner/\""
+   "\"../..//\""
    "\"utbash space.sh\""                    
    "\"\$dolla\""                            
    "\"Hello spaces and tabs\tand...\"" 
@@ -862,9 +862,9 @@ Test.with_handler(ut_handler) do
   expArr = []
   push!(expArr, ["# This file contains the names of varibales, column numbers and source file paths from which the value of the variable should be taken."])
   push!(expArr, ["# <variable name>\t<column in file>\t<file path>"])
-  push!(expArr, ["LANE_NUM","0","\"\"\"../../../jsub_pipeliner/\"\"\"/\"unit_tests/lists/multiLane_\"'\"1\"'\"col.txt\""])
+  push!(expArr, ["LANE_NUM","0","\"\"\"../..//\"\"\"/\"unit_tests/lists/multiLane_\"'\"1\"'\"col.txt\""])
   push!(expArr, ["# The zero in the <column in file> field indicates that all columns shold be used (or treated as one column)"])
-  push!(expArr, ["SAMPLEID","1","\"\"\"../../../jsub_pipeliner/\"\"\"/\"unit_tests/lists/sampleIDs_1col.txt\""])
+  push!(expArr, ["SAMPLEID","1","\"\"\"../..//\"\"\"/\"unit_tests/lists/sampleIDs_1col.txt\""])
   push!(expArr, ["# The value of DIR_BASE is declared in refs_samples.vars"])
   @test expand_inarrayofarrays(arrArr, rows, varNames, varVals; verbose=false, adapt_quotation=true) == expArr
 
@@ -887,7 +887,7 @@ Test.with_handler(ut_handler) do
   "VAR\$VAR2"
   ]
   expValuesRaw = [
-  "\"../../../jsub_pipeliner\""
+  "\"../../\""
   "\"\$DIR_BASE/output_testing_jsub\""
   "\"\$DIR_BASE\"/\"unit_tests/data/header_coordinate\""
   "\"\$DIR_BASE\"/\"unit_tests/data/hg19.chrom.sizes\""
@@ -913,7 +913,7 @@ Test.with_handler(ut_handler) do
   "VAR\$VAR2"
   ];
   valuesVarsRaw = [
-  "\"../../../jsub_pipeliner\""
+  "\"../../\""
   "\"\$DIR_BASE/output_testing_jsub\""
   "\"\$DIR_BASE\"/\"unit_tests/data/header_coordinate\""
   "\"\$DIR_BASE\"/\"unit_tests/data/hg19.chrom.sizes\""
@@ -935,12 +935,12 @@ Test.with_handler(ut_handler) do
   "VAR\$VAR2"
   ];
   expValues = [
-  "\"../../../jsub_pipeliner\""
-  "\"\"../../../jsub_pipeliner\"/output_testing_jsub\""
-  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\""
-  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\""
-  "\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_refFile.txt\""
-  "\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\""
+  "\"../../\""
+  "\"\"../../\"/output_testing_jsub\""
+  "\"\"../../\"\"/\"unit_tests/data/header_coordinate\""
+  "\"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\""
+  "\"\"\"../../\"/output_testing_jsub\"\"/\"utSplit_refFile.txt\""
+  "\"\"\"../../\"/output_testing_jsub\"\"/\"utSplit_out1_\""
   "\"_valueVar1_\""
   "\"_valueVar\$VAR1_\""
   "\"_valueVar\$VAR2_\"" 
@@ -959,7 +959,7 @@ Test.with_handler(ut_handler) do
   "VAR\$VAR2"
   ];
   valuesVarsRaw = [
-  "\"../../../jsub_pipeliner\""
+  "\"../../\""
   "\"\$DIR_BASE/output_testing_jsub\""
   "\"\$DIR_BASE\"/\"unit_tests/data/header_coordinate\""
   "\"\$DIR_BASE\"/\"unit_tests/data/hg19.chrom.sizes\""
@@ -981,12 +981,12 @@ Test.with_handler(ut_handler) do
   "VAR\$VAR2"
   ];
   expValues = [
-  "\"../../../jsub_pipeliner\""
-  "\"\"\"../../../jsub_pipeliner\"\"/output_testing_jsub\""
-  "\"\"\"../../../jsub_pipeliner\"\"\"/\"unit_tests/data/header_coordinate\""
-  "\"\"\"../../../jsub_pipeliner\"\"\"/\"unit_tests/data/hg19.chrom.sizes\""
-  "\"\"\"\"\"../../../jsub_pipeliner\"\"/output_testing_jsub\"\"\"/\"utSplit_refFile.txt\""
-  "\"\"\"\"\"../../../jsub_pipeliner\"\"/output_testing_jsub\"\"\"/\"utSplit_out1_\""
+  "\"../../\""
+  "\"\"\"../../\"\"/output_testing_jsub\""
+  "\"\"\"../../\"\"\"/\"unit_tests/data/header_coordinate\""
+  "\"\"\"../../\"\"\"/\"unit_tests/data/hg19.chrom.sizes\""
+  "\"\"\"\"\"../../\"\"/output_testing_jsub\"\"\"/\"utSplit_refFile.txt\""
+  "\"\"\"\"\"../../\"\"/output_testing_jsub\"\"\"/\"utSplit_out1_\""
   "\"_valueVar1_\""
   "\"_valueVar\$VAR1_\""
   "\"_valueVar\$VAR2_\"" 
@@ -1009,7 +1009,7 @@ Test.with_handler(ut_handler) do
   "PREFIX_1"
   ]
   expValues1=[
-  "\"../../../jsub_pipeliner/\"",
+  "\"../..//\"",
   "\"\$DIR_BASE\"/\"unit_tests/outputs/split/\"",
   "\"\$DIR_BASE\"/\"unit_tests/shell_scripts/write_files/ut_create_reference.sh\"",
   "\"\$DIR_BASE\"/\"unit_tests/shell_scripts/write_files/ut_process.sh\"",
@@ -1027,8 +1027,8 @@ Test.with_handler(ut_handler) do
   expNamesFvars=["LANE_NUM", "SAMPLEID"];
   expInfileColumnsFvars=["0","1"];
   expFilePathsFvars=[
-  "../../../jsub_pipeliner//unit_tests/lists/multiLane_\"1\"col.txt",
-  "../../../jsub_pipeliner//unit_tests/lists/sampleIDs_1col.txt"
+  "../..///unit_tests/lists/multiLane_\"1\"col.txt",
+  "../..///unit_tests/lists/sampleIDs_1col.txt"
   ];
   @test parse_expandvars_fvarsfile_(fileFvars, expNames1, expValues1, dlmFvars="\t", verbose=false, adapt_quotation=false) == (expNamesFvars, expInfileColumnsFvars, expFilePathsFvars)
 
@@ -1036,8 +1036,8 @@ Test.with_handler(ut_handler) do
   expNamesFvars=["LANE_NUM", "SAMPLEID"];
   expInfileColumnsFvars=["0","1"];
   expFilePathsFvars=[
-  "../../../jsub_pipeliner//unit_tests/lists/multiLane_\"1\"col.txt",
-  "../../../jsub_pipeliner//unit_tests/lists/sampleIDs_1col.txt"
+  "../..///unit_tests/lists/multiLane_\"1\"col.txt",
+  "../..///unit_tests/lists/sampleIDs_1col.txt"
   ];
   @test parse_expandvars_fvarsfile_(fileFvars, expNames1, expValues1, dlmFvars="\t", verbose=false, adapt_quotation=true) == (expNamesFvars, expInfileColumnsFvars, expFilePathsFvars)  
 
@@ -1054,12 +1054,12 @@ Test.with_handler(ut_handler) do
   "VAR\$VAR2"
   ];
   expValuesIn0 = [
-  "\"../../../jsub_pipeliner\""
-  "\"\"../../../jsub_pipeliner\"/output_testing_jsub\""
-  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\""
-  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\""
-  "\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_refFile.txt\""
-  "\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\""
+  "\"../../\""
+  "\"\"../../\"/output_testing_jsub\""
+  "\"\"../../\"\"/\"unit_tests/data/header_coordinate\""
+  "\"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\""
+  "\"\"\"../../\"/output_testing_jsub\"\"/\"utSplit_refFile.txt\""
+  "\"\"\"../../\"/output_testing_jsub\"\"/\"utSplit_out1_\""
   "\"_valueVar1_\""
   "\"_valueVar\$VAR1_\""
   "\"_valueVar\$VAR2_\"" 
@@ -1068,8 +1068,8 @@ Test.with_handler(ut_handler) do
   expCmdRowsProt=[2,3];
   expArrProt=[]
   push!(expArrProt, ["# A very minimalistic hypothetical protocol file"])
-  push!(expArrProt, ["bash \"../../../jsub_pipeliner\"/somescript.sh  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" \"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\""])
-  push!(expArrProt, ["python \"\"../../../jsub_pipeliner\"\"/\"therscript.py\" \"\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\"\" \"\"../../../jsub_pipeliner\"/output_testing_jsub\"/\"processed1.txt\""])
+  push!(expArrProt, ["bash \"../../\"/somescript.sh  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" \"\"\"../../\"/output_testing_jsub\"\"/\"utSplit_out1_\""])
+  push!(expArrProt, ["python \"\"../../\"\"/\"therscript.py\" \"\"\"\"../../\"/output_testing_jsub\"\"/\"utSplit_out1_\"\" \"\"../../\"/output_testing_jsub\"/\"processed1.txt\""])
   push!(expArrProt, ["# The end"])
   @test parse_expandvars_protocol_(fileProtocol, expNamesIn0, expValuesIn0; adapt_quotation=false, verbose=false) == (expArrProt, expCmdRowsProt)
 
@@ -1085,12 +1085,12 @@ Test.with_handler(ut_handler) do
   "VAR\$VAR2"
   ];
   expValuesIn1 = [
-  "\"../../../jsub_pipeliner\""
-  "\"\"../../../jsub_pipeliner\"/output_testing_jsub\""
-  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\""
-  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\""
-  "\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_refFile.txt\""
-  "\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\""
+  "\"../../\""
+  "\"\"../../\"/output_testing_jsub\""
+  "\"\"../../\"\"/\"unit_tests/data/header_coordinate\""
+  "\"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\""
+  "\"\"\"../../\"/output_testing_jsub\"\"/\"utSplit_refFile.txt\""
+  "\"\"\"../../\"/output_testing_jsub\"\"/\"utSplit_out1_\""
   "\"_valueVar1_\""
   "\"_valueVar\$VAR1_\""
   "\"_valueVar\$VAR2_\"" 
@@ -1099,8 +1099,8 @@ Test.with_handler(ut_handler) do
   expCmdRowsProt=[2,3]; # Blank lines are not counted
   expArrProt=[]
   push!(expArrProt, ["# A very minimalistic hypothetical protocol file"])
-  push!(expArrProt, ["bash \"../../../jsub_pipeliner\"/somescript.sh  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" \"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\""])
-  push!(expArrProt, ["python \"\"\"../../../jsub_pipeliner\"\"\"/\"therscript.py\" \"\"\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\"\"\" \"\"../../../jsub_pipeliner\"/output_testing_jsub\"/\"processed1.txt\""])
+  push!(expArrProt, ["bash \"../../\"/somescript.sh  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" \"\"\"../../\"/output_testing_jsub\"\"/\"utSplit_out1_\""])
+  push!(expArrProt, ["python \"\"\"../../\"\"\"/\"therscript.py\" \"\"\"\"\"../../\"/output_testing_jsub\"\"/\"utSplit_out1_\"\"\" \"\"../../\"/output_testing_jsub\"/\"processed1.txt\""])
   push!(expArrProt, ["# The end"])
   @test parse_expandvars_protocol_(fileProtocol, expNamesIn1, expValuesIn1; adapt_quotation=true, verbose=false) == (expArrProt, expCmdRowsProt)
 
@@ -1109,8 +1109,8 @@ Test.with_handler(ut_handler) do
   supNamesFvars=["LANE_NUM", "SAMPLEID"];
   supInfileColumnsFvars=["0","1"];
   supFilePathsFvars=[
-  "../../../jsub_pipeliner//unit_tests/lists/multiLane_\"1\"col.txt",
-  "../../../jsub_pipeliner//unit_tests/lists/sampleIDs_1col.txt"
+  "../..///unit_tests/lists/multiLane_\"1\"col.txt",
+  "../..///unit_tests/lists/sampleIDs_1col.txt"
   ];
   supNamesIn0 = [
   "DIR_BASE"
@@ -1124,12 +1124,12 @@ Test.with_handler(ut_handler) do
   "VAR\$VAR2"
   ];
   supValuesIn0 = [
-  "\"../../../jsub_pipeliner\""
-  "\"\"../../../jsub_pipeliner\"/output_testing_jsub\""
-  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\""
-  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\""
-  "\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_refFile.txt\""
-  "\"\"\"../../../jsub_pipeliner\"/output_testing_jsub\"\"/\"utSplit_out1_\""
+  "\"../../\""
+  "\"\"../../\"/output_testing_jsub\""
+  "\"\"../../\"\"/\"unit_tests/data/header_coordinate\""
+  "\"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\""
+  "\"\"\"../../\"/output_testing_jsub\"\"/\"utSplit_refFile.txt\""
+  "\"\"\"../../\"/output_testing_jsub\"\"/\"utSplit_out1_\""
   "\"_valueVar1_\""
   "\"_valueVar\$VAR1_\""
   "\"_valueVar\$VAR2_\"" 
@@ -1153,12 +1153,12 @@ Test.with_handler(ut_handler) do
   push!(arrFileContents2, ["Sample007"]);
   arrFileNonCommentLines2 = [1,2,3,4,5,6,7]
   dictListArr = Dict(
-  "../../../jsub_pipeliner//unit_tests/lists/multiLane_\"1\"col.txt" => arrFileContents1,
-  "../../../jsub_pipeliner//unit_tests/lists/sampleIDs_1col.txt" => arrFileContents2
+  "../..///unit_tests/lists/multiLane_\"1\"col.txt" => arrFileContents1,
+  "../..///unit_tests/lists/sampleIDs_1col.txt" => arrFileContents2
   )
   dictCmdLineIdxs = Dict(
-  "../../../jsub_pipeliner//unit_tests/lists/multiLane_\"1\"col.txt" => arrFileNonCommentLines1,
-  "../../../jsub_pipeliner//unit_tests/lists/sampleIDs_1col.txt" => arrFileNonCommentLines2
+  "../..///unit_tests/lists/multiLane_\"1\"col.txt" => arrFileNonCommentLines1,
+  "../..///unit_tests/lists/sampleIDs_1col.txt" => arrFileNonCommentLines2
   )
   @test parse_expandvars_listfiles_(supFilePathsFvars, supNamesIn0, supValuesIn0, "\t"; adapt_quotation=false, verbose=false) == (dictListArr, dictCmdLineIdxs)
   @test parse_expandvars_listfiles_(supFilePathsFvars, supNamesIn0, supValuesIn0, "\t"; adapt_quotation=true, verbose=false) == (dictListArr, dictCmdLineIdxs)
@@ -1169,14 +1169,14 @@ Test.with_handler(ut_handler) do
   push!(supArrProt, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"])
   push!(supArrProt, ["bash \${a_bash_script_dot_sh} \${LANE_NUM} \${SAMPLEID} fileA_\${SAMPLEID}"])
   push!(supArrProt, ["python \${a_python_script_dot_py}                       fileA_\${SAMPLEID}  fileB_\${SAMPLEID}"])
-  push!(supArrProt, ["./path/to/binary.exe  fileB_\${SAMPLEID}  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supArrProt, ["./path/to/binary.exe  fileB_\${SAMPLEID}  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supArrProt, ["# The end"])
   supCmdRowsProt=[2,3,4];
   supNamesFvars=["LANE_NUM", "SAMPLEID"];
   supInfileColumnsFvars=["0","1"];
   supFilePathsFvars=[
-  "dummy/path/to/lane_numbers.list", # "../../../jsub_pipeliner//unit_tests/lists/multiLane_\"1\"col.txt",
-  "dummy/path/to/sampleIDs.list"  # "../../../jsub_pipeliner//unit_tests/lists/sampleIDs_1col.txt"
+  "dummy/path/to/lane_numbers.list", # "../..///unit_tests/lists/multiLane_\"1\"col.txt",
+  "dummy/path/to/sampleIDs.list"  # "../..///unit_tests/lists/sampleIDs_1col.txt"
   ];
   supNamesIn = [
   "DIR_BASE"
@@ -1185,10 +1185,10 @@ Test.with_handler(ut_handler) do
   "PRE_REF_FILE2"
   ];
   supValuesIn = [
-  "\"../../../jsub_pipeliner\""
-  "\"\"../../../jsub_pipeliner\"/output_testing_jsub\""
-  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\""
-  "\"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\""
+  "\"../../\""
+  "\"\"../../\"/output_testing_jsub\""
+  "\"\"../../\"\"/\"unit_tests/data/header_coordinate\""
+  "\"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\""
   ];
   # These arrays contain data that would be read from list files into dictionaries
   arrFileContents1 = [];
@@ -1223,43 +1223,43 @@ Test.with_handler(ut_handler) do
   push!(expectedSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(expectedSubArray, ["bash \${a_bash_script_dot_sh} \"path\/to\/\"Lane'\"1\"1' path\/to\"Lane\"\"1\"2 Sample001 fileA_Sample001"])
   push!(expectedSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample001  fileB_Sample001"])
-  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample001  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample001  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(expectedSubArray, ["# The end"]);
   push!(expectedSummaryArrayOfArrays, expectedSubArray); expectedSubArray = [];
   push!(expectedSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(expectedSubArray, ["bash \${a_bash_script_dot_sh} Lane\"2\"1 Sample002 fileA_Sample002"])
   push!(expectedSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample002  fileB_Sample002"])
-  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample002  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample002  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(expectedSubArray, ["# The end"]);
   push!(expectedSummaryArrayOfArrays, expectedSubArray); expectedSubArray = [];
   push!(expectedSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(expectedSubArray, ["bash \${a_bash_script_dot_sh} Lane31 Lane32 Lane33 Sample003 fileA_Sample003"])
   push!(expectedSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample003  fileB_Sample003"])
-  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample003  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample003  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(expectedSubArray, ["# The end"]);
   push!(expectedSummaryArrayOfArrays, expectedSubArray); expectedSubArray = [];
   push!(expectedSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(expectedSubArray, ["bash \${a_bash_script_dot_sh} Lane41 Lane42 Lane43 Lane44 Sample004 fileA_Sample004"])
   push!(expectedSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample004  fileB_Sample004"])
-  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample004  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample004  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(expectedSubArray, ["# The end"]);
   push!(expectedSummaryArrayOfArrays, expectedSubArray); expectedSubArray = [];
   push!(expectedSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(expectedSubArray, ["bash \${a_bash_script_dot_sh} Lane51 Sample005 fileA_Sample005"])
   push!(expectedSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample005  fileB_Sample005"])
-  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample005  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample005  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(expectedSubArray, ["# The end"]);
   push!(expectedSummaryArrayOfArrays, expectedSubArray); expectedSubArray = [];
   push!(expectedSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(expectedSubArray, ["bash \${a_bash_script_dot_sh} Lane61 Sample006 fileA_Sample006"])
   push!(expectedSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample006  fileB_Sample006"])
-  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample006  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample006  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(expectedSubArray, ["# The end"]);
   push!(expectedSummaryArrayOfArrays, expectedSubArray); expectedSubArray = [];
   push!(expectedSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(expectedSubArray, ["bash \${a_bash_script_dot_sh} Lane71 Lane72 Sample007 fileA_Sample007"])
   push!(expectedSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample007  fileB_Sample007"])
-  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample007  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample007  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(expectedSubArray, ["# The end"]);
   push!(expectedSummaryArrayOfArrays, expectedSubArray); 
   @test protocol_to_array(supArrProt, supCmdRowsProt, supNamesFvars, supInfileColumnsFvars, supFilePathsFvars, supDictListArr, supDictCmdLineIdxs; verbose=false, adapt_quotation=false) == expectedSummaryArrayOfArrays;
@@ -1270,7 +1270,7 @@ Test.with_handler(ut_handler) do
   push!(supArrProt, ["#JSUB<summary-name> sample id is \${SAMPLEID}"])
   push!(supArrProt, ["bash \${a_bash_script_dot_sh} \${LANE_NUM} \${SAMPLEID} fileA_\${SAMPLEID}"])
   push!(supArrProt, ["python \${a_python_script_dot_py}                       fileA_\${SAMPLEID}  fileB_\${SAMPLEID}"])
-  push!(supArrProt, ["./path/to/binary.exe  fileB_\${SAMPLEID}  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supArrProt, ["./path/to/binary.exe  fileB_\${SAMPLEID}  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supArrProt, ["# The end"])
   supCmdRowsProt=[1,2,3,4];
   # These array contain data that would be read from list files into dictionaries
@@ -1306,43 +1306,43 @@ Test.with_handler(ut_handler) do
   push!(expectedSubArray, ["#JSUB<summary-name> sample id is Sample001"]);
   push!(expectedSubArray, ["bash \${a_bash_script_dot_sh} \"path\/to\/\"Lane'\"1\"1' path\/to\"Lane\"\"1\"2 Sample001 fileA_Sample001"])
   push!(expectedSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample001  fileB_Sample001"])
-  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample001  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample001  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(expectedSubArray, ["# The end"]);
   push!(expectedSummaryArrayOfArrays, expectedSubArray); expectedSubArray = [];
   push!(expectedSubArray, ["#JSUB<summary-name> sample id is Sample002"]);
   push!(expectedSubArray, ["bash \${a_bash_script_dot_sh} Lane\"2\"1 Sample002 fileA_Sample002"])
   push!(expectedSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample002  fileB_Sample002"])
-  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample002  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample002  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(expectedSubArray, ["# The end"]);
   push!(expectedSummaryArrayOfArrays, expectedSubArray); expectedSubArray = [];
   push!(expectedSubArray, ["#JSUB<summary-name> sample id is Sample003"]);
   push!(expectedSubArray, ["bash \${a_bash_script_dot_sh} Lane31 Lane32 Lane33 Sample003 fileA_Sample003"])
   push!(expectedSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample003  fileB_Sample003"])
-  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample003  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample003  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(expectedSubArray, ["# The end"]);
   push!(expectedSummaryArrayOfArrays, expectedSubArray); expectedSubArray = [];
   push!(expectedSubArray, ["#JSUB<summary-name> sample id is Sample004"]);
   push!(expectedSubArray, ["bash \${a_bash_script_dot_sh} Lane41 Lane42 Lane43 Lane44 Sample004 fileA_Sample004"])
   push!(expectedSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample004  fileB_Sample004"])
-  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample004  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample004  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(expectedSubArray, ["# The end"]);
   push!(expectedSummaryArrayOfArrays, expectedSubArray); expectedSubArray = [];
   push!(expectedSubArray, ["#JSUB<summary-name> sample id is Sample005"]);
   push!(expectedSubArray, ["bash \${a_bash_script_dot_sh} Lane51 Sample005 fileA_Sample005"])
   push!(expectedSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample005  fileB_Sample005"])
-  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample005  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample005  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(expectedSubArray, ["# The end"]);
   push!(expectedSummaryArrayOfArrays, expectedSubArray); expectedSubArray = [];
   push!(expectedSubArray, ["#JSUB<summary-name> sample id is Sample006"]);
   push!(expectedSubArray, ["bash \${a_bash_script_dot_sh} Lane61 Sample006 fileA_Sample006"])
   push!(expectedSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample006  fileB_Sample006"])
-  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample006  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample006  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(expectedSubArray, ["# The end"]);
   push!(expectedSummaryArrayOfArrays, expectedSubArray); expectedSubArray = [];
   push!(expectedSubArray, ["#JSUB<summary-name> sample id is Sample007"]);
   push!(expectedSubArray, ["bash \${a_bash_script_dot_sh} Lane71 Lane72 Sample007 fileA_Sample007"])
   push!(expectedSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample007  fileB_Sample007"])
-  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample007  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(expectedSubArray, ["./path/to/binary.exe  fileB_Sample007  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(expectedSubArray, ["# The end"]);
   push!(expectedSummaryArrayOfArrays, expectedSubArray); 
   @test protocol_to_array(supArrProt, supCmdRowsProt, supNamesFvars, supInfileColumnsFvars, supFilePathsFvars, supDictListArr, supDictCmdLineIdxs; verbose=false, adapt_quotation=false) == expectedSummaryArrayOfArrays;
@@ -1356,40 +1356,40 @@ Test.with_handler(ut_handler) do
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script_dot_sh} \"path\/to\/\"Lane'\"1\"1' path\/to\"Lane\"\"1\"2 Sample001 fileA_Sample001"])
   push!(supSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample001  fileB_Sample001"])
-  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample001  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample001  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["#JSUB<summary-name> the second job"]);
   push!(supSubArray, ["bash \${a_bash_script_dot_sh} Lane\"2\"1 Sample002 fileA_Sample002"])
   push!(supSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample002  fileB_Sample002"])
-  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample002  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample002  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script_dot_sh} Lane31 Lane32 Lane33 Sample003 fileA_Sample003"])
   push!(supSubArray, [" #JSUB<summary-name>\tthe third job"]);
   push!(supSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample003  fileB_Sample003"])
-  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample003  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample003  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script_dot_sh} Lane41 Lane42 Lane43 Lane44 Sample004 fileA_Sample004"])
   push!(supSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample004  fileB_Sample004"])
   push!(supSubArray, ["  #JSUB<summary-name> \tthe fourth job\t"]);
-  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample004  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample004  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script_dot_sh} Lane51 Sample005 fileA_Sample005"])
   push!(supSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample005  fileB_Sample005"])
-  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample005  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample005  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script_dot_sh} Lane61 Sample006 fileA_Sample006"])
   push!(supSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample006  fileB_Sample006"])
-  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample006  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample006  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
   push!(supSubArray, ["#JSUB<summary-name>the sixth job"]);
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
@@ -1397,7 +1397,7 @@ Test.with_handler(ut_handler) do
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script_dot_sh} Lane71 Lane72 Sample007 fileA_Sample007"])
   push!(supSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample007  fileB_Sample007"])
-  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample007  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample007  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray);
   # Expected output
@@ -1428,7 +1428,7 @@ Test.with_handler(ut_handler) do
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script_dot_sh} \"path\/to\/\"Lane'\"1\"1' path\/to\"Lane\"\"1\"2 Sample001 fileA_Sample001"])
   push!(supSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample001  fileB_Sample001"])
-  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample001  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample001  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
   push!(supSubArray, ["\t#JSUB<summary-name>the seventh job twin"]);
@@ -1436,7 +1436,7 @@ Test.with_handler(ut_handler) do
   push!(supSubArray, ["bash \${a_bash_script_dot_sh} Lane71 Lane72 Sample007 fileA_Sample007"])
   push!(supSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample007  fileB_Sample007"])
   push!(supSubArray, ["\t#JSUB<summary-name> the seventh job twin"]);
-  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample007  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample007  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["\t#JSUB<summary-name> the other seventh job"]);
   push!(supSubArray, ["# The end"]);  
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
@@ -1626,43 +1626,43 @@ Test.with_handler(ut_handler) do
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script_dot_sh} \"path\/to\/\"Lane'\"1\"1' path\/to\"Lane\"\"1\"2 Sample001 fileA_Sample001"])
   push!(supSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample001  fileB_Sample001"])
-  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample001  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample001  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script_dot_sh} Lane\"2\"1 Sample002 fileA_Sample002"])
   push!(supSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample002  fileB_Sample002"])
-  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample002  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample002  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script_dot_sh} Lane31 Lane32 Lane33 Sample003 fileA_Sample003"])
   push!(supSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample003  fileB_Sample003"])
-  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample003  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample003  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script_dot_sh} Lane41 Lane42 Lane43 Lane44 Sample004 fileA_Sample004"])
   push!(supSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample004  fileB_Sample004"])
-  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample004  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample004  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script_dot_sh} Lane51 Sample005 fileA_Sample005"])
   push!(supSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample005  fileB_Sample005"])
-  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample005  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample005  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script_dot_sh} Lane61 Sample006 fileA_Sample006"])
   push!(supSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample006  fileB_Sample006"])
-  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample006  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample006  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray); supSubArray = [];
   push!(supSubArray, ["# In practice this array would be produced by reading a .protocol file and expanding variables using the table in a .vars file"]);
   push!(supSubArray, ["bash \${a_bash_script_dot_sh} Lane71 Lane72 Sample007 fileA_Sample007"])
   push!(supSubArray, ["python \${a_python_script_dot_py}                       fileA_Sample007  fileB_Sample007"])
-  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample007  \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/header_coordinate\" \"\"../../../jsub_pipeliner\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
+  push!(supSubArray, ["./path/to/binary.exe  fileB_Sample007  \"\"../../\"\"/\"unit_tests/data/header_coordinate\" \"\"../../\"\"/\"unit_tests/data/hg19.chrom.sizes\" "])
   push!(supSubArray, ["# The end"]);
   push!(supSummaryArrayOfArrays, supSubArray);
   # Expected output consists of files written to disk
