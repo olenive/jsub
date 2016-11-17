@@ -1,4 +1,26 @@
-20161026_162724 summaryPrefix_sample0003A_3 completed - # Basic integration test protocol involving only a call to a bash script that writes a single line to a text file.
-20161026_162724 summaryPrefix_sample0003A_3 completed - #JSUB<summary-name> sample0003A
-20161026_162724 summaryPrefix_sample0003A_3 completed - bash ../../bash_scripts/trivial.sh "outPrefix_"sample0003A".txt"
-20161026_162724 summaryPrefix_sample0003A_3 completed - 
+ summaryPrefix_sample0003A_3 completed - # Basic integration test protocol involving only a call to a bash script that writes a single line to a text file.
+
+ summaryPrefix_sample0003A_3 completed - #JSUB<summary-name> sample0003A
+
+ summaryPrefix_sample0003A_3 completed - bash ../../bash_scripts/trivial.sh "outPrefix_"sample0003A".txt"
+
+ summaryPrefix_sample0003A_3 version - which bash
+/bin/bash
+
+ summaryPrefix_sample0003A_3 git - repository associated with: ../../bash_scripts/trivial.sh
+Date and hash in repository: <path to repo>
+2016-11-17 16:23:01 +0000 5d44ab12b6fa85acd983ad74a3f0e1a4e9de528f
+Status of repository at date_time: 20161117_163936
+# On branch cyberdev
+# Changed but not updated:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	modified:   ../../fvars/expected_files/prefixes/jobs/jobPrefix_summaryPrefix_sample0001A_1.lsf
+#	modified:   ../../fvars/expected_files/prefixes/jobs/jobPrefix_summaryPrefix_sample0002A_2.lsf
+#	modified:   ../../fvars/expected_files/prefixes/jobs/jobPrefix_summaryPrefix_sample0003A_3.lsf
+#
+no changes added to commit (use "git add" and/or "git commit -a")
+
+ summaryPrefix_sample0003A_3 completed - 
+
