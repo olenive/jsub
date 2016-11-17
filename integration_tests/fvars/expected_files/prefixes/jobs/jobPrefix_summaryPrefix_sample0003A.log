@@ -1,4 +1,27 @@
-20161026_155255 summaryPrefix_sample0003A_3 completed - # Basic integration test protocol involving only a call to a bash script that writes a single line to a text file.
-20161026_155255 summaryPrefix_sample0003A_3 completed - #JSUB<summary-name> sample0003A
-20161026_155255 summaryPrefix_sample0003A_3 completed - bash ../../../bash_scripts/trivial.sh sample0003A".txt"
-20161026_155255 summaryPrefix_sample0003A_3 completed - 
+ summaryPrefix_sample0003A_3 completed - # Basic integration test protocol involving only a call to a bash script that writes a single line to a text file.
+
+ summaryPrefix_sample0003A_3 completed - #JSUB<summary-name> sample0003A
+
+ summaryPrefix_sample0003A_3 completed - bash ../../../bash_scripts/trivial.sh sample0003A".txt"
+
+
+ summaryPrefix_sample0003A_3 version - which bash
+/bin/bash
+ summaryPrefix_sample0003A_3 git - repository associated with: ../../../bash_scripts/trivial.sh
+Date and hash in repository: <path to repo>
+2016-11-16 15:18:10 +0000 f73f1a86527a8287ec41ca909154d73c306a64f6
+Status of repository at date_time: 20161116_152440
+# On branch cyberdev
+# Changed but not updated:
+#   (use "git add/rm <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	deleted:    ../../../../examples/example_05/summaries/sumpre_echo03_vars02_fvars03.list-summaries
+#	deleted:    ../../../../examples/example_05/summaries/sumpre_echo03_vars02_fvars03_1.summary
+#	deleted:    ../../../../examples/example_05/summaries/sumpre_echo03_vars02_fvars03_2.summary
+#	deleted:    ../../../../examples/example_05/summaries/sumpre_echo03_vars02_fvars03_3.summary
+#
+no changes added to commit (use "git add" and/or "git commit -a")
+
+ summaryPrefix_sample0003A_3 completed - 
+
