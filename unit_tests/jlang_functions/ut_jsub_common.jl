@@ -518,6 +518,15 @@ Test.with_handler(ut_handler) do
   expString  = "start in888 string \"888\"/unit_tests/ foo\${VAR#*} bar\${VAR%afd} baz\${VAR:?asdf} boo\${VAR?!*} moo\${VAR\$!*} \"sample\"\"888\"\".txt\"888" # expString  = "start in!!! string \"!!!\"/unit_tests/ foo\${VAR#*} bar\${VAR%afd} baz\${VAR:?asdf} boo\${VAR?!*} moo\${VAR\$!*} \"sample\"!!!\".txt\""
   @test expandnameafterdollar(testString, "VAR", "888") == expString
 
+  testString = "jcheck_file_not_empty                                  \"\$OUT_PREFIX\"sample_id_first.txt \"\$OUT_PREFIX\"sample_id_second.txt \"\$OUT_PREFIX\"sample_id_third.txt"
+  expString  = "jcheck_file_not_empty                                  \"\"results/outPrefix_\"\"sample_id_first.txt \"\"results/outPrefix_\"\"sample_id_second.txt \"\"results/outPrefix_\"\"sample_id_third.txt"
+  @test expandnameafterdollar(testString, "OUT_PREFIX", "\"results/outPrefix_\"", adapt_quotation=false) == expString
+  
+  testString = "jcheck_file_not_empty                                  \"\$OUT_PREFIX\"sample_id_first.txt \"\$OUT_PREFIX\"sample_id_second.txt \"\$OUT_PREFIX\"sample_id_third.txt"
+  expString  = "jcheck_file_not_empty                                  \"\"\"results/outPrefix_\"\"\"sample_id_first.txt \"\"\"results/outPrefix_\"\"\"sample_id_second.txt \"\"\"results/outPrefix_\"\"\"sample_id_third.txt"
+  @test expandnameafterdollar(testString, "OUT_PREFIX", "\"results/outPrefix_\"", adapt_quotation=true) == expString
+
+
   ## is_escaped(inString, position, charEscape)
   @test_throws BoundsError is_escaped("", 0, '\\')
   @test is_escaped("", 1, '\\') == false
@@ -715,6 +724,13 @@ Test.with_handler(ut_handler) do
   # assign_quote_state("x1\"y1\${val}x2\"y2\"x3\"", '\"')'
   # assign_quote_state(substitute_string("o1\"i1\${VAR}i2\"o2\"i3\"", enforce_quote_consistency("o1\"i1\${VAR}i2\"o2\"i3\"", "x1\"y1\${val}x2\"y2\"x3\"", 6, 11; charQuote='\"'), 6, 11), '\"')'
 
+  # Test based on the call to this function inside expandnameafterdollar funciton in integration test ...
+  resultString = "jcheck_file_not_empty                                  \"\$OUT_PREFIX\"sample_id_first.txt \"\$OUT_PREFIX\"sample_id_second.txt \"\$OUT_PREFIX\"sample_id_third.txt"
+  processedCandidate = "\"results/outPrefix_\"";
+  inclusive_start = 57;
+  inclusive_finish = 67;
+  @test enforce_quote_consistency(resultString, processedCandidate, inclusive_start, inclusive_finish; charQuote='\"', verbose=false) == "\"\"results/outPrefix_\"\"";
+
   # adapt_quotation=true -> Attemt to keep the pattern of quotation consistent before and after substitution by inserting quotes
   @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value\""; adapt_quotation=false) == "out0\"in1\"out1\"\"value\"\"out2\"in2\"out3"
   @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value\""; adapt_quotation=true) == "out0\"in1\"out1\"\"\"value\"\"\"out2\"in2\"out3"
@@ -749,6 +765,43 @@ Test.with_handler(ut_handler) do
   varNames = ["FILE_A","OUT_A","FILE_B","OUT_B","OUT_C"];
   varVals = ["data_1A.txt","result_1A.txt","data_1B.txt","result_1B.txt","result_1C.txt"];
   @test expandmanyafterdollars(inString, varNames, varVals, adapt_quotation=true, returnTF=false, keepSuperfluousQuotes=false) == expected;
+  
+  ## Test based on jgroup_checkpoints integration test
+  # Trying to match result from running only expandnameafterdollar (see above)
+  varNames = ["OUT_PREFIX"]
+  varVals = ["\"results/outPrefix_\""]
+  inString = "jcheck_file_not_empty                                  \"\$OUT_PREFIX\"sample_id_first.txt \"\$OUT_PREFIX\"sample_id_second.txt \"\$OUT_PREFIX\"sample_id_third.txt"
+  expected = "jcheck_file_not_empty                                  \"\"results/outPrefix_\"\"sample_id_first.txt \"\"results/outPrefix_\"\"sample_id_second.txt \"\"results/outPrefix_\"\"sample_id_third.txt"
+  @test expandmanyafterdollars(inString, varNames, varVals, adapt_quotation=false, returnTF=false, keepSuperfluousQuotes=true) == expected;
+  expected = "jcheck_file_not_empty                                  \"\"\"results/outPrefix_\"\"\"sample_id_first.txt \"\"\"results/outPrefix_\"\"\"sample_id_second.txt \"\"\"results/outPrefix_\"\"\"sample_id_third.txt"
+  @test expandmanyafterdollars(inString, varNames, varVals, adapt_quotation=true, returnTF=false, keepSuperfluousQuotes=true) == expected;
+  expected = "jcheck_file_not_empty                                  \"results/outPrefix_\"sample_id_first.txt \"results/outPrefix_\"sample_id_second.txt \"results/outPrefix_\"sample_id_third.txt"
+  @test expandmanyafterdollars(inString, varNames, varVals, adapt_quotation=true, returnTF=false, keepSuperfluousQuotes=false) == expected;
+
+  varNames = ["OUT_PREFIX", "PATH_TO_TRIVIAL", "PATH_TO_CONCAT", "PATH_TO_CATFILES"]
+  varVals = ["\"results/outPrefix_\"", "../../bash_scripts/trivial.sh", "../../bash_scripts/concat.sh", "../../bash_scripts/catfiles.sh"]
+  inString = "jcheck_file_not_empty                                  \"\$OUT_PREFIX\"sample_id_first.txt \"\$OUT_PREFIX\"sample_id_second.txt \"\$OUT_PREFIX\"sample_id_third.txt"
+  expected = "jcheck_file_not_empty                                  \"results/outPrefix_\"sample_id_first.txt \"results/outPrefix_\"sample_id_second.txt \"results/outPrefix_\"sample_id_third.txt"
+  @test expandmanyafterdollars(inString, varNames, varVals, adapt_quotation=true, returnTF=false, keepSuperfluousQuotes=false) == expected;
+  expKeepQuotes = "jcheck_file_not_empty                                  \"\"\"results/outPrefix_\"\"\"sample_id_first.txt \"\"\"results/outPrefix_\"\"\"sample_id_second.txt \"\"\"results/outPrefix_\"\"\"sample_id_third.txt"
+  @test expandmanyafterdollars(inString, varNames, varVals, adapt_quotation=true, returnTF=false, keepSuperfluousQuotes=true) == expKeepQuotes;
+
+  ## Tests used to fix an out of bounds bug
+            #            1          2           3 
+            #  1234567 8901234 5678901 2345678 9012345 6789
+  inString =  "\$VAR.1.\$VAR.2.\$VAR.3.\$VAR.4.\$VAR.5.\$VAR"
+  expKeep01 = "\"0x0012300x0\".1.\"0x0012300x0\".2.\"0x0012300x0\".3.\"0x0012300x0\".4.\"0x0012300x0\".5.\"0x0012300x0\""
+  @test expandmanyafterdollars(inString, ["VAR"], ["\"0x0012300x0\""], adapt_quotation=true, returnTF=false, keepSuperfluousQuotes=true) == expKeep01;  
+  @test expandnameafterdollar(inString, "VAR", "\"0x0012300x0\""; adapt_quotation=false) == "\"0x0012300x0\".1.\"0x0012300x0\".2.\"0x0012300x0\".3.\"0x0012300x0\".4.\"0x0012300x0\".5.\"0x0012300x0\"";
+  @test expandnameafterdollar(inString, "VAR", "\"0x0012300x0\""; adapt_quotation=true) == "\"0x0012300x0\".1.\"0x0012300x0\".2.\"0x0012300x0\".3.\"0x0012300x0\".4.\"0x0012300x0\".5.\"0x0012300x0\"";
+
+  inString =  "\"\$VAR\".1.\"\$VAR\".2.\"\$VAR\".3.\"\$VAR\".4.\"\$VAR\".5.\"\$VAR\"";
+  @test expandnameafterdollar(inString, "VAR", "\"0x0012300x0\""; adapt_quotation=false) == "\"\"0x0012300x0\"\".1.\"\"0x0012300x0\"\".2.\"\"0x0012300x0\"\".3.\"\"0x0012300x0\"\".4.\"\"0x0012300x0\"\".5.\"\"0x0012300x0\"\"";
+  @test expandnameafterdollar(inString, "VAR", "\"0x0012300x0\""; adapt_quotation=true) == "\"\"\"0x0012300x0\"\"\".1.\"\"\"0x0012300x0\"\"\".2.\"\"\"0x0012300x0\"\"\".3.\"\"\"0x0012300x0\"\"\".4.\"\"\"0x0012300x0\"\"\".5.\"\"\"0x0012300x0\"\"";
+
+  inString =  "\${VAR}.1.\${VAR}.2.\${VAR}.3.\${VAR}.4.\${VAR}.5.\${VAR}"
+  @test expandnameafterdollar(inString, "VAR", "\"0x0012300x0\""; adapt_quotation=false) == "\"0x0012300x0\".1.\"0x0012300x0\".2.\"0x0012300x0\".3.\"0x0012300x0\".4.\"0x0012300x0\".5.\"0x0012300x0\""
+  @test expandnameafterdollar(inString, "VAR", "\"0x0012300x0\""; adapt_quotation=true) == "\"0x0012300x0\".1.\"0x0012300x0\".2.\"0x0012300x0\".3.\"0x0012300x0\".4.\"0x0012300x0\".5.\"0x0012300x0\""
 
   # remove_superfluous_quotes("BAR\"\"xx", '\"', 2, 1)
 

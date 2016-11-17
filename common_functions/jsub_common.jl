@@ -332,11 +332,15 @@ function expandnameafterdollar(inString, name, value; adapt_quotation=false, ret
     elseif ("terminating" in charLabels[ichr]) # Reached end of potential variable name
       candidate = candidate * string(char); # Add to candidate name string # println("1 added to candidate: ", string(candidate[end]));
       ## Check for closing curly brace and append it to candidate name
+      jchr = ichr;
       if ("curly_inside" in charLabels[ichr]) && !("discard" in charLabels[ichr]) #println("dealing with closing curly brace in discarded candidate name: ", candidate)
+        jchr += 1;
         candidate = candidate * string(inString[ichr+1]); # Note: this should never be called for the final character in the input string # println("2 added to candidate: ", string(candidate[end]));
       end
       ## Process, append and re-intialise candidate variable name # println("B processcandidatename: ", candidate, ",  ", charLabels[ichr], ",  ", name, ",  ", value)
       processedCandidate = "";
+      # println(" candidate = ", candidate);
+      # println(" length(candidate) = ", length(candidate)); 
       if returnTF
         return processcandidatename(candidate, charLabels[ichr], name, value; returnTrueOrFalse=true);
       else  
@@ -345,16 +349,34 @@ function expandnameafterdollar(inString, name, value; adapt_quotation=false, ret
         if processedCandidate != candidate && adapt_quotation
           inclusive_start = length(outString)+1;
           inclusive_finish = length(outString)+length(candidate); 
+          # println(" -- resultString = ", resultString);
+          # println(" -- processedCandidate = ", processedCandidate);
+          # println(" -- inclusive_start = ", inclusive_start);
+          # println(" -- inclusive_finish = ", inclusive_finish);
+          # println(" -- length(resultString)  = ", length(resultString));
+          # println("-------------");
           processedCandidate = enforce_quote_consistency(resultString, processedCandidate, inclusive_start, inclusive_finish; charQuote='\"', verbose=false);
         end
       end
-      # println("B Appending: ", processedCandidate )
-      idxUnprocessed = length(outString)+length(candidate)+1; # Determine the index of the rest of the string after value substitution
+      # println(" -1- outString = ", outString);
+      # println(" -1- length(outString) = ", length(outString));
+      # println(" -1- resultString = ", resultString);
+      # println(" -1- length(resultString) = ", length(resultString));
+      # println(" jchr = ", jchr);
+      idxUnprocessed = jchr + 1; #length(outString)+length(candidate)+1; # Determine the index of the rest of the string after value substitution
       idxUnprocessed > length(inString) ? (unprocessedString = "") : (unprocessedString = inString[idxUnprocessed:end])
       resultString = outString * processedCandidate * unprocessedString; # Update string after substitution
       outString = outString * processedCandidate; ## Add candidate string or variable value to output
-      candidate = ""; 
-      # istart = 1;
+      # println(" unprocessedString = ", unprocessedString);
+      # println(" length(unprocessedString) = ", length(unprocessedString));
+      # println(" processedCandidate = ", processedCandidate);
+      # println(" length(processedCandidate) = ", length(processedCandidate));      
+      # println(" -2- outString = ", outString);
+      # println(" -2- length(outString) = ", length(outString));
+      # println(" -2- resultString = ", resultString);
+      # println(" -2- length(resultString) = ", length(resultString));
+      # println("\n\n");
+      candidate = "";
     elseif !("curly_close" in charLabels[ichr]) # closing curly braces are added to the candidate in the lines above
       candidate = candidate * string(char); # Add to candidate name string # println("3 added to candidate: ", string(candidate[end]));
     end

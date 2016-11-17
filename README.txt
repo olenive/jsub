@@ -14,7 +14,7 @@ Reproduceablitiy: Re-running the analysis should be easy given a protocol file a
 
 Modularity: Paths to the input data and the steps taken to process it can be specified in separate files.
 
-User friendliness: No need to learn a new language, the process is based on variable declaration using bash syntax and supplying the relevant files via a command line interface.
+User friendliness: No need to learn a new language, the process is based on variable declaration using bash-like syntax and supplying the relevant files via a command line interface.
 
 
 Installation
@@ -27,7 +27,7 @@ Pkg.add("ArgParse")
 
 Running
 
-To run, call the jsub.jl julia script, for example:
+To run, call the jsub.jl julia script with the relevant arguments, for example:
 
 julia jsub.jl --help
 
@@ -83,6 +83,8 @@ Example 2 - vars
 Suppose that there are several combinations of inputs and we want to try them one at a time while keeping the overall procedure the same (see: examples/example_02/echo_vars.protocol).  To do this we can declare variables in the protocol file. 
 
 Variables are declared using the same syntax as in bash (e.g. $VARIABLE or ${VARIABLE}).
+
+NOTE: The job files also use shell variables to preform their logging functions.  These varaiables begin with JSUB_* so it is best to avoid using variables starting with "JSUB_".
 
 We can create a table of variable names and their associated values in a file and pass it as an argument to the --vars option (see examples/example_02/vars02.vars)
 

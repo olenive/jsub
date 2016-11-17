@@ -95,6 +95,7 @@ source "../../common_functions/job_submission_functions.sh"
 ## isAbsolutePath
 assert "isAbsolutePath /hello/abs" "absolute"
 assert "isAbsolutePath hello/rel" "relative"
+# 17
 ## checkForDuplicateLines "path to file" "suppress warnings" "strict"
 assert "checkForDuplicateLines ../data/list_without_duplicate_lines.txt true false" ""
 assert "checkForDuplicateLines ../data/list_without_duplicate_lines.txt false false" "Checking for duplicates in  ../data/list_without_duplicate_lines.txt"
@@ -125,6 +126,7 @@ EXPECTED_MULTIPLE="bash_function_test_files/jcheck_file_not_empty/expected_multi
 JSUB_JOB_TIMESTAMP=false
 JSUB_JOB_ID="jcheck_file_not_empty_jobID"
 JSUB_LOG_FILE="bash_function_test_files/test_outputs/jcheck_file_not_empty/checkpoint.log"
+mkdir -p $(dirname "$JSUB_LOG_FILE") # since git does not keep track of directories and this one may be empty to begin with
 assert "file_exists ${NON_EXISTANT_FILE}" "no"
 assert "file_exists ${EMPTY_FILE}" "yes"
 assert "file_contains_nonwhitespace ${WHITESPACE_FILE}" "no"
