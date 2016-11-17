@@ -143,13 +143,13 @@ function has_which {
 }
 function log_version { # $1 = word $2 = log file
   if [ $(has_which "$1") = "yes" ]; then
-    echo "" >> "$2"
     echo "$dateTime ""$JSUB_JOB_ID"" version - ""which $1" >> "$2"
     echo $(which "$1") >> "$2"
+    echo "" >> "$2"
   fi
 }
 function is_special_word { # Used to skip words for which version control should not be attempted
-  declare -a exclude=('#' '=' '[' ']' '{' '}' '$?' 'if' 'then' 'else' 'elif' 'fi' 'for' 'while' 'do' 'done' 'file')
+  declare -a exclude=('#' '=' '[' ']' '{' '}' '$?' 'if' 'then' 'else' 'elif' 'fi' 'for' 'while' 'do' 'done' 'file' 'continue' 'break' 'return')
   local flagYes=false
   for word in "${exclude[@]}"; do
     if [ "$word" = "$1" ]; then

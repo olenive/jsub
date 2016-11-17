@@ -114,10 +114,10 @@ for sample in "${SAMPLES[@]}"; do
     if [ "$jgroup" == "last" ]; then
       : # Jobs in the "last" group are not started because jobs they depend on are not completed.
     elif [ "$jgroup" == "second" ] || [ "$jgroup" == "third" ]; then
-      GENERATED_INCOMPLETE=${JOB_PREFIX}${SUMMARY_BASE_PREFIX}${sample}_${JOBIDS[idx]}_${jgroup}".incomplete"
+      GENERATED_INCOMPLETE=${SUMMARY_BASE_PREFIX}${sample}_${JOBIDS[idx]}_${jgroup}".incomplete"
       assert "file_exists ${GENERATED_INCOMPLETE}" "yes"
     else
-      GENERATED_COMPLETED=${JOB_PREFIX}${SUMMARY_BASE_PREFIX}${sample}_${JOBIDS[idx]}_${jgroup}".completed"
+      GENERATED_COMPLETED=${SUMMARY_BASE_PREFIX}${sample}_${JOBIDS[idx]}_${jgroup}".completed"
       assert "file_exists ${GENERATED_COMPLETED}" "yes"
     fi
   done
@@ -129,3 +129,4 @@ assert "file_exists ${GENERATED_SUBMITTED_JOBS_LIST}" "yes"
 assert_end
 
 # EOF
+

@@ -5,22 +5,22 @@ set -eu
 #BSUB -J summaryPrefix_sample0011A_11_third
 #BSUB -e lsf_output/lsf_summaryPrefix_sample0011A_11_third.error
 #BSUB -o lsf_output/lsf_summaryPrefix_sample0011A_11_third.output
-#BSUB -P grant-code
+#BSUB -P prepay-houlston
 #BSUB -q short
 
 
 # Job file variables:
-JSUB_PATH_TO_THIS_JOB="jsub/integration_tests/fvars/generated_files/jobs/jobPrefix_summaryPrefix_sample0001A_1.lsf"
+JSUB_PATH_TO_THIS_JOB="/scratch/cancgene/olenive/jsub/integration_tests/jgroup_prefixCompleted/generated_files/jobs/jobPrefix_summaryPrefix_sample0011A_11_third.lsf"
 JSUB_JOB_ID="summaryPrefix_sample0011A_11_third"
 JSUB_LOG_FILE="jobs/jobPrefix_summaryPrefix_sample0011A.log"
 JSUB_SUMMARY_COMPLETED="progoress/completed/summaryPrefix_sample0011A_11_third.completed"
 JSUB_SUMMARY_INCOMPLETE="progoress/incomplete/summaryPrefix_sample0011A_11_third.incomplete"
-JSUB_VERSION_CONTROL=false
-JSUB_JOB_TIMESTAMP=true
+JSUB_VERSION_CONTROL=true
+JSUB_JOB_TIMESTAMP=false
 
 # Contents inserted from other files (this section is intended to be used only for functions):
 
-# --- From file: jsub/common_functions/job_processing.sh
+# --- From file: /scratch/cancgene/olenive/jsub/common_functions/job_processing.sh
 ## job_processing parses the job file, writes to log and summary files, and calls version control functions.
 # Function allowing job script termination
 trap "exit 1" TERM
@@ -38,23 +38,24 @@ JSUB_SUCCESSFUL_COMPLETION="#JSUB Successfully ran job on:"
 JSUB_PREVIOUS_END=0
 JSUB_FLAG_FAIL=false
 function process_job { # This function reads the job file line by line and writes to log and summray (completed and incomplete) files.
+  ## Determine time stamp, if any
   local dateTime=""
   [[ ${JSUB_JOB_TIMESTAMP} = true ]] && dateTime=`date +%Y%m%d_%H%M%S`
-  rm -f ${JSUB_SUMMARY_INCOMPLETE} # Clean out the summary.incomplete file so that it is ready to accept a new text from the start
+  rm -f ${JSUB_SUMMARY_INCOMPLETE} # clear the *.incomplete file
   ## Loop over this job file and process lines
   local jline=0 # Line number within the job commands section
   local flagInJob=false
   local flagBlockEnded=false
   while read -r line || [[ -n "$line" ]]; do
     ## Check if we have entered or left the job commands section
-    if [[ ${line} == ${JSUB_BEGIN_JOB_TAG}* ]]; then
+    if [[ "$line" == ${JSUB_BEGIN_JOB_TAG}* ]]; then
       flagInJob=true
-      continue
-    elif [[ ${line} == ${JSUB_FINISH_JOB_TAG}* ]]; then
+      continue # so that the tag is not written to the summary files
+    elif [[ "$line" == ${JSUB_FINISH_JOB_TAG}* ]]; then
       jline=$((jline+1))
       flagInJob=false
     fi
-    ## Only process the line if it originated form a summary file
+    ## Only process the line if it is between the tags, ie it originated form a summary file
     if [ ${flagInJob} = true ]; then
       jline=$((jline+1)) # Increment line numbers inside job
       ## Determin current line type
@@ -63,27 +64,44 @@ function process_job { # This function reads the job file line by line and write
           : # do nothing
         elif [ ${jline} -gt ${JSUB_PREVIOUS_END} ]; then # A line within the block of code currently being executed
           ## Check if this line corresponds to the end of a block
-          if [[ ${line} == ${JSUB_CHECKPOINT_TAG}* ]] || [[ ${line} == ${JSUB_FINISH_JOB_TAG}* ]]; then
+          if [[ "$line" == ${JSUB_CHECKPOINT_TAG}* ]] || [[ "$line" == ${JSUB_FINISH_JOB_TAG}* ]]; then
             flagBlockEnded=true
             JSUB_PREVIOUS_END=${jline} # Update line number of last block end
           fi
           ## Write to log and summary files
           if [ ${JSUB_FLAG_FAIL} = false ]; then
-            echo "$dateTime ""$JSUB_JOB_ID"" completed - "${line} >> ${JSUB_LOG_FILE}
-            echo ${line} >> ${JSUB_SUMMARY_COMPLETED}
+            echo "$dateTime ""$JSUB_JOB_ID"" completed - ""$line" >> ${JSUB_LOG_FILE}; echo "" >> ${JSUB_LOG_FILE}
+            echo "$line" >> ${JSUB_SUMMARY_COMPLETED}
           else
-            echo "$dateTime ""$JSUB_JOB_ID"" incomplete - "${line} >> ${JSUB_LOG_FILE}
-            echo ${line} >> ${JSUB_SUMMARY_INCOMPLETE}
+            echo "$dateTime ""$JSUB_JOB_ID"" incomplete - ""$line" >> ${JSUB_LOG_FILE}; echo "" >> ${JSUB_LOG_FILE}
+            echo "$line" >> ${JSUB_SUMMARY_INCOMPLETE}
           fi
-          [[ ${JSUB_VERSION_CONTROL} = true ]] && version_control # Do version control
+          [[ ${JSUB_VERSION_CONTROL} = true ]] && [[ "$line" != "" ]] && version_control "$line" # Do version control
         fi
       else # A line after the block of code that has just been executed
-        echo ${line} >> ${JSUB_SUMMARY_INCOMPLETE}
-      fi
+        echo "$line" >> ${JSUB_SUMMARY_INCOMPLETE} # Write all remaining blocks of code to *.incomplete (in case the job crashes during the next block)
+      fi      
     fi
   done < ${JSUB_PATH_TO_THIS_JOB}
   [[ ${JSUB_FLAG_FAIL} = true ]] && kill_this_job ${JSUB_PATH_TO_THIS_JOB} # Kill the job if a checkpoint fail occured (but let this function do logging etc first)
   return 0
+}
+function initialise_job { # Function that will be run before any of the job commands
+  ## In this version this function simply populates the *.incomplete file in case the job crashes before process_job is called
+  local flagInJob=false
+  while read -r line || [[ -n "$line" ]]; do # Read every line of this job
+    ## Check if we have entered or left the job commands section
+    if [[ "$line" == ${JSUB_BEGIN_JOB_TAG}* ]]; then
+      flagInJob=true
+      continue # so that the tag is not written to the summary files
+    elif [[ "$line" == ${JSUB_FINISH_JOB_TAG}* ]]; then
+      flagInJob=false
+    fi
+    ## Only process the line if it is between the tags, ie it originated form a summary file
+    if [ ${flagInJob} = true ]; then
+      echo "$line" >> ${JSUB_SUMMARY_INCOMPLETE}
+    fi
+  done < ${JSUB_PATH_TO_THIS_JOB}
 }
 function check_completion { # Check that the input file ends a string indicating successful job completion
   [[ ${JSUB_JOB_TIMESTAMP} = true ]] && local dateTime=`date +%Y%m%d_%H%M%S` || local dateTime=""
@@ -92,19 +110,71 @@ function check_completion { # Check that the input file ends a string indicating
     kill_this_job ${JSUB_PATH_TO_THIS_JOB} 
   fi
 }
-function on_completion { # Writes a line indicating successful job completing to the .incomplete file.  This line is then used to determine if jobs which depend on this one should be run.
+function on_completion { # Writes a line indicating successful job completing to the *.completed file.  This line is then used to determine if jobs which depend on this one should be run.
   [[ ${JSUB_JOB_TIMESTAMP} = true ]] && local dateTime=`date +%Y%m%d_%H%M%S` || local dateTime=""
   [[ ${JSUB_FLAG_FAIL} == false ]] && echo ${JSUB_SUCCESSFUL_COMPLETION}" "${dateTime} >> ${JSUB_SUMMARY_COMPLETED}
 }
 
-# --- From file: jsub/common_functions/version_control.sh
-# Function used to try to keep track of the versions of arbitrary software on the system by checking the which command and checking for the existance of git repositories.
+# --- From file: /scratch/cancgene/olenive/jsub/common_functions/version_control.sh
+# Function used to try to keep track of the versions of arbitrary software on the system by checking the which command, --version and -version arguments and checking for the existance of git repositories.
+function is_in_gitrepo { # Checks if file is being tracked by a git repository
+  cd $(dirname "$1")
+  [ -d .git ] || git rev-parse --is-inside-git-dir > /dev/null 2>&1 # Check if this directory is in a repo
+  [ "$?" = 0 ] && git ls-files --error-unmatch $(basename "$1") > /dev/null 2>&1 # Check if the file is tracked
+  [ "$?" = 0 ] && echo "yes" || echo "no"
+}
+function log_file_gitrepo { # Write status of git repository to a log file
+  local pathSrc="$1"
+  local logFile="$2"
+  if [ -f "$pathSrc" ] && [ $(is_in_gitrepo "$pathSrc") = "yes" ]; then
+    local pathRepo=$(cd $(dirname "$pathSrc"); git rev-parse --show-toplevel) # Get root of repository
+    echo "$dateTime ""$JSUB_JOB_ID"" git - repository associated with: "${pathSrc} >> "$logFile"
+    # Get the hash of the last commit.
+    echo "Date and hash in repository: "${pathRepo} >> "$logFile"
+    echo $(git --git-dir ${pathRepo}/.git  show -s --format=%ci HEAD)" "$(git --git-dir ${pathRepo}/.git rev-parse HEAD) >> "$logFile"
+    # Write git status to log file
+    echo "Status of repository at date_time: "`date +%Y%m%d_%H%M%S` >> "$logFile"
+    git --git-dir=${pathRepo}/.git --work-tree=${pathRepo} status >> "$logFile"
+    echo "" >> "$logFile"
+  fi
+}
+function has_which {
+  which "$1"  > /dev/null 2>&1
+  [ "$?" = 0 ] && echo "yes" || echo "no"
+}
+function log_version { # $1 = word $2 = log file
+  if [ $(has_which "$1") = "yes" ]; then
+    echo "$dateTime ""$JSUB_JOB_ID"" version - ""which $1" >> "$2"
+    echo $(which "$1") >> "$2"
+    echo "" >> "$2"
+  fi
+}
+function is_special_word { # Used to skip words for which version control should not be attempted
+  declare -a exclude=('#' '=' '[' ']' '{' '}' '$?' 'if' 'then' 'else' 'elif' 'fi' 'for' 'while' 'do' 'done' 'file' 'continue' 'break' 'return')
+  local flagYes=false
+  for word in "${exclude[@]}"; do
+    if [ "$word" = "$1" ]; then
+      flagYes=true
+      break
+    fi
+  done
+  [ "$flagYes" = true ] && echo "yes" || echo "no"
+}
 function version_control {
-  echo "called version_control"
+  local cmdString="$1"
+  for word in ${cmdString[@]}; do
+    [[ ${cmdString[0]} = \#* ]] && break # Ignore commented lines
+    if [ $(is_special_word "$word") = "yes" ]; then
+      : # echo "...nothing to be done" >> ${JSUB_LOG_FILE}
+    else
+      log_version "$word" ${JSUB_LOG_FILE}
+      log_file_gitrepo "$word" ${JSUB_LOG_FILE}
+    fi
+  done
 }
 
+initialise_job
 # Commands taken from summary file: summaries/summaryPrefix_sample0011A.summary
-
 #JSUB<begin-job>
 check_completion "progoress/completed/summaryPrefix_sample0011A_11_root.completed"
 #JGROUP third

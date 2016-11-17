@@ -116,3 +116,4 @@ assert "file_exists ${GENERATED_SUBMITTED_JOBS_LIST}" "yes"
 assert_end
 
 # EOF
+

@@ -22,6 +22,6 @@ bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0003A_third.txt sub0
 echo "  " >            "results/outPrefix_"sample0003A_third.txt
 jcheck_file_not_empty  "results/outPrefix_"sample0003A_third.txt
 #JGROUP last first second third
-jcheck_file_not_empty                                  "results/outPrefix_"sample0003A_first.txt "results/outPrefix_"sample0003A"_second.txt "results/outPrefix_"sample0003A_third.txt"
-bash ../../bash_scripts/catfiles.sh "results/outPrefix_"sample0003A.txt "results/outPrefix_"sample0003A"_first.txt "results/outPrefix_"sample0003A_second.txt results/outPrefix_"sample0003A_third.txt
+jcheck_file_not_empty                                  "results/outPrefix_"sample0003A_first.txt "results/outPrefix_"sample0003A_second.txt "results/outPrefix_"sample0003A_third.txt
+bash ../../bash_scripts/catfiles.sh "results/outPrefix_"sample0003A.txt "results/outPrefix_"sample0003A_first.txt "results/outPrefix_"sample0003A_second.txt "results/outPrefix_"sample0003A_third.txt
 jcheck_file_not_empty    "results/outPrefix_"sample0003A.txt

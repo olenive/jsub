@@ -20,6 +20,6 @@ jcheck_file_not_empty  "results/outPrefix_"sample0002A_third.txt
 bash ../../bash_scripts/concat.sh "results/outPrefix_"sample0002A_third.txt sub02X sub02Y
 jcheck_file_not_empty  "results/outPrefix_"sample0002A_third.txt
 #JGROUP last first second third
-jcheck_file_not_empty                                  "results/outPrefix_"sample0002A_first.txt "results/outPrefix_"sample0002A"_second.txt "results/outPrefix_"sample0002A_third.txt"
-bash ../../bash_scripts/catfiles.sh "results/outPrefix_"sample0002A.txt "results/outPrefix_"sample0002A"_first.txt "results/outPrefix_"sample0002A_second.txt results/outPrefix_"sample0002A_third.txt
+jcheck_file_not_empty                                  "results/outPrefix_"sample0002A_first.txt "results/outPrefix_"sample0002A_second.txt "results/outPrefix_"sample0002A_third.txt
+bash ../../bash_scripts/catfiles.sh "results/outPrefix_"sample0002A.txt "results/outPrefix_"sample0002A_first.txt "results/outPrefix_"sample0002A_second.txt "results/outPrefix_"sample0002A_third.txt
 jcheck_file_not_empty    "results/outPrefix_"sample0002A.txt
