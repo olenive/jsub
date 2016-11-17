@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# This file should be renamed, edited to incldue system specific data, renamed and listed in .gitignore
+# The function declared here is used to check all files in the current directory for machine or user specific data that should not be published.
+
+function check_for_private {
+  clear
+  declare -a arr=("a list" "of terms" "to" "be" "identified")
+  local filename
+  for filename in ./*; do
+    if [ -f "$filename" ]; then
+      echo "$filename"
+      local i
+      for i in "${arr[@]}"; do
+        grep "$i" "$filename"
+      done
+      echo ""
+    fi
+  done
+}
+
+function replace_lines_in_all_files {
+  local filename
+  for filename in ./*; do
+    if [ -f "$filename" ]; then
+      echo $filename
+      sed -i 's/Wild cards are .*/Escape forward slashes with backslashes/' "$filename"
+    fi
+  done
+}
+
+function generate_numbered_output_files {
+  local END="$1"
+  for i in $(seq 1 $END); do
+    echo $i
+    touch summaryPrefix_sample000"$i"A_"$i".output
+  done
+}
+
+# EOF
+
+
+
+
+
+
