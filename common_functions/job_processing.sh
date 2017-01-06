@@ -89,5 +89,5 @@ function check_completion { # Check that the input file ends a string indicating
 }
 function on_completion { # Writes a line indicating successful job completing to the *.completed file.  This line is then used to determine if jobs which depend on this one should be run.
   [[ ${JSUB_JOB_TIMESTAMP} = true ]] && local dateTime=`date +%Y%m%d_%H%M%S` || local dateTime=""
-  [[ ${JSUB_FLAG_FAIL} == false ]] && echo ${JSUB_SUCCESSFUL_COMPLETION}" "${dateTime} >> ${JSUB_SUMMARY_COMPLETED}
+  [[ ${JSUB_FLAG_FAIL} = false ]] && echo ${JSUB_SUCCESSFUL_COMPLETION}" "${dateTime} >> ${JSUB_SUMMARY_COMPLETED}
 }

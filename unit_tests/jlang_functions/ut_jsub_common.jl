@@ -287,11 +287,11 @@ Test.with_handler(ut_handler) do
   @test determinelabel("\"\$VAR\"", 5, Set(["plain"])) == Set(["terminating", "plain"])
   @test determinelabel("\"\$VAR\"", 6, Set(["terminating"])) == Set(["outside"])
                                           
-                                           #          11 1111111 12222 2 2222 2
-                                           #1234 5678901 2345678 90123 4 5678 9
+                       #          11 1111111 12222 2 2222 2
+                       #1234 5678901 2345678 90123 4 5678 9
   @test determinelabel("pre \$VAR as\$VARVAR\$VAR_\"\$VAR\"", 13, Set(["dollar"])) == Set(["plain"])
   @test determinelabel("pre \$VAR as\$VARVAR\$VAR_\"\$VAR\"", 18, Set(["plain"])) == Set(["plain", "terminating"])
-  @test determinelabel("pre \$VAR as\$VARVAR\$VAR_\"\$VAR\"", 19, Set(["dollar"])) == Set(["dollar"])
+  @test determinelabel("pre \$VAR as\$VARVAR\$VAR_\"\$VAR\"", 19, Set(["plain"])) == Set(["dollar"])
 
                                            #          1111 111111222 222222 2 33333333 33
                                            #1234 567890123 456789012 345678 9 01234567 89
@@ -377,6 +377,61 @@ Test.with_handler(ut_handler) do
   Set(["outside"]) # 9
   ]
   @test assignlabels(testString) == expLabels
+               #           1           2          3
+               # 12345 6789012 3456789 0123456789 0
+  testString = "\${VAR\$!}"
+  expLabels = [
+  Set(["dollar"]) # 1
+  Set(["curly_open"]) # 2
+  Set(["curly_inside"]) # 3
+  Set(["curly_inside"]) # 4
+  Set(["curly_inside", "terminating", "discard"]) # 5
+  Set(["dollar"]) # 6
+  Set(["terminating", "discard"]) # 7
+  Set(["outside"]) # 8
+  ]
+  @test assignlabels(testString) == expLabels
+               #           1           2          3
+               # 12345 6789012 3456789 0123456789 0
+  testString = "\${VAR\$!"
+  expLabels = [
+  Set(["dollar"]) # 1
+  Set(["curly_open"]) # 2
+  Set(["curly_inside"]) # 3
+  Set(["curly_inside"]) # 4
+  Set(["curly_inside", "terminating", "discard"]) # 5
+  Set(["dollar"]) # 6
+  Set(["terminating", "discard"]) # 7
+  ]
+  @test assignlabels(testString) == expLabels
+               #           1           2          3
+               # 12345 6789012 3456789 0123456789 0
+  testString = "\${VAR\$"
+  expLabels = [
+  Set(["dollar"]) # 1
+  Set(["curly_open"]) # 2
+  Set(["curly_inside"]) # 3
+  Set(["curly_inside"]) # 4
+  Set(["curly_inside", "terminating", "discard"]) # 5
+  Set(["dollar"]) # 6
+  ]
+  @test assignlabels(testString) == expLabels
+               #           1           2          3
+               # 12345 6789012 3456789 0123456789 0
+  testString = "\${VAR\$X*}"
+  expLabels = [
+  Set(["dollar"]) # 1
+  Set(["curly_open"]) # 2
+  Set(["curly_inside"]) # 3
+  Set(["curly_inside"]) # 4
+  Set(["curly_inside", "terminating", "discard"]) # 5
+  Set(["dollar"]) # 6
+  Set(["terminating", "plain"]) # 7
+  Set(["outside"]) # 8
+  Set(["outside"]) # 9
+  ]
+  @test assignlabels(testString) == expLabels
+
 
   ## processcandidatename(candidate, terminatingLabelSet, name, value)
   @test processcandidatename("\$F", Set(["terminating", "plain"]), "FOO", "888") == "\$F"
@@ -803,7 +858,69 @@ Test.with_handler(ut_handler) do
   @test expandnameafterdollar(inString, "VAR", "\"0x0012300x0\""; adapt_quotation=false) == "\"0x0012300x0\".1.\"0x0012300x0\".2.\"0x0012300x0\".3.\"0x0012300x0\".4.\"0x0012300x0\".5.\"0x0012300x0\""
   @test expandnameafterdollar(inString, "VAR", "\"0x0012300x0\""; adapt_quotation=true) == "\"0x0012300x0\".1.\"0x0012300x0\".2.\"0x0012300x0\".3.\"0x0012300x0\".4.\"0x0012300x0\".5.\"0x0012300x0\""
 
-  # remove_superfluous_quotes("BAR\"\"xx", '\"', 2, 1)
+  ## Tests to try to figure out what to do about confusing cases
+  testString = "\${VAR\$X*}"
+  @test expandmanyafterdollars(testString, ["VAR", "X"], ["value", "12345"]) == "\${VAR12345*}"
+  testString = "\${\$VAR\$X*}"
+  @test expandmanyafterdollars(testString, ["VAR", "X"], ["value", "12345"]) == "\${value12345*}"
+  testString = "\${\$VAR\$X}"
+  @test expandmanyafterdollars(testString, ["VAR", "X"], ["value", "12345"]) == "\${value12345}"
+  testString = "\${\$VAR\$X}"
+  @test expandmanyafterdollars(testString, ["VAR", "X", "value12345"], ["value", "12345", "crazydoubleexpansion"]) == "crazydoubleexpansion"
+  testString = "\${\$VAR\$X}"
+  @test expandmanyafterdollars(testString, ["value12345", "VAR", "X"], ["crazydoubleexpansion", "value", "12345"]) == "\${value12345}"
+
+  ## Tests used for fixing a bug with how the variable expansion functions deal with single letter variables
+  @test assignlabels("\$F") == [Set(Any["dollar"]), Set(Any["terminating","plain"])];
+  @test determinelabel("\$F", 1, Set([])) == Set(Any["dollar"]);
+  @test determinelabel("\$F", 2, Set(Any["dollar"])) == Set(Any["terminating","plain"]);
+
+  @test assignlabels(" \$F") == [Set(Any["outside"]), Set(Any["dollar"]), Set(Any["terminating","plain"])];
+  @test determinelabel(" \$F", 1, Set([])) == Set(Any["outside"]);
+  @test determinelabel(" \$F", 2, Set(Any["outside"])) == Set(Any["dollar"]);
+  @test determinelabel(" \$F", 3, Set(Any["dollar"])) == Set(Any["terminating","plain"]);
+
+  @test assignlabels("\$F ") == [Set(Any["dollar"]), Set(Any["terminating","plain"]), Set(Any["outside"])];
+  @test determinelabel("\$F ", 1, Set([])) == Set(Any["dollar"]);
+  @test determinelabel("\$F ", 2, Set(Any["dollar"])) == Set(Any["terminating","plain"]);
+  @test determinelabel("\$F ", 3, Set(Any["terminating","plain"]);) == Set(Any["outside"]);
+
+  @test assignlabels("\$FX") == [Set(Any["dollar"]), Set(Any["plain"]), Set(Any["terminating","plain"])];
+  @test determinelabel("\$FX", 1, Set([])) == Set(Any["dollar"]);
+  @test determinelabel("\$FX", 2, Set(Any["dollar"])) == Set(Any["plain"]);
+  @test determinelabel("\$FX", 3, Set(Any["plain"])) == Set(Any["terminating","plain"]);
+
+  @test expandnameafterdollar("\$F", "F", "val") == "val"
+  @test expandnameafterdollar(" \$F", "F", "val") == " val"
+  @test expandnameafterdollar("\$F ", "F", "val") == "val "
+  @test expandnameafterdollar("\$FX", "FX", "val") == "val"
+
+  # ## Tests used for fixing a bug with how the variable expansion functions deal with braces
+  @test expandnameafterdollar("\$()", "VAR", "val") == "\$()"
+  
+  @test assignlabels("\$()") == [Set(["dollar"]), Set(["terminating", "discard"]), Set(["outside"])]
+  @test assignlabels("\$<>") == [Set(["dollar"]), Set(["terminating", "discard"]), Set(["outside"])]
+  @test assignlabels("\$(F)") == [Set(["dollar"]), Set(["discard"]), Set(["outside"]), Set(["outside"])]
+  @test assignlabels("\$(\$F)") == [Set(["dollar"]), Set(["terminating", "discard"]), Set(["dollar"]), Set(Any["terminating","plain"]), Set(["outside"])]
+  @test assignlabels("\$(aa)") == [Set(["dollar"]), Set(["discard"]), Set(["outside"]), Set(["outside"]), Set(["outside"])]
+  
+  @test expandnameafterdollar("\$(F)", "F", "val") == "\$(F)"
+  @test expandnameafterdollar("\$(\$F)", "F", "val") == "\$(val)"
+  @test expandnameafterdollar("\$(aa)", "aa", "val") == "\$(aa)"
+  @test expandnameafterdollar("\$(\$aa)", "aa", "val") == "\$(val)"
+  @test expandnameafterdollar("\$(basename aa/bb)", "VAR", "val") == "\$(basename aa/bb)"
+
+  testString = "mycmd --some-list \"\$POSITION_LIST\" > \"\$DIR_OUT\"/\$(basename \"\$BAM_BASE\").readcount"
+  expString  = "mycmd --some-list \"test_positions.txt\" > \"\$DIR_OUT\"/\$(basename \"\$BAM_BASE\").readcount"
+  @test expandnameafterdollar(testString, "POSITION_LIST", "test_positions.txt") == expString
+
+  testString = "mycmd --some-list \"\$POSITION_LIST\" > \"\$DIR_OUT\"/\$(basename \"\$BAM_BASE\").readcount"
+  expString  = "mycmd --some-list \"\$POSITION_LIST\" > \"readcounts\"/\$(basename \"\$BAM_BASE\").readcount"
+  @test expandnameafterdollar(testString, "DIR_OUT", "readcounts") == expString
+
+  testString = "mycmd --some-list \"\$POSITION_LIST\" > \"\$DIR_OUT\"/\$(basename \"\$BAM_BASE\").readcount"
+  expString  = "mycmd --some-list \"test_positions.txt\" > \"readcounts\"/\$(basename \"\$BAM_BASE\").readcount"
+  @test expandmanyafterdollars(testString, ["POSITION_LIST", "DIR_OUT"], ["test_positions.txt", "readcounts"]) == expString
 
   ## enforce_closingquote
   @test enforce_closingquote("a", '\"') == "a"

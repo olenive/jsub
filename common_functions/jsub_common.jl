@@ -173,7 +173,7 @@ function nextcharacter_isnamecompliant(inString, ichr) # Note ichr is the curren
   end
 end
 
-# Determine the role of the character in the input string.
+# Assign labels to characters determining varibale names.
 function determinelabel(inString, ichr, previousLabels)
   char = inString[ichr]
   outLabels = Set([])
@@ -188,9 +188,10 @@ function determinelabel(inString, ichr, previousLabels)
   # terminating: indicates the end of a variable name
   # discard: indicates the end of a variable in an unexpected manner
   ###########################################
-
+  # print("\n---")
   ## Outside of candidate varaible name or at start of string
   if ("outside" in previousLabels) || isempty(previousLabels) ||  ("curly_close" in previousLabels)
+    # print("\n1")
     # Check for opening dollar sign
     if char != '\$'
       push!(outLabels, "outside")
@@ -200,34 +201,42 @@ function determinelabel(inString, ichr, previousLabels)
   end
 
   ## After a terminating character
-  if ("terminating" in previousLabels)
+  if ("terminating" in previousLabels) || ("discard" in previousLabels)
+    # print("\n2")
     # Check for opening dollar sign
     if char != '\$'
+      # print("\n2.1")
       # Check for closing curly brace
       if ( ("curly_inside" in previousLabels) || ("curly_open" in previousLabels) ) && char=='}'
-        # Note: Checks for this closing curly brace and warnings should happen when looking at the previous character
+        # print("\n2.1.1")
+        # Note: Checks for this closing curly brace a discardnd warnings should happen when looking at the previous character
         push!(outLabels, "curly_close")
       else
+        # print("\n2.1.2")
         push!(outLabels, "outside")
       end
     else
+      # print("\n2.2")
       push!(outLabels, "dollar")
     end
   end
 
   ## Inside candidate variable name
   if !("terminating" in previousLabels) && (("plain" in previousLabels) || ("curly_inside" in previousLabels) || ("dollar" in previousLabels) || ("curly_open" in previousLabels))
+    # print("\n3")
     # Check for opening dollar sign
     if char == '\$'
+      # print("\n3.1")
       push!(outLabels, "dollar")
     end
 
     # Check if this is a terminating character
     if !nextcharacter_isnamecompliant(inString, ichr)
+      # print("\n3.2")
       push!(outLabels, "terminating")
 
-      # Label as discard if this is the first character after the opening dollar sign or curly brace
-      if ("curly_open" in previousLabels) || ("dollar" in previousLabels)
+      # Label as discard if this is the first character curly brace
+      if ("curly_open" in previousLabels)
         push!(outLabels, "discard")
       end
 
@@ -239,28 +248,33 @@ function determinelabel(inString, ichr, previousLabels)
     end
 
     ## Propogate label state from previous character
-    if ("plain" in previousLabels) 
+    if ("plain" in previousLabels) && nextcharacter_isnamecompliant(inString, ichr - 1) # -1 because the function looks at the next character and we want to evalute this character 
+      # print("\n3.3")
       push!(outLabels, "plain")
-    
     elseif ("curly_inside" in previousLabels)
       push!(outLabels, "curly_inside")
-    
     elseif ("dollar" in previousLabels)
       # Check if this character is name compliant or an opening curly brace
-      if nextcharacter_isnamecompliant(inString, ichr-1 ) # -1 because the function looks at the next character
+      if nextcharacter_isnamecompliant(inString, ichr - 1) # -1 because the function looks at the next character (sort this out later)
         push!(outLabels, "plain")
       elseif char=='{'
         push!(outLabels, "curly_open")
       end
-    
     elseif ("curly_open" in previousLabels)
+      # print("\n3.3.3")
       if char=='}' # Check for premature closing brace
         SUPPRESS_WARNINGS ? num_suppressed[1] += 1 : warn(" (in determinelabel) Found closing curly brace immediately after an opening curly brace \"\${}\" in string: ", inString);
-      elseif nextcharacter_isnamecompliant(inString, ichr-1 ) # -1 because the function looks at the next character
+      elseif nextcharacter_isnamecompliant(inString, ichr - 1) # -1 because the function looks at the next character
         push!(outLabels, "curly_inside")
       end
-    
     end
+
+    ## Check for the specific case where a dollar sign is followed by a non-varaible name character (e.g. $! or $* etc...)
+    if ("dollar" in previousLabels) && (char != '{') && !nextcharacter_isnamecompliant(inString, ichr - 1)
+      # print("\n3.4")
+      push!(outLabels, "discard")
+    end
+
   end
   return outLabels
 end
@@ -288,7 +302,7 @@ end
 function processcandidatename(candidate, terminatingLabelSet, name, value; returnTrueOrFalse=false) # returnTrueOrFalse=true means that instead of returning the value to replace the variable name, true will be returned if a valid name exists (false otherwise)
   ## Check for discard label
   if ("discard" in terminatingLabelSet)
-    returnTrueOrFalse ? false : return candidate
+    returnTrueOrFalse ? false : (return candidate)
   end
   ## Determin if using curlly or just dollar
   if ("curly_inside" in terminatingLabelSet)
@@ -329,7 +343,7 @@ function expandnameafterdollar(inString, name, value; adapt_quotation=false, ret
     ## Process on the basis of the label
     if ("outside" in charLabels[ichr]) # Not in a variable name
       outString = outString * string(char); # Add to output string (this could be made more efficient but should not take much CPU time in practice anyway)
-    elseif ("terminating" in charLabels[ichr]) # Reached end of potential variable name
+    elseif ("terminating" in charLabels[ichr]) || ("discard" in charLabels[ichr]) # Reached end of potential variable name
       candidate = candidate * string(char); # Add to candidate name string # println("1 added to candidate: ", string(candidate[end]));
       ## Check for closing curly brace and append it to candidate name
       jchr = ichr;
@@ -345,6 +359,7 @@ function expandnameafterdollar(inString, name, value; adapt_quotation=false, ret
         return processcandidatename(candidate, charLabels[ichr], name, value; returnTrueOrFalse=true);
       else  
         processedCandidate = processcandidatename(candidate, charLabels[ichr], name, value);
+        # print("\nprocessedCandidate: ", processedCandidate);
         ## Insert quotes in the resulting string (optional) to maintain the patter of quotation before and after substitution of name for value.
         if processedCandidate != candidate && adapt_quotation
           inclusive_start = length(outString)+1;
