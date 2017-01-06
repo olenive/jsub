@@ -25,10 +25,10 @@ function process_job { # This function reads the job file line by line and write
   local flagBlockEnded=false
   while read -r line || [[ -n "$line" ]]; do
     ## Check if we have entered or left the job commands section
-    if [[ "$line" == ${JSUB_BEGIN_JOB_TAG}* ]]; then
+    if [[ "$line" = ${JSUB_BEGIN_JOB_TAG}* ]]; then
       flagInJob=true
       continue # so that the tag is not written to the summary files
-    elif [[ "$line" == ${JSUB_FINISH_JOB_TAG}* ]]; then
+    elif [[ "$line" = ${JSUB_FINISH_JOB_TAG}* ]]; then
       jline=$((jline+1))
       flagInJob=false
     fi
@@ -41,7 +41,7 @@ function process_job { # This function reads the job file line by line and write
           : # do nothing
         elif [ ${jline} -gt ${JSUB_PREVIOUS_END} ]; then # A line within the block of code currently being executed
           ## Check if this line corresponds to the end of a block
-          if [[ "$line" == ${JSUB_CHECKPOINT_TAG}* ]] || [[ "$line" == ${JSUB_FINISH_JOB_TAG}* ]]; then
+          if [[ "$line" = ${JSUB_CHECKPOINT_TAG}* ]] || [[ "$line" = ${JSUB_FINISH_JOB_TAG}* ]]; then
             flagBlockEnded=true
             JSUB_PREVIOUS_END=${jline} # Update line number of last block end
           fi
@@ -68,10 +68,10 @@ function initialise_job { # Function that will be run before any of the job comm
   local flagInJob=false
   while read -r line || [[ -n "$line" ]]; do # Read every line of this job
     ## Check if we have entered or left the job commands section
-    if [[ "$line" == ${JSUB_BEGIN_JOB_TAG}* ]]; then
+    if [[ "$line" = ${JSUB_BEGIN_JOB_TAG}* ]]; then
       flagInJob=true
       continue # so that the tag is not written to the summary files
-    elif [[ "$line" == ${JSUB_FINISH_JOB_TAG}* ]]; then
+    elif [[ "$line" = ${JSUB_FINISH_JOB_TAG}* ]]; then
       flagInJob=false
     fi
     ## Only process the line if it is between the tags, ie it originated form a summary file

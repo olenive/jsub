@@ -419,7 +419,7 @@ function run_stage2_(pathSummariesList, pathJobsList; jobFilePrefix="", flagVerb
   arrArrOrderedJobPaths = map((ranksDict, pathsDict) -> order_by_dictionary(ranksDict, pathsDict), arrDictPriorities, arrDictFilePaths)
 
   ## Write ordered list of job paths to file
-  string2file_(pathJobsList, join(map(x -> join(x, '\n'), arrArrOrderedJobPaths), '\n'));
+  string2file_(pathJobsList, join(map(x -> join(x, '\n'), arrArrOrderedJobPaths), '\n') * "\n");
 
   return pathJobsList
 end
