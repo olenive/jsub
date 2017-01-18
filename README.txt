@@ -1,4 +1,4 @@
-This is a light weight tool for creating and submitting job files to the LSF queuing system.  Its purpose is to automate job file generation in cases where the same processing steps need to be applied to different sets of input data.
+This is a lightweight tool for creating and submitting job files to the LSF queuing system.  Its purpose is to automate job file generation in cases where the same processing steps need to be applied to different sets of input data.
 
 
 Dependencies

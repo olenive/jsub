@@ -488,27 +488,28 @@ Test.with_handler(ut_handler) do
   # @test processcandidatename(testString, Set(["terminating", "curly_inside", "discard"]), "VAR", "888") expString
 
   ## expandnameafterdollar
-  @test expandnameafterdollar("\$DIR_BASE", "DIR_BASE", "/path/some/where/") == "/path/some/where/"
-  @test expandnameafterdollar("\$DIR_BASE", "VAR", "/path/some/where/") == "\$DIR_BASE"
-  @test expandnameafterdollar("\${DIR_BASE}", "DIR_BASE", "/path/some/where/") == "/path/some/where/"
-  @test expandnameafterdollar("\${DIR_BASE}", "VAR", "/path/some/where/") == "\${DIR_BASE}"
-  @test expandnameafterdollar("\"\$DIR_BASE\"", "DIR_BASE", "/path/some/where/") == "\"/path/some/where/\""
-  @test expandnameafterdollar("\"\${DIR_BASE}\"", "DIR_BASE", "/path/some/where/") == "\"/path/some/where/\""
-  @test expandnameafterdollar("\"\${DIR_BASE}\"", "DIR_BASE", "/path/some/where/") == "\"/path/some/where/\""
+  @test expandnameafterdollar("\$DIR_BASE", "DIR_BASE", "/path/some/where/") == ("/path/some/where/", Array[[1,9,"/path/some/where/"]])
+  @test expandnameafterdollar("\$DIR_BASE", "VAR", "/path/some/where/") == ("\$DIR_BASE", [])
+  @test expandnameafterdollar("\${DIR_BASE}", "DIR_BASE", "/path/some/where/") == ("/path/some/where/", Array[[1,11,"/path/some/where/"]])
+  @test expandnameafterdollar("\${DIR_BASE}", "VAR", "/path/some/where/") == ("\${DIR_BASE}", Array[])
+  @test expandnameafterdollar("\"\$DIR_BASE\"", "DIR_BASE", "/path/some/where/") == ("\"/path/some/where/\"", Array[[2,10,"/path/some/where/"]])
+  @test expandnameafterdollar("\"\${DIR_BASE}\"", "DIR_BASE", "/path/some/where/") == ("\"/path/some/where/\"", Array[[2,12,"/path/some/where/"]])
 
   # Any character other than a letter number or underscore should indicate the end of a vairable name
-  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE-" , "DIR_BASE", "/path/some/where/") == "aa\"bb//path/some/where/-"
-  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE---\"" , "DIR_BASE", "/path/some/where/") == "aa\"bb//path/some/where/---\""
-  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE/so/on/\"" , "DIR_BASE", "/path/some/where/") == "aa\"bb//path/some/where//so/on/\""
-  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE?so/on/\"" , "DIR_BASE", "/path/some/where/") == "aa\"bb//path/some/where/?so/on/\""
-  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE}so/on/\"" , "DIR_BASE", "/path/some/where/") == "aa\"bb//path/some/where/}so/on/\""
-  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE)so/on/\"" , "DIR_BASE", "/path/some/where/") == "aa\"bb//path/some/where/)so/on/\""
-  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE,so/on/\"" , "DIR_BASE", "/path/some/where/") == "aa\"bb//path/some/where/,so/on/\""
-  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE.so/on/\"" , "DIR_BASE", "/path/some/where/") == "aa\"bb//path/some/where/.so/on/\""
-  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE\$so/on/\"" , "DIR_BASE", "/path/some/where/") == "aa\"bb//path/some/where/\$so/on/\""
-  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE so/on/\"" , "DIR_BASE", "/path/some/where/") == "aa\"bb//path/some/where/ so/on/\""
-  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE+so/on/\"" , "DIR_BASE", "/path/some/where/") == "aa\"bb//path/some/where/+so/on/\""
-  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE-so/on/\"" , "DIR_BASE", "/path/some/where/") == "aa\"bb//path/some/where/-so/on/\""
+  #                                        1         2
+  #                             12 3456 7890123456789012 3
+  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE-" , "DIR_BASE", "/path/some/where/") == ("aa\"bb//path/some/where/-", Array[[7, 15, "/path/some/where/"]])
+  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE---\"" , "DIR_BASE", "/path/some/where/") == ("aa\"bb//path/some/where/---\"", Array[[7, 15, "/path/some/where/"]])
+  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE/so/on/\"" , "DIR_BASE", "/path/some/where/") == ("aa\"bb//path/some/where//so/on/\"", Array[[7, 15, "/path/some/where/"]])
+  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE?so/on/\"" , "DIR_BASE", "/path/some/where/") == ("aa\"bb//path/some/where/?so/on/\"", Array[[7, 15, "/path/some/where/"]])
+  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE}so/on/\"" , "DIR_BASE", "/path/some/where/") == ("aa\"bb//path/some/where/}so/on/\"", Array[[7, 15, "/path/some/where/"]])
+  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE)so/on/\"" , "DIR_BASE", "/path/some/where/") == ("aa\"bb//path/some/where/)so/on/\"", Array[[7, 15, "/path/some/where/"]])
+  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE,so/on/\"" , "DIR_BASE", "/path/some/where/") == ("aa\"bb//path/some/where/,so/on/\"", Array[[7, 15, "/path/some/where/"]])
+  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE.so/on/\"" , "DIR_BASE", "/path/some/where/") == ("aa\"bb//path/some/where/.so/on/\"", Array[[7, 15, "/path/some/where/"]])
+  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE\$so/on/\"" , "DIR_BASE", "/path/some/where/") == ("aa\"bb//path/some/where/\$so/on/\"", Array[[7, 15, "/path/some/where/"]])
+  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE so/on/\"" , "DIR_BASE", "/path/some/where/") == ("aa\"bb//path/some/where/ so/on/\"", Array[[7, 15, "/path/some/where/"]])
+  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE+so/on/\"" , "DIR_BASE", "/path/some/where/") == ("aa\"bb//path/some/where/+so/on/\"", Array[[7, 15, "/path/some/where/"]])
+  @test expandnameafterdollar( "aa\"bb/\$DIR_BASE-so/on/\"" , "DIR_BASE", "/path/some/where/") == ("aa\"bb//path/some/where/-so/on/\"", Array[[7, 15, "/path/some/where/"]])
 
   ## expandnameafterdollar
   @test expandnameafterdollar("\$DIR_BASE", "DIR_BASE", "/path/some/where/"; returnTF=true) == true
@@ -533,53 +534,58 @@ Test.with_handler(ut_handler) do
   @test expandnameafterdollar( "aa\"bb/\$DIR_BASE+so/on/\"" , "DIR_BASE", "/path/some/where/"; returnTF=true) == true
   @test expandnameafterdollar( "aa\"bb/\$DIR_BASE-so/on/\"" , "DIR_BASE", "/path/some/where/"; returnTF=true) == true
 
+  #                       1          2          3         4          5          6          7             8             9
+  #             123 456789012345 67890123456789 0123456789012345 6789012345678 90123 45678 9012345 6 7 8901 2 34567 8 90123
   testString = "foo\${VAR#*} bar\${VAR%afd} baz\${VAR:?asdf} boo\${VAR?!*} moo\${VAR\$!*} \"sample\"\"\$VAR\"\".txt\"\$VAR"
   expString  = "foo\${VAR#*} bar\${VAR%afd} baz\${VAR:?asdf} boo\${VAR?!*} moo\${VAR\$!*} \"sample\"\"888\"\".txt\"888"
-  @test expandnameafterdollar(testString, "VAR", "888") == expString
-
+  @test expandnameafterdollar(testString, "VAR", "888") == (expString, Array[[78, 81, "888"], [89, 92, "888"]])
+  #             12345678 901234567890 1 234567 89012345678901234
   testString = "start in\$VAR string \"\${VAR}\"/unit_tests/ foo"
   expString  = "start in888 string \"888\"/unit_tests/ foo"
-  @test expandnameafterdollar(testString, "VAR", "888") == expString
-
+  @test expandnameafterdollar(testString, "VAR", "888") == (expString, Array[[9, 12, "888"], [22, 27, "888"]])
+  #              1 234567 89012345678901234 56789012
   testString = "\"\${VAR}\"/unit_tests/ foo\${VAR#*}"
   expString  = "\"888\"/unit_tests/ foo\${VAR#*}"
-  @test expandnameafterdollar(testString, "VAR", "888") == expString
-
+  @test expandnameafterdollar(testString, "VAR", "888") == (expString, Array[[2, 7, "888"]])
+  #             1 2345678 90123 4567890123456789012345678901234
   testString = "s\${VARd}\"/s/o\${VAR#*}"
   expString  = "s\${VARd}\"/s/o\${VAR#*}"
-  @test expandnameafterdollar(testString, "VAR", "888") == expString
-
+  @test expandnameafterdollar(testString, "VAR", "888") == (expString, Array[])
+  #             12345678901234567890123456789012345678901234
   testString = "s\$VARX}\"/s/o\${VAR#*}"
   expString  = "s\$VARX}\"/s/o\${VAR#*}"
-  @test expandnameafterdollar(testString, "VAR", "888") == expString
-
+  @test expandnameafterdollar(testString, "VAR", "888") == (expString, Array[])
+  #             12345678901234567890123456789012345678901234
   testString = "s\${VAR\"/s/o\${VAR#*}"
   expString  = "s\${VAR\"/s/o\${VAR#*}"
-  @test expandnameafterdollar(testString, "VAR", "888") == expString
-
+  @test expandnameafterdollar(testString, "VAR", "888") == (expString, Array[])
+  #             12345678901234567890123456789012345678901234
   testString = "s\${VAR\"o\${VAR#*}"
   expString  = "s\${VAR\"o\${VAR#*}"
-  @test expandnameafterdollar(testString, "VAR", "888") == expString
-
+  @test expandnameafterdollar(testString, "VAR", "888") == (expString, Array[])
+  #             1 234567 89 01234567890123456789012345678901234
   testString = "s\${VAR}\"o\${VAR#*}"
   expString  = "s888\"o\${VAR#*}"
-  @test expandnameafterdollar(testString, "VAR", "888") == expString
-
+  @test expandnameafterdollar(testString, "VAR", "888") == (expString, Array[[2, 7, "888"]])
+  #             1 234567 8901234567890123456789012345678901234
   testString = "s\${VAR}\"o"
   expString  = "s888\"o"
-  @test expandnameafterdollar(testString, "VAR", "888") == expString
-
+  @test expandnameafterdollar(testString, "VAR", "888") == (expString, Array[[2, 7, "888"]])
+  #                       1         2            3         4          5          6         7          8          9          0         1             2            3          4         5
+  #             12345678 901234567890 1 234567 89012345678901234 567890123456 78901234567890 1234567890123456 7890123456789 01234567890 1234567 8 9 0123 4 56789 0 1234567890123456789012
   testString = "start in\$VAR string \"\${VAR}\"/unit_tests/ foo\${VAR#*} bar\${VAR%afd} baz\${VAR:?asdf} boo\${VAR?!*} moo\${VAR\$!*} \"sample\"\"\$VAR\"\".txt\"\$VAR"
   expString  = "start in888 string \"888\"/unit_tests/ foo\${VAR#*} bar\${VAR%afd} baz\${VAR:?asdf} boo\${VAR?!*} moo\${VAR\$!*} \"sample\"\"888\"\".txt\"888" # expString  = "start in!!! string \"!!!\"/unit_tests/ foo\${VAR#*} bar\${VAR%afd} baz\${VAR:?asdf} boo\${VAR?!*} moo\${VAR\$!*} \"sample\"!!!\".txt\""
-  @test expandnameafterdollar(testString, "VAR", "888") == expString
-
+  @test expandnameafterdollar(testString, "VAR", "888") == (expString, Array[[9, 12, "888"], [22, 27, "888"], [119, 122, "888"], [130, 133, "888"]])
+  #                      1         2         3         4         5           6          7         8           9         0          1         2           3          4         5
+  #             1234567890123456789012345678901234567890123456789012345 6 78901234567 890123456789012345678 9 01234567890 1234567890123456789012 3 45678901234 567890123456789012
   testString = "jcheck_file_not_empty                                  \"\$OUT_PREFIX\"sample_id_first.txt \"\$OUT_PREFIX\"sample_id_second.txt \"\$OUT_PREFIX\"sample_id_third.txt"
   expString  = "jcheck_file_not_empty                                  \"\"results/outPrefix_\"\"sample_id_first.txt \"\"results/outPrefix_\"\"sample_id_second.txt \"\"results/outPrefix_\"\"sample_id_third.txt"
-  @test expandnameafterdollar(testString, "OUT_PREFIX", "\"results/outPrefix_\"", adapt_quotation=false) == expString
-  
+  @test expandnameafterdollar(testString, "OUT_PREFIX", "\"results/outPrefix_\"", adapt_quotation=false) == (expString, Array[[57, 67, "\"results/outPrefix_\""], [90, 100, "\"results/outPrefix_\""], [124, 134, "\"results/outPrefix_\""]])
+  #                      1         2         3         4         5           6          7         8           9         0          1         2           3          4         5
+  #             1234567890123456789012345678901234567890123456789012345 6 78901234567 890123456789012345678 9 01234567890 1234567890123456789012 3 45678901234 567890123456789012
   testString = "jcheck_file_not_empty                                  \"\$OUT_PREFIX\"sample_id_first.txt \"\$OUT_PREFIX\"sample_id_second.txt \"\$OUT_PREFIX\"sample_id_third.txt"
   expString  = "jcheck_file_not_empty                                  \"\"\"results/outPrefix_\"\"\"sample_id_first.txt \"\"\"results/outPrefix_\"\"\"sample_id_second.txt \"\"\"results/outPrefix_\"\"\"sample_id_third.txt"
-  @test expandnameafterdollar(testString, "OUT_PREFIX", "\"results/outPrefix_\"", adapt_quotation=true) == expString
+  @test expandnameafterdollar(testString, "OUT_PREFIX", "\"results/outPrefix_\"", adapt_quotation=true) == (expString, Array[[57, 67, "\"\"results/outPrefix_\"\""], [90, 100, "\"\"results/outPrefix_\"\""], [124, 134, "\"\"results/outPrefix_\"\""]])
 
 
   ## is_escaped(inString, position, charEscape)
@@ -787,18 +793,33 @@ Test.with_handler(ut_handler) do
   @test enforce_quote_consistency(resultString, processedCandidate, inclusive_start, inclusive_finish; charQuote='\"', verbose=false) == "\"\"results/outPrefix_\"\"";
 
   # adapt_quotation=true -> Attemt to keep the pattern of quotation consistent before and after substitution by inserting quotes
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value\""; adapt_quotation=false) == "out0\"in1\"out1\"\"value\"\"out2\"in2\"out3"
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value\""; adapt_quotation=true) == "out0\"in1\"out1\"\"\"value\"\"\"out2\"in2\"out3"
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "value"; adapt_quotation=true) == "out0\"in1\"out1\"\"value\"\"out2\"in2\"out3"
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "v\"al\"ue"; adapt_quotation=true) == "out0\"in1\"out1\"\"v\"al\"ue\"\"out2\"in2\"out3"
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"va\"l\"ue\""; adapt_quotation=true) == "out0\"in1\"out1\"\"\"va\"l\"ue\"\"\"out2\"in2\"out3"
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value"; adapt_quotation=true) == "out0\"in1\"out1\"\"\"value\"out2\"in2\"out3"
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "va\"lue"; adapt_quotation=true) == "out0\"in1\"out1\"\"va\"lue\"out2\"in2\"out3"
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "value\""; adapt_quotation=true) == "out0\"in1\"out1\"\"value\"\"out2\"in2\"out3"
-  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"v\"\"a\"\"l\"\"u\"\"e\""; adapt_quotation=true) == "out0\"in1\"out1\"\"\"v\"\"a\"\"l\"\"u\"\"e\"\"\"out2\"in2\"out3"
+  #                                       1            2           3         4           5
+  #                            1234 5678 90123 4 5678 90123 4567 8901234567890123 456789 01234567890123
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value\""; adapt_quotation=false) == ("out0\"in1\"out1\"\"value\"\"out2\"in2\"out3", Array[[15, 18, "\"value\""]])
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value\""; adapt_quotation=true) == ("out0\"in1\"out1\"\"\"value\"\"\"out2\"in2\"out3", Array[[15, 18, "\"\"value\"\""]])
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "value"; adapt_quotation=true) == ("out0\"in1\"out1\"\"value\"\"out2\"in2\"out3", Array[[15, 18, "\"value\""]])
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "v\"al\"ue"; adapt_quotation=true) == ("out0\"in1\"out1\"\"v\"al\"ue\"\"out2\"in2\"out3", Array[[15, 18, "\"v\"al\"ue\""]])
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"va\"l\"ue\""; adapt_quotation=true) == ("out0\"in1\"out1\"\"\"va\"l\"ue\"\"\"out2\"in2\"out3", Array[[15, 18, "\"\"va\"l\"ue\"\""]])
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"value"; adapt_quotation=true) == ("out0\"in1\"out1\"\"\"value\"out2\"in2\"out3", Array[[15, 18, "\"\"value"]])
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "va\"lue"; adapt_quotation=true) == ("out0\"in1\"out1\"\"va\"lue\"out2\"in2\"out3", Array[[15, 18, "\"va\"lue"]])
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "value\""; adapt_quotation=true) == ("out0\"in1\"out1\"\"value\"\"out2\"in2\"out3", Array[[15, 18, "\"value\""]])
+  @test expandnameafterdollar("out0\"in1\"out1\"\$VAR\"out2\"in2\"out3", "VAR", "\"v\"\"a\"\"l\"\"u\"\"e\""; adapt_quotation=true) == ("out0\"in1\"out1\"\"\"v\"\"a\"\"l\"\"u\"\"e\"\"\"out2\"in2\"out3", Array[[15, 18, "\"\"v\"\"a\"\"l\"\"u\"\"e\"\""]])
   # Test created in response to an error in example 7
+  #                1         2            3         4           5           6         7            8         9
+  #       123456789012345678901 2 345678 9012345678901 2 345678901234 5 67890123456789012 3 456789 01234567890
   line = "cat dummy_output/pre_\"\$OUT_A\" dummy_data/\"\"data_1A.txt\"\" > dummy_output/\"\$OUT_A\""
-  @test expandnameafterdollar(line, "OUT_A", "result_1A.txt", adapt_quotation=true, returnTF=false) == "cat dummy_output/pre_\"\"result_1A.txt\"\" dummy_data/\"\"data_1A.txt\"\" > dummy_output/\"\"result_1A.txt\""
+  @test expandnameafterdollar(line, "OUT_A", "result_1A.txt", adapt_quotation=true, returnTF=false) == ("cat dummy_output/pre_\"\"result_1A.txt\"\" dummy_data/\"\"data_1A.txt\"\" > dummy_output/\"\"result_1A.txt\"", Array[[23, 28, "\"result_1A.txt\""], [74, 79, "\"result_1A.txt"]])
+
+  ## sort_replacements(arrArr)
+  @test sort_replacements([]) == [];
+  testReplacements = Array[[21, 25, "third"], [11, 15, "second"], [31, 35, "fourth"], [1, 5, "first"]];
+  sortedTestReplacements = Array[[1, 5, "first"], [11, 15, "second"], [21, 25, "third"], [31, 35, "fourth"]];
+  @test sort_replacements(testReplacements) == sortedTestReplacements;
+  problemReplacements = Array[[21, 32, "third"], [11, 15, "second"], [31, 35, "fourth"], [1, 5, "first"]];
+  @test_throws ErrorException sort_replacements(problemReplacements)
+  testLong = Array[ [1, 10, "a"], [21, 30, "b"], [501, 510, "i"],  [41, 50, "c"], [51, 60, "d"],  [301, 310, "g"], [401, 410, "h"], [551, 560, "j"], [901, 910, "k"], [101, 110, "e"], [201, 210, "f"] ];
+  sortedLong = Array[ [1, 10, "a"], [21, 30, "b"], [41, 50, "c"], [51, 60, "d"], [101, 110, "e"], [201, 210, "f"], [301, 310, "g"], [401, 410, "h"], [501, 510, "i"], [551, 560, "j"], [901, 910, "k"] ];
+  @test sort_replacements(testLong) == sortedLong;
 
   ## expandmanyafterdollars
   testString = "start in\$VAR1 string \"\${VAR2}\"/unit_tests/ foo\${VAR0#*} bar\${VAR0%afd} baz\${VAR0:?asdf} boo\${VAR0?!*} moo\${VAR0\$!*} \"sample\"\"\$VAR3\"\".txt\""
@@ -843,20 +864,26 @@ Test.with_handler(ut_handler) do
 
   ## Tests used to fix an out of bounds bug
             #            1          2           3 
-            #  1234567 8901234 5678901 2345678 9012345 6789
-  inString =  "\$VAR.1.\$VAR.2.\$VAR.3.\$VAR.4.\$VAR.5.\$VAR"
-  expKeep01 = "\"0x0012300x0\".1.\"0x0012300x0\".2.\"0x0012300x0\".3.\"0x0012300x0\".4.\"0x0012300x0\".5.\"0x0012300x0\""
+            #   1234567 8901234 5678901 2345678 9012345 6789
+  inString =  "\$VAR.1.\$VAR.2.\$VAR.3.\$VAR.4.\$VAR.5.\$VAR";
+  expKeep01 = "\"0x0012300x0\".1.\"0x0012300x0\".2.\"0x0012300x0\".3.\"0x0012300x0\".4.\"0x0012300x0\".5.\"0x0012300x0\"";
+  arrArrStartEndValue = Array[[1, 4, "\"0x0012300x0\""], [8, 11, "\"0x0012300x0\""], [15, 18, "\"0x0012300x0\""], [22, 25, "\"0x0012300x0\""], [29,32,"\"0x0012300x0\""], [36, 39, "\"0x0012300x0\""]];
   @test expandmanyafterdollars(inString, ["VAR"], ["\"0x0012300x0\""], adapt_quotation=true, returnTF=false, keepSuperfluousQuotes=true) == expKeep01;  
-  @test expandnameafterdollar(inString, "VAR", "\"0x0012300x0\""; adapt_quotation=false) == "\"0x0012300x0\".1.\"0x0012300x0\".2.\"0x0012300x0\".3.\"0x0012300x0\".4.\"0x0012300x0\".5.\"0x0012300x0\"";
-  @test expandnameafterdollar(inString, "VAR", "\"0x0012300x0\""; adapt_quotation=true) == "\"0x0012300x0\".1.\"0x0012300x0\".2.\"0x0012300x0\".3.\"0x0012300x0\".4.\"0x0012300x0\".5.\"0x0012300x0\"";
-
+  @test expandnameafterdollar(inString, "VAR", "\"0x0012300x0\""; adapt_quotation=false) == ("\"0x0012300x0\".1.\"0x0012300x0\".2.\"0x0012300x0\".3.\"0x0012300x0\".4.\"0x0012300x0\".5.\"0x0012300x0\"", arrArrStartEndValue);
+  @test expandnameafterdollar(inString, "VAR", "\"0x0012300x0\""; adapt_quotation=true) == ("\"0x0012300x0\".1.\"0x0012300x0\".2.\"0x0012300x0\".3.\"0x0012300x0\".4.\"0x0012300x0\".5.\"0x0012300x0\"", arrArrStartEndValue);
+  #                         1             2            3            4            5         6         7
+  #             1 2345 6789 0 1234 5678 9 0123 4567 8 9012 3456 7 8901 2345 6 789012345678901234567890
   inString =  "\"\$VAR\".1.\"\$VAR\".2.\"\$VAR\".3.\"\$VAR\".4.\"\$VAR\".5.\"\$VAR\"";
-  @test expandnameafterdollar(inString, "VAR", "\"0x0012300x0\""; adapt_quotation=false) == "\"\"0x0012300x0\"\".1.\"\"0x0012300x0\"\".2.\"\"0x0012300x0\"\".3.\"\"0x0012300x0\"\".4.\"\"0x0012300x0\"\".5.\"\"0x0012300x0\"\"";
-  @test expandnameafterdollar(inString, "VAR", "\"0x0012300x0\""; adapt_quotation=true) == "\"\"\"0x0012300x0\"\"\".1.\"\"\"0x0012300x0\"\"\".2.\"\"\"0x0012300x0\"\"\".3.\"\"\"0x0012300x0\"\"\".4.\"\"\"0x0012300x0\"\"\".5.\"\"\"0x0012300x0\"\"";
-
+  arrArrStartEndValue = Array[[2, 5, "\"0x0012300x0\""], [11, 14, "\"0x0012300x0\""], [20, 23, "\"0x0012300x0\""], [29, 32, "\"0x0012300x0\""], [38, 41,"\"0x0012300x0\""], [47, 50, "\"0x0012300x0\""]];
+  @test expandnameafterdollar(inString, "VAR", "\"0x0012300x0\""; adapt_quotation=false) == ("\"\"0x0012300x0\"\".1.\"\"0x0012300x0\"\".2.\"\"0x0012300x0\"\".3.\"\"0x0012300x0\"\".4.\"\"0x0012300x0\"\".5.\"\"0x0012300x0\"\"", arrArrStartEndValue);
+  arrArrStartEndValue = Array[[2, 5,  "\"\"0x0012300x0\"\""], [11, 14,  "\"\"0x0012300x0\"\""], [20, 23, "\"\"0x0012300x0\"\""], [29, 32,  "\"\"0x0012300x0\"\""], [38, 41, "\"\"0x0012300x0\"\""], [47, 50,  "\"\"0x0012300x0\""]];
+  @test expandnameafterdollar(inString, "VAR", "\"0x0012300x0\""; adapt_quotation=true) == ("\"\"\"0x0012300x0\"\"\".1.\"\"\"0x0012300x0\"\"\".2.\"\"\"0x0012300x0\"\"\".3.\"\"\"0x0012300x0\"\"\".4.\"\"\"0x0012300x0\"\"\".5.\"\"\"0x0012300x0\"\"", arrArrStartEndValue);
+  #                       1          2          3          4          5         6         7
+  #             123456789 012345678 901234567 890123456 789012345 6789012345678901234567890
   inString =  "\${VAR}.1.\${VAR}.2.\${VAR}.3.\${VAR}.4.\${VAR}.5.\${VAR}"
-  @test expandnameafterdollar(inString, "VAR", "\"0x0012300x0\""; adapt_quotation=false) == "\"0x0012300x0\".1.\"0x0012300x0\".2.\"0x0012300x0\".3.\"0x0012300x0\".4.\"0x0012300x0\".5.\"0x0012300x0\""
-  @test expandnameafterdollar(inString, "VAR", "\"0x0012300x0\""; adapt_quotation=true) == "\"0x0012300x0\".1.\"0x0012300x0\".2.\"0x0012300x0\".3.\"0x0012300x0\".4.\"0x0012300x0\".5.\"0x0012300x0\""
+  arrArrStartEndValue = Array[[1, 6, "\"0x0012300x0\""], [10, 15, "\"0x0012300x0\""], [19, 24, "\"0x0012300x0\""], [28, 33, "\"0x0012300x0\""], [37, 42,"\"0x0012300x0\""], [46, 51, "\"0x0012300x0\""]];
+  @test expandnameafterdollar(inString, "VAR", "\"0x0012300x0\""; adapt_quotation=false) == ("\"0x0012300x0\".1.\"0x0012300x0\".2.\"0x0012300x0\".3.\"0x0012300x0\".4.\"0x0012300x0\".5.\"0x0012300x0\"", arrArrStartEndValue);
+  @test expandnameafterdollar(inString, "VAR", "\"0x0012300x0\""; adapt_quotation=true) == ("\"0x0012300x0\".1.\"0x0012300x0\".2.\"0x0012300x0\".3.\"0x0012300x0\".4.\"0x0012300x0\".5.\"0x0012300x0\"", arrArrStartEndValue);
 
   ## Tests to try to figure out what to do about confusing cases
   testString = "\${VAR\$X*}"
@@ -866,9 +893,18 @@ Test.with_handler(ut_handler) do
   testString = "\${\$VAR\$X}"
   @test expandmanyafterdollars(testString, ["VAR", "X"], ["value", "12345"]) == "\${value12345}"
   testString = "\${\$VAR\$X}"
-  @test expandmanyafterdollars(testString, ["VAR", "X", "value12345"], ["value", "12345", "crazydoubleexpansion"]) == "crazydoubleexpansion"
+  @test expandmanyafterdollars(testString, ["VAR", "X", "value12345"], ["value", "12345", "crazydoubleexpansion"]) == "\${value12345}"
   testString = "\${\$VAR\$X}"
   @test expandmanyafterdollars(testString, ["value12345", "VAR", "X"], ["crazydoubleexpansion", "value", "12345"]) == "\${value12345}"
+
+  # Expanding the first variable causes expansion of the second variable to fail
+  testExpandSecondVariable = "\$X""\$Y"
+  @test expandmanyafterdollars(testExpandSecondVariable, ["Y", "X"], ["yyy", "xxx"]) == "xxxyyy"
+  testExpandSecondVariable = "\$X""\$Y%%"
+  @test expandmanyafterdollars(testExpandSecondVariable, ["Y", "X"], ["yyy", "xxx"]) == "xxxyyy%%"
+  # This case fails unexpectedly
+  testString = "\${\$VAR\$X}"
+  @test expandmanyafterdollars(testString, ["X", "VAR"], ["xxx", "vvv"]) == "\${vvvxxx}"
 
   ## Tests used for fixing a bug with how the variable expansion functions deal with single letter variables
   @test assignlabels("\$F") == [Set(Any["dollar"]), Set(Any["terminating","plain"])];
@@ -890,13 +926,13 @@ Test.with_handler(ut_handler) do
   @test determinelabel("\$FX", 2, Set(Any["dollar"])) == Set(Any["plain"]);
   @test determinelabel("\$FX", 3, Set(Any["plain"])) == Set(Any["terminating","plain"]);
 
-  @test expandnameafterdollar("\$F", "F", "val") == "val"
-  @test expandnameafterdollar(" \$F", "F", "val") == " val"
-  @test expandnameafterdollar("\$F ", "F", "val") == "val "
-  @test expandnameafterdollar("\$FX", "FX", "val") == "val"
+  @test expandnameafterdollar("\$F", "F", "val") == ("val", Array[[1, 2, "val"]])
+  @test expandnameafterdollar(" \$F", "F", "val") == (" val", Array[[2, 3, "val"]])
+  @test expandnameafterdollar("\$F ", "F", "val") == ("val ", Array[[1, 2, "val"]])
+  @test expandnameafterdollar("\$FX", "FX", "val") == ("val", Array[[1, 3, "val"]])
 
   # ## Tests used for fixing a bug with how the variable expansion functions deal with braces
-  @test expandnameafterdollar("\$()", "VAR", "val") == "\$()"
+  @test expandnameafterdollar("\$()", "VAR", "val") == ("\$()", Array[])
   
   @test assignlabels("\$()") == [Set(["dollar"]), Set(["terminating", "discard"]), Set(["outside"])]
   @test assignlabels("\$<>") == [Set(["dollar"]), Set(["terminating", "discard"]), Set(["outside"])]
@@ -904,23 +940,26 @@ Test.with_handler(ut_handler) do
   @test assignlabels("\$(\$F)") == [Set(["dollar"]), Set(["terminating", "discard"]), Set(["dollar"]), Set(Any["terminating","plain"]), Set(["outside"])]
   @test assignlabels("\$(aa)") == [Set(["dollar"]), Set(["discard"]), Set(["outside"]), Set(["outside"]), Set(["outside"])]
   
-  @test expandnameafterdollar("\$(F)", "F", "val") == "\$(F)"
-  @test expandnameafterdollar("\$(\$F)", "F", "val") == "\$(val)"
-  @test expandnameafterdollar("\$(aa)", "aa", "val") == "\$(aa)"
-  @test expandnameafterdollar("\$(\$aa)", "aa", "val") == "\$(val)"
-  @test expandnameafterdollar("\$(basename aa/bb)", "VAR", "val") == "\$(basename aa/bb)"
-
+  @test expandnameafterdollar("\$(F)", "F", "val") == ("\$(F)", Array[])
+  @test expandnameafterdollar("\$(\$F)", "F", "val") == ("\$(val)", Array[[3, 4, "val"]])
+  @test expandnameafterdollar("\$(aa)", "aa", "val") == ("\$(aa)", Array[])
+  @test expandnameafterdollar("\$(\$aa)", "aa", "val") == ("\$(val)", Array[[3, 5, "val"]])
+  @test expandnameafterdollar("\$(basename aa/bb)", "VAR", "val") == ("\$(basename aa/bb)", Array[])
+  #                      1           2         2           2           2         2           2          2         2
+  #             123456789012345678 9 01234567890123 4567 8 90123456 78 90123456789 0 123456789 012345678901234567890
   testString = "mycmd --some-list \"\$POSITION_LIST\" > \"\$DIR_OUT\"/\$(basename \"\$BAM_BASE\").readcount"
   expString  = "mycmd --some-list \"test_positions.txt\" > \"\$DIR_OUT\"/\$(basename \"\$BAM_BASE\").readcount"
-  @test expandnameafterdollar(testString, "POSITION_LIST", "test_positions.txt") == expString
-
+  @test expandnameafterdollar(testString, "POSITION_LIST", "test_positions.txt") == (expString, Array[[20, 33, "test_positions.txt"]])
+  #                      1           2         3            4           5          6           7         8         9
+  #             123456789012345678 9 01234567890123 4567 8 90123456 78 90123456789 0 123456789 012345678901234567890
   testString = "mycmd --some-list \"\$POSITION_LIST\" > \"\$DIR_OUT\"/\$(basename \"\$BAM_BASE\").readcount"
   expString  = "mycmd --some-list \"\$POSITION_LIST\" > \"readcounts\"/\$(basename \"\$BAM_BASE\").readcount"
-  @test expandnameafterdollar(testString, "DIR_OUT", "readcounts") == expString
-
+  @test expandnameafterdollar(testString, "DIR_OUT", "readcounts") == (expString, Array[[39, 46, "readcounts"]])
+  #                      1           2         3            4           5          6           7         8         9
+  #             123456789012345678 9 01234567890123 4567 8 90123456 78 90123456789 0 123456789 012345678901234567890
   testString = "mycmd --some-list \"\$POSITION_LIST\" > \"\$DIR_OUT\"/\$(basename \"\$BAM_BASE\").readcount"
   expString  = "mycmd --some-list \"test_positions.txt\" > \"readcounts\"/\$(basename \"\$BAM_BASE\").readcount"
-  @test expandmanyafterdollars(testString, ["POSITION_LIST", "DIR_OUT"], ["test_positions.txt", "readcounts"]) == expString
+  @test expandmanyafterdollars(testString, ["POSITION_LIST", "DIR_OUT"], ["test_positions.txt", "readcounts"]) == expString;
 
   ## enforce_closingquote
   @test enforce_closingquote("a", '\"') == "a"

@@ -298,8 +298,8 @@ function assignlabels(inString)
   return charLabels
 end
 
-# Take a potential variable name, the charLabels of the characters, compare against known variable names and return the string to be appended to the output.
-function processcandidatename(candidate, terminatingLabelSet, name, value; returnTrueOrFalse=false) # returnTrueOrFalse=true means that instead of returning the value to replace the variable name, true will be returned if a valid name exists (false otherwise)
+# Take a potential variable name, the charLabels of the characters, compare against known variable name and return the string to be appended to the output.
+function processcandidatename(candidate, terminatingLabelSet, name, value; returnTrueOrFalse=false) # returnTrueOrFalse=true means that instead of returning the value to replace the variable name, true will be returned if a valid name is present (false otherwise)
   ## Check for discard label
   if ("discard" in terminatingLabelSet)
     returnTrueOrFalse ? false : (return candidate)
@@ -328,15 +328,15 @@ end
 ## Takes a string and replaces name with value where a match is found
 # adapt_quotation=true: Attemts to keep the pattern of quotation consistent before and after substitution by inserting quotes
 # returTF=true: Returns true if inString contains a name that would be substituted for value (but does not return the resulting string)
-function expandnameafterdollar(inString, name, value; adapt_quotation=false, returnTF=false)
+function expandnameafterdollar(inString, name, value; adapt_quotation=false, returnTF=false, returnIdx=false)
   # Initialise
   outString = "";
   candidate = ""; # potential variable name
   # istart = 0;
   resultString = inString;
-
+  replacements = []; # array for holding indices of characters that are to be replaced
   charLabels = assignlabels(inString); # Get vector of character label sets
-  inclusive_start = 0; inclusive_finish = 0;
+  inclusiveStart = 0; inclusiveFinish = 0;
   ## Process string based on character labels
   for ichr in 1:length(inString)
     char = inString[ichr];
@@ -361,16 +361,29 @@ function expandnameafterdollar(inString, name, value; adapt_quotation=false, ret
         processedCandidate = processcandidatename(candidate, charLabels[ichr], name, value);
         # print("\nprocessedCandidate: ", processedCandidate);
         ## Insert quotes in the resulting string (optional) to maintain the patter of quotation before and after substitution of name for value.
-        if processedCandidate != candidate && adapt_quotation
-          inclusive_start = length(outString)+1;
-          inclusive_finish = length(outString)+length(candidate); 
-          # println(" -- resultString = ", resultString);
-          # println(" -- processedCandidate = ", processedCandidate);
-          # println(" -- inclusive_start = ", inclusive_start);
-          # println(" -- inclusive_finish = ", inclusive_finish);
-          # println(" -- length(resultString)  = ", length(resultString));
-          # println("-------------");
-          processedCandidate = enforce_quote_consistency(resultString, processedCandidate, inclusive_start, inclusive_finish; charQuote='\"', verbose=false);
+        if processedCandidate != candidate
+          inclusiveStart = length(outString)+1;
+          inclusiveFinish = length(outString)+length(candidate); 
+          if adapt_quotation
+            # println(" -- resultString = ", resultString);
+            # println(" -- processedCandidate = ", processedCandidate);
+            # println(" -- inclusiveStart = ", inclusiveStart);
+            # println(" -- inclusiveFinish = ", inclusiveFinish);
+            # println(" -- length(resultString)  = ", length(resultString));
+            # println("-------------");
+            processedCandidate = enforce_quote_consistency(resultString, processedCandidate, inclusiveStart, inclusiveFinish; charQuote='\"', verbose=false);
+          end
+          # println("ichr = ", ichr, " length(candidate) = ", length(candidate))
+          # println("candidate = ", candidate)
+          ## Determine start and stop positions of based on original (input) string index
+          if ("curly_inside" in charLabels[ichr])
+            candidateStart = ichr + 2 - length(candidate); # +1 for '{' character
+            candidateFinish = ichr + 1; # +1 for '}' character
+          else
+            candidateStart = ichr + 1 - length(candidate);
+            candidateFinish = ichr;
+          end
+          push!(replacements, [candidateStart, candidateFinish, processedCandidate]); # start and finish position of replacement (idx in original string) and what this part of the string is to be replaced with
         end
       end
       # println(" -1- outString = ", outString);
@@ -396,7 +409,7 @@ function expandnameafterdollar(inString, name, value; adapt_quotation=false, ret
       candidate = candidate * string(char); # Add to candidate name string # println("3 added to candidate: ", string(candidate[end]));
     end
   end
-  return outString
+  return outString, replacements
 end
 
 ## Check if the character at a given position is escaped but also make sure the escape character is not escaped
@@ -448,11 +461,11 @@ function remove_nonescaped(line, charQuote::Char, charEscape::Char)
   return out
 end
 
-function substitute_string(inString, subString, inclusive_start, inclusive_finish; charQuote='\"', quotes_before=0, quotes_after=0)
-  return inString[1:inclusive_start-1] * repeat(string(charQuote), quotes_before) * subString * repeat(string(charQuote), quotes_after) * inString[inclusive_finish+1:end];
+function substitute_string(inString, subString, inclusiveStart, inclusiveFinish; charQuote='\"', quotes_before=0, quotes_after=0)
+  return inString[1:inclusiveStart-1] * repeat(string(charQuote), quotes_before) * subString * repeat(string(charQuote), quotes_after) * inString[inclusiveFinish+1:end];
 end
 
-## Get the index of the first and last non-quote character in a section of the input string indicated by inclusive_start and inclusive_finish
+## Get the index of the first and last non-quote character in a section of the input string indicated by inclusiveStart and inclusiveFinish
 function get_index_of_first_and_last_nonquote_characters(inString, charQuote::Char; iStart=1, iFinish=0, charEscape='\\')
   # Determine end of sub-string
   if iFinish == 0
@@ -478,31 +491,31 @@ function get_index_of_first_and_last_nonquote_characters(inString, charQuote::Ch
 end
 
 ## Check that substitution of part of a string does not change the inside/outside quote status of other parts of the string
-function check_quote_consistency(inString, subString, inclusive_start, inclusive_finish; charQuote='\"', verbose=false, quotes_before=0, quotes_after=0)
+function check_quote_consistency(inString, subString, inclusiveStart, inclusiveFinish; charQuote='\"', verbose=false, quotes_before=0, quotes_after=0)
   # println("called check_quote_consistency");
   # println(" in ------ check_quote_consistency ---  inString = ", inString);
   # println(" in ------ check_quote_consistency ---  subString = ", subString);
-  # println(" in ------ check_quote_consistency ---  inclusive_start = ", inclusive_start);
-  # println(" in ------ check_quote_consistency ---  inclusive_finish = ", inclusive_finish);
+  # println(" in ------ check_quote_consistency ---  inclusiveStart = ", inclusiveStart);
+  # println(" in ------ check_quote_consistency ---  inclusiveFinish = ", inclusiveFinish);
 
 
   ## Get indices of prefix, suffix (before and after) and substituted string
-  idx_prefix = collect(1:inclusive_start-1);
-  # idx_suffix_in = collect(inclusive_finish+1:end);
-  # idx_suffix_out = collect(inclusive_start+quotes_before+length(subString)+quotes_after:end);
-  idx_subbed = collect(inclusive_start+quotes_before:inclusive_start+quotes_before+length(subString)-1);
-  ## Get quote patterns for inString, the string into which subString will be substituted at the positions indicated by inclusive_start and inclusive_finish
+  idx_prefix = collect(1:inclusiveStart-1);
+  # idx_suffix_in = collect(inclusiveFinish+1:end);
+  # idx_suffix_out = collect(inclusiveStart+quotes_before+length(subString)+quotes_after:end);
+  idx_subbed = collect(inclusiveStart+quotes_before:inclusiveStart+quotes_before+length(subString)-1);
+  ## Get quote patterns for inString, the string into which subString will be substituted at the positions indicated by inclusiveStart and inclusiveFinish
   pattern_inString = assign_quote_state(inString, charQuote);
   # print(" --- in check_quote_consistency  pattern_inString = ", pattern_inString);
   pattern_prefix_in = pattern_inString[idx_prefix];
   # print(" --- in check_quote_consistency  pattern_prefix_in = ", pattern_prefix_in);
-  pattern_suffix_in = pattern_inString[inclusive_finish+1:end];
+  pattern_suffix_in = pattern_inString[inclusiveFinish+1:end];
   # print(" --- in check_quote_consistency  pattern_suffix_in = ", pattern_suffix_in);
   ## Get quote pattern for the string resulting from the substitution (including additional quotes added using the quotes_before and quotes_after options)
-  outString = substitute_string(inString, subString, inclusive_start, inclusive_finish, quotes_before=quotes_before, quotes_after=quotes_after);
+  outString = substitute_string(inString, subString, inclusiveStart, inclusiveFinish, quotes_before=quotes_before, quotes_after=quotes_after);
   pattern_outString = assign_quote_state(outString, charQuote);
   pattern_prefix_out = pattern_outString[idx_prefix];
-  pattern_suffix_out = pattern_outString[inclusive_start+quotes_before+length(subString)+quotes_after:end];
+  pattern_suffix_out = pattern_outString[inclusiveStart+quotes_before+length(subString)+quotes_after:end];
   ## Get quote patterns for subString on it's own and after insertion into inString
   pattern_subString_before = assign_quote_state(subString, charQuote);
   pattern_subString_after = pattern_outString[idx_subbed];
@@ -511,11 +524,11 @@ function check_quote_consistency(inString, subString, inclusive_start, inclusive
   # iseven_outString = iseven(length(split(outString, charQuote))-1;)
   ## Get the last character type remaining from inString before and after substitution
   last_in = ""; last_out = "";
-  if length(pattern_inString[inclusive_finish+1:end]) > 0
-    last_in = pattern_inString[inclusive_finish+1:end][end]
+  if length(pattern_inString[inclusiveFinish+1:end]) > 0
+    last_in = pattern_inString[inclusiveFinish+1:end][end]
   end
-  if length(pattern_outString[inclusive_start+quotes_before+length(subString)+quotes_after:end]) > 0
-    last_out = pattern_outString[inclusive_start+quotes_before+length(subString)+quotes_after:end][end];
+  if length(pattern_outString[inclusiveStart+quotes_before+length(subString)+quotes_after:end]) > 0
+    last_out = pattern_outString[inclusiveStart+quotes_before+length(subString)+quotes_after:end][end];
   end
   ## Print variables used to determine the result (for debugging)
   if verbose
@@ -548,19 +561,19 @@ end
 ## Alter a string so that substituting it into another string (e.g. variable name for its value) does not change the inside/outside quote status of other parts of the string
 # Return value consists of the subString argument with quotes (charQuote) added before and after to try to prevent changes in the quoting pattern before and after substitution.
 # ignore_fails=true: If quote pattern is still inconsistent return the original subString
-function enforce_quote_consistency(inString, subString, inclusive_start, inclusive_finish; charQuote='\"', ignore_fails=false, verbose=false)
+function enforce_quote_consistency(inString, subString, inclusiveStart, inclusiveFinish; charQuote='\"', ignore_fails=false, verbose=false)
   pattern_before = assign_quote_state(inString, charQuote);
   ## Try adding different quote permutations until one gives a consistent result
   for num_before in [0,1,2]
     for num_after in [0,1,2]
       # println(" from enforce_quote_consistency calling check_quote_consistency ");
-      consistent = check_quote_consistency(inString, subString, inclusive_start, inclusive_finish, quotes_before=num_before, quotes_after=num_after, charQuote=charQuote, verbose=verbose);
+      consistent = check_quote_consistency(inString, subString, inclusiveStart, inclusiveFinish, quotes_before=num_before, quotes_after=num_after, charQuote=charQuote, verbose=verbose);
       if verbose # For debugging
         println("    Verbose output of enforce_quote_consistency:")
         println("num_before = ", num_before, ", num_after = ", num_after)
         println("check_quote_consistency -> ", consistent)
-        println("pattern_before[1:inclusive_start-1] == pattern_after[1:inclusive_start-1] -> ", pattern_before[1:inclusive_start-1] == pattern_after[1:inclusive_start-1] )
-        println("pattern_before[inclusive_finish+1:end] == pattern_after[inclusive_finish+1+num_before:end] -> ", pattern_before[inclusive_finish+1:end] == pattern_after[inclusive_finish+1+num_before:end])
+        println("pattern_before[1:inclusiveStart-1] == pattern_after[1:inclusiveStart-1] -> ", pattern_before[1:inclusiveStart-1] == pattern_after[1:inclusiveStart-1] )
+        println("pattern_before[inclusiveFinish+1:end] == pattern_after[inclusiveFinish+1+num_before:end] -> ", pattern_before[inclusiveFinish+1:end] == pattern_after[inclusiveFinish+1+num_before:end])
         println("")
       end
       if consistent # Check that the new string is consistent after substitution  
@@ -570,10 +583,45 @@ function enforce_quote_consistency(inString, subString, inclusive_start, inclusi
   end
   ## Adding quotes on either side did not fix the problem
   if !ignore_fails
-    error("Unable to enforce quote consistency for: ", "inString=[", inString, "], subString=[", subString, "], inclusive_start=[", inclusive_start, "] (inString[inclusive_start]=",inString[inclusive_start],"), inclusive_finish=[", inclusive_finish, "], (inString[inclusive_finish]=",inString[inclusive_finish],"), charQuote=[", charQuote, "]")
+    error("Unable to enforce quote consistency for: ", "inString=[", inString, "], subString=[", subString, "], inclusiveStart=[", inclusiveStart, "] (inString[inclusiveStart]=",inString[inclusiveStart],"), inclusiveFinish=[", inclusiveFinish, "], (inString[inclusiveFinish]=",inString[inclusiveFinish],"), charQuote=[", charQuote, "]")
   else
     return subString  
   end
+end
+
+## Order the replacement string array of arrays by start position
+function sort_replacements(arrArrReplacements)
+  sortedReplacements = [];
+  lengthInput = length(arrArrReplacements)
+  replacements = deepcopy(arrArrReplacements);
+  while length(sortedReplacements) < lengthInput
+    # println(length(sortedReplacements), " --vs-- ", lengthInput)
+    isplice = 1;
+    lowestStartIndex = Inf;
+    for irep = 1:length(replacements)
+      rep = replacements[irep]
+      # println("irep = ", irep, " rep = ", rep)
+      if rep[1] < lowestStartIndex
+        lowestStartIndex = rep[1];
+        isplice = irep
+      end
+      # println("isplice = ", isplice)
+    end
+    nextReplacement = splice!(replacements, isplice);
+    push!(sortedReplacements, nextReplacement);
+    ## Check that the end position of the next replacement is greater than the start
+    if nextReplacement[2] <= nextReplacement[1]
+      error(string("Invalid replacement start and end positions (start >= end): ", nextReplacement))
+    end
+    ## Check that the start positions of all remaining replacements come after the end position of this replacement
+    for irep = 1:length(replacements)
+      rep = replacements[irep];
+      if nextReplacement[2] >= rep[1]
+        error(string("The end position of next replacement ", nextReplacement, " (", nextReplacement[2], ") is greater or equal to the start position of another replacement ", rep));
+      end
+    end
+  end
+  return sortedReplacements
 end
 
 ## Expand many variables in a string
@@ -582,13 +630,28 @@ function expandmanyafterdollars(inString, varNames, varVals; adapt_quotation=fal
   if size(varNames) != size(varVals)
     ArgumentError(" in ExpandVariablesAtDollars size($varNames) != size($varVals).  Each input variable name should have exactly one corresponding value.  Is the .vars file correctly formated?")
   end
-  outString = inString; # initialize, to be overwritten at each iteration of the loop
+  ## Get all arrays of positions and strings used to replace parts of the input string
+  allReplacements = [];
   for idx = 1:size(varNames)[1]
     # println(string(idx, " of ", size(varNames)[1] ) );
     name = sanitizestring(string(varNames[idx]));
     value = sanitizestring(string(varVals[idx]));
-    outString = expandnameafterdollar(outString, name, value, adapt_quotation=adapt_quotation, returnTF=returnTF);
+    (replacedString, arrReplace) = expandnameafterdollar(inString, name, value, adapt_quotation=adapt_quotation, returnTF=returnTF);
+    append!(allReplacements, arrReplace)
   end
+  sortedReplacements = sort_replacements(allReplacements); 
+  ## Concatenate original parts of the input string with the parts that replace variable names
+  outString = "";
+  iLast = 1; # Position index in original (input) string
+  for irep = 1:length(sortedReplacements)
+    rep = sortedReplacements[irep]
+    outString = outString * inString[iLast:rep[1] - 1] * rep[3];
+    iLast = rep[2] + 1;
+  end
+  if iLast <= length(inString)
+    outString = outString * inString[iLast:end] # append any remaining part of the original string after replacements
+  end
+  ## Remove excess quotes
   if !keepSuperfluousQuotes
     outString = remove_superfluous_quotes(outString, '\"', 2, 1); # remove_superfluous_quotes(line, quoteChar::Char, intQuoteChar, intInsideQuotes)
   end
