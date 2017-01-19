@@ -333,9 +333,9 @@ function run_stage1_(pathProtocol, pathVars, pathFvars; processName="", summaryP
     namesFvars, infileColumnsFvars, filePathsFvars = parse_expandvars_fvarsfile_(pathFvars, namesVars, valuesVars; dlmFvars=delimiterFvars, verbose=false, adapt_quotation=adapt_quotation, tagsExpand=tagsExpand, keepSuperfluousQuotes=keepSuperfluousQuotes);
   end
 
-  # Read .protocol file (of 1 column ) and expand variables from .vars
-  (flagVerbose && length(namesVars) > 0) && println("Expanding variables in protocol file using values from the --vars file.");
-  arrProtExpVars, cmdRowsProt = parse_expandvars_protocol_(pathProtocol, namesVars, valuesVars, adapt_quotation=adapt_quotation, verbose=false, tagsExpand=tagsExpand, keepSuperfluousQuotes=keepSuperfluousQuotes);
+  # Previously: # Read .protocol file (of 1 column ) and expand variables from .vars
+  # (flagVerbose && length(namesVars) > 0) && println("Expanding variables in protocol file using values from the --vars file.");
+  # arrProtExpVars, cmdRowsProt = parse_expandvars_protocol_(pathProtocol, namesVars, valuesVars, adapt_quotation=adapt_quotation, verbose=false, tagsExpand=tagsExpand, keepSuperfluousQuotes=keepSuperfluousQuotes);
 
   dictListArr = Dict(); dictCmdLineIdxs = Dict();
   if pathFvars != ""
@@ -348,12 +348,20 @@ function run_stage1_(pathProtocol, pathVars, pathFvars; processName="", summaryP
 
   ## Create summary files
   # Use variable values from "list" files to create multiple summary file arrays from the single .protocol file array
-  flagVerbose && println("Creating summary files...");
+  flagVerbose && println("Creating summary arrays...");
   arrArrExpFvars = [];
+  arrProt, cmdRowsProt = file2arrayofarrays_(pathProtocol, comStr; cols=1, delimiter=nothing, tagsExpand=tagsExpand);
   if length(keys(dictListArr)) != 0 && length(keys(dictCmdLineIdxs)) != 0
-    arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs; verbose=false, adapt_quotation=adapt_quotation, keepSuperfluousQuotes=keepSuperfluousQuotes);
+    (flagVerbose && length(namesVars) > 0) && println("Expanding variables in protocol file using values from both the --vars and --frvars files.");
+
+    arrArrExpFvars = protocol_to_array(arrProt, cmdRowsProt, namesVars, valuesVars, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ;
+      verbose=false, adapt_quotation=adapt_quotation, keepSuperfluousQuotes=keepSuperfluousQuotes
+    );
+
   else
-    push!(arrArrExpFvars, arrProtExpVars); # If there is no data from list files, simply proceed using the protocol with expanded varibles (if applicable)
+    # Read .protocol file (of 1 column ) and expand variables from .vars
+    (flagVerbose && length(namesVars) > 0) && println("Expanding variables in protocol file using only values from the --vars file.");
+    push!(arrArrExpFvars, expand_inarrayofarrays(arrProt, cmdRowsProt, namesVars, valuesVars; verbose=false, adapt_quotation=adapt_quotation, keepSuperfluousQuotes=keepSuperfluousQuotes)); # If there is no data from list files, simply proceed using the data from the vars file
   end
   # Generate list of summary file paths.
   summaryPaths = get_summary_names(arrArrExpFvars; tag="#JSUB<summary-name>", # if an entry with this tag is found in the protocol (arrArrExpFvars), the string following the tag will be used as the name

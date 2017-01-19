@@ -773,23 +773,16 @@ function parse_expandvars_fvarsfile_(fileFvars, namesVars, valuesVars; dlmFvars=
   return namesFvars, infileColumnsFvars, filePathsFvars
 end
 
-function parse_expandvars_protocol_(fileProtocol, namesVars, valuesVars; adapt_quotation=false, verbose=false, tagsExpand=nothing, keepSuperfluousQuotes=true)
-  arrProt, cmdRowsProt = file2arrayofarrays_(fileProtocol, comStr; cols=1, delimiter=nothing, tagsExpand=tagsExpand);
-  ## Use variables from .vars to expand values in .protocol
-  arrProtExpVars = expand_inarrayofarrays(arrProt, cmdRowsProt, namesVars, valuesVars ; verbose = verbose, adapt_quotation=adapt_quotation, keepSuperfluousQuotes=keepSuperfluousQuotes)
-  return arrProtExpVars, cmdRowsProt
-end
-
 # Expand variables in .fvars file using values from list files
 function parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, dlmFvars; verbose=false, adapt_quotation=false, tagsExpand=nothing, keepSuperfluousQuotes=true)
   ## Read each list file
   dictListArr = Dict(); # Dictionary with file paths as keys and file contents (arrays of arrays) as values.
   dictCmdLineIdxs = Dict(); #previously: # arrCmdLineIdxs = Array(Array, length(filePathsFvars) ); # Array for storing line counts from input files
-  idx=0;
+  idx = 0;
   for file in filePathsFvars
-    idx+=1;
+    idx += 1;
     arrList, cmdRowsList = file2arrayofarrays_(file, comStr; cols=0, delimiter=dlmFvars, tagsExpand=tagsExpand);
-    arrListExpVars = expand_inarrayofarrays(arrList, cmdRowsList, namesVars, valuesVars ; verbose = verbose, adapt_quotation=adapt_quotation, keepSuperfluousQuotes=keepSuperfluousQuotes);
+    arrListExpVars = expand_inarrayofarrays(arrList, cmdRowsList, namesVars, valuesVars ; verbose=verbose, adapt_quotation=adapt_quotation, keepSuperfluousQuotes=keepSuperfluousQuotes);
     dictListArr[file] = deepcopy(arrListExpVars);
     dictCmdLineIdxs[file] = cmdRowsList; #previously: # arrCmdLineIdxs[idx] = cmdRowsList
   end
@@ -822,8 +815,50 @@ function parse_expandvars_listfiles_(filePathsFvars, namesVars, valuesVars, dlmF
   return dictListArr, dictCmdLineIdxs
 end
 
+# arrArrExpFvars = protocol_to_array(arrProtExpVars, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs; verbose=false, adapt_quotation=adapt_quotation, keepSuperfluousQuotes=keepSuperfluousQuotes);
+
+# # Expand varaibles in .protocol using values from .fvars.  This necessarily results in one output summary file per list entry (list files indicated in .fvars)
+# function protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose=false, adapt_quotation=false, keepSuperfluousQuotes=true)
+#   arrArrExpFvars = []; ## Initialise array for holding summary file data in the form of an arrays-of-arrays
+#   ## Loop over length of list files (currently assuming that all lists are of the same length but this may need to change in the future)
+#   for iln in 1:maximum( map(x->length(x), values(dictCmdLineIdxs)) )
+#     # Initialise array for holding values of each Fvar for the current list row (across all list files)
+#     valuesFvars = Array(AbstractString, size(namesFvars));
+#     ## Get the values of Fvars for the current list row
+#     for ivar in 1:length(namesFvars)
+#       ## Get Fvar value from corresponding row of its list file
+#       # .fvar variable name, column and list file.
+#       fvarName = namesFvars[ivar]; # Get variable name
+#       fvarColumnInListFile = parse(Int, infileColumnsFvars[ivar]); # Get column number
+#       fvarFile = filePathsFvars[ivar]; # Get the list file name associated with this Fvar
+#       listArr = dictListArr[fvarFile]; # array of arrays of the contents of the list file
+#       cmdLineIdxs = dictCmdLineIdxs[fvarFile]; # Rows in the list file which contain data as opposed to comments or being empty
+#       valuesFvars[ivar] = columnfrom_arrayofarrays(listArr, cmdLineIdxs, fvarColumnInListFile)[iln]; # This particular value of the Fvar
+#     end
+#     ## Create a new summary file array for the current list row (across all list files)
+#     if verbose
+#       println("Expanding variables using values from row ", iln, " of list files.")
+#       println("arrProt = ", arrProt)
+#       println("namesFvars = ", namesFvars);
+#       println("valuesFvars = ", valuesFvars);
+#     end
+#         #arrProtExpVars = expand_inarrayofarrays(arrProt, cmdRowsProt, namesVars, valuesVars ; verbose = verbose, adapt_quotation=adapt_quotation, keepSuperfluousQuotes=keepSuperfluousQuotes)
+#     push!(arrArrExpFvars, expand_inarrayofarrays(arrProt, cmdRowsProt, namesFvars, valuesFvars; verbose=verbose, adapt_quotation=adapt_quotation, keepSuperfluousQuotes=keepSuperfluousQuotes))
+#   end
+#   return arrArrExpFvars
+# end
+
+# arrProtExpVars, cmdRowsProt = parse_expandvars_protocol_(pathProtocol, namesVars, valuesVars, adapt_quotation=adapt_quotation, verbose=false, tagsExpand=tagsExpand, keepSuperfluousQuotes=keepSuperfluousQuotes);
+
+# function parse_expandvars_protocol_(fileProtocol, namesVars, valuesVars; adapt_quotation=false, verbose=false, tagsExpand=nothing, keepSuperfluousQuotes=true)
+#   ## Use variables from .vars to expand values in .protocol
+#   arrProt, cmdRowsProt = file2arrayofarrays_(fileProtocol, comStr; cols=1, delimiter=nothing, tagsExpand=tagsExpand);
+#   arrProtExpVars = expand_inarrayofarrays(arrProt, cmdRowsProt, namesVars, valuesVars ; verbose = verbose, adapt_quotation=adapt_quotation, keepSuperfluousQuotes=keepSuperfluousQuotes)
+#   return arrProtExpVars, cmdRowsProt
+# end
+
 # Expand varaibles in .protocol using values from .fvars.  This necessarily results in one output summary file per list entry (list files indicated in .fvars)
-function protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose=false, adapt_quotation=false, keepSuperfluousQuotes=true)
+function protocol_to_array(arrProt, cmdRowsProt, namesVars, valuesVars, namesFvars, infileColumnsFvars, filePathsFvars, dictListArr, dictCmdLineIdxs ; verbose=false, adapt_quotation=false, keepSuperfluousQuotes=true)
   arrArrExpFvars = []; ## Initialise array for holding summary file data in the form of an arrays-of-arrays
   ## Loop over length of list files (currently assuming that all lists are of the same length but this may need to change in the future)
   for iln in 1:maximum( map(x->length(x), values(dictCmdLineIdxs)) )
@@ -847,7 +882,8 @@ function protocol_to_array(arrProt, cmdRowsProt, namesFvars, infileColumnsFvars,
       println("namesFvars = ", namesFvars);
       println("valuesFvars = ", valuesFvars);
     end
-    push!(arrArrExpFvars, expand_inarrayofarrays(arrProt, cmdRowsProt, namesFvars, valuesFvars; verbose=verbose, adapt_quotation=adapt_quotation, keepSuperfluousQuotes=keepSuperfluousQuotes))
+        #arrProtExpVars = expand_inarrayofarrays(arrProt, cmdRowsProt, namesVars, valuesVars ; verbose = verbose, adapt_quotation=adapt_quotation, keepSuperfluousQuotes=keepSuperfluousQuotes)
+    push!(arrArrExpFvars, expand_inarrayofarrays(arrProt, cmdRowsProt, [namesVars; namesFvars], [valuesVars; valuesFvars]; verbose=verbose, adapt_quotation=adapt_quotation, keepSuperfluousQuotes=keepSuperfluousQuotes))
   end
   return arrArrExpFvars
 end
